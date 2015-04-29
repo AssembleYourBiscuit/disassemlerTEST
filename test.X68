@@ -88,8 +88,8 @@ START
             MOVE.W A0, (A0)                   ;ADDRESS REGISTER TO INDIRECT ADDRESS REGISTER
             MOVE.W A0, (A0)+                  ;ADDRESS REGISTER TO INDIRECT ADDRESS REGOSTER POST INC
             MOVE.W A0, -(A0)                  ;ADDRESS REGISTER TO INDIRECT ADDRESS REGISTER PRE DEC
-            MOVE.W A0, $FFFE                ;ADDRESS REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
-            MOVE.W A0, $FFFFFFFE            ;ADDRESS REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
+            MOVE.W A0, $FFFE                  ;ADDRESS REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
+            MOVE.W A0, $FFFFFFFE              ;ADDRESS REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
             
             MOVE.W (A0), D0                   ;INDIRECT ADDRESS REGISTER TO DATA REGISTER
             MOVE.W (A0), (A1)                 ;INDIRECT ADDRESS REGISTER TO INDIRECT ADDRESS REGISTER
@@ -199,6 +199,7 @@ START
 *-------------------------------------------------------------------------------
 
             END        START                                *end program
+
 
 
 *~Font name~Courier New~
