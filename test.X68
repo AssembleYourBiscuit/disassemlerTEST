@@ -5,9 +5,7 @@
 * Description: All valid commands we could run into, from here
 *              we can assemble to machine language and use
 *              the machine code as test input for our 
-*              disassembler. DECIMAL AND BINARY IMMEDIATE 
-*              DATA AND ADDRESSING NOT CONSIDERED SINCE
-*              MACHINE LAGUAGE IS ALL HEX ANYHOW
+*              disassembler. 
 *-------------------------------------------------------------------------------
 *-------------------------------------------------------------------------------
 * START
@@ -18,6 +16,8 @@ START
 
 *-------------------------------------------------------------------------------
 * ALL POSSIBLE MOVE COMMANDS (00 size destRegister destMode srcMode srcRegister)
+*                            DECIMAL AND BINARY IMMEDIATE DATA AND ADDRESSING 
+*                            NOT CONSIDERED SINCE MACHINE LAGUAGE IS ALL HEX ANYHOW
 *-------------------------------------------------------------------------------
 
             *-----------------------------------------------------------------*
@@ -134,7 +134,7 @@ START
             MOVE.W #$AFFF, $AAAAAAAA          ;IMMEDIATE WORD DATA IN HEX (NO MORE THAN 2 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS) 
 
             *-----------------------------------------------------------------*
-            * LONGWORD MOVES                                                      *
+            * LONGWORD MOVES                                                  *
             *-----------------------------------------------------------------*
 
             MOVE.L D0, D1                     ;DATA REGISTER TO DATA REGISTER
@@ -191,7 +191,46 @@ START
             MOVE.L #$AFFFFFFF, (A0)+          ;IMMEDIATE LONGWORD DATA IN HEX (NO MORE THAN 8 DIGITS) TO INDIRECT ADDRESS REGISTER POST INC
             MOVE.L #$AFFFFFFF, -(A0)          ;IMMEDIATE LONGWORD DATA IN HEX (NO MORE THAN 8 DIGITS) TO INDIRECT ADDRESS REGISTER PRE DEC
             MOVE.L #$AFFFFFFF, $AAAA          ;IMMEDIATE LONGWORD DATA IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE WORD ADDRESS IN DECIMAL (NO MORE THAN 4 DIGITS)
-            MOVE.L #$AFFFFFFF, $AAAAAAAA      ;IMMEDIATE LONGWORD DATA IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)               
+            MOVE.L #$AFFFFFFF, $AAAAAAAA      ;IMMEDIATE LONGWORD DATA IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)
+
+*-------------------------------------------------------------------------------
+* ALL POSSIBLE MOVEA COMMANDS (00 size destRegister 001 srcMode srcRegister)
+*                             THE ONLY DIFFERENCES BETWEEN MOVEM AND MOVE IS THAT
+*                             THE DESTIMATION MUST BE AN ADDRESS REGISTER AND
+*                             DATA TO BOVE MUST BE WORD OR LONGWORD (NOT BYTE)
+*                             NOTE: I DONT UNDERSTAND MOVEA.W ABSOLUTE WORD/LONG 
+*                             WORD ADDRESS TO ADDRESS REGISTER, HOW MANY DIGITS?
+*                             MAY HAVE REDUNDANT CODE, IM NOT SURE YET!
+*-------------------------------------------------------------------------------  
+
+            *-----------------------------------------------------------------*
+            * WORD MOVES (0011)                                               *
+            *-----------------------------------------------------------------*
+            
+            MOVEA.W D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.W A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.W (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.W (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.W -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.W $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
+            MOVEA.W $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
+            MOVEA.W #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS!
+            MOVEA.W #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!IS THIS THE SAME AS ABOVE?
+            
+            *-----------------------------------------------------------------*
+            * LONGWORD MOVES (0010)                                           *
+            *-----------------------------------------------------------------*
+            
+            MOVEA.L D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.L A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.L (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.L (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.L -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
+            MOVEA.L $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
+            MOVEA.L $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
+            MOVEA.L #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS! WE PROBABLY DONT NEED THIS!
+            MOVEA.L #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!
+            
 
 
 *-------------------------------------------------------------------------------
@@ -199,6 +238,7 @@ START
 *-------------------------------------------------------------------------------
 
             END        START                                *end program
+
 
 
 
