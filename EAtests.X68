@@ -21,6 +21,33 @@ isMOVEB     JSR     getSREG
             JSR     getSMODE
             JSR     getDMODE
             *CHECK FOR ERRORS IN REGISTERS D3-D6
+            JSR     sModeErr
+            JSR     dModeErr
+            JSR     sRegErr
+            JSR     dRegErr
+            RTS
+       
+sModeErr    CMP.L   #7, D4
+            BNE     setEAErr
+            RTS
+            
+dModeErr    CMP.L   #7, D3
+            BNE     setEAErr
+            RTS
+            
+sRegErr     CMP.L   #4, D6
+            BGE     setEAErr
+            RTS
+            
+dRegErr     CMP.L   #1, D5
+            BEQ     setEAErr
+            CMP.L   #4, D5
+            BGE     setEAErr
+            RTS
+            
+setEAErr    CLR     D2
+            MOVE.W  #$BEEF, D2
+            RTS
 
 *SETS THE SOURCE REGISTER FOR A MOVEB COMMAND TO D6          
 getSREG     CLR     D6
