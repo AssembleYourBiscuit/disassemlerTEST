@@ -8,11 +8,69 @@
 START:                  ; first instruction of program
 
 * Put program code here
-           JSR  printDREGF
+                                               
+             move.w #$1cc7, d7            *1cc7 = move.b d7, (a6)+ 0001 110 011 000 111
+             JSR    isMOVEB
+             
+             * END PROGRAM
+             MOVE.B #9, D0
+             TRAP #15
            
-* END PROGRAM
-           MOVE.B #9, D0
-           TRAP #15
+isMOVEB     JSR     getSREG
+            JSR     getDREG
+            JSR     getSMODE
+            JSR     getDMODE
+            *CHECK FOR ERRORS IN REGISTERS D3-D6
+
+*SETS THE SOURCE REGISTER FOR A MOVEB COMMAND TO D6          
+getSREG     CLR     D6
+            MOVE.L  D7, D6
+            LSL.L   #8, D6
+            LSL.L   #8, D6
+            LSL.L   #8, D6
+            LSL.L   #5, D6
+            LSR.L   #8, D6
+            LSR.L   #8, D6
+            LSR.L   #8, D6
+            LSR.L   #5, D6
+            RTS
+
+*SETS DESTINATION REGISTER FOR MOVEB COMMAND TO D5            
+getDREG     CLR     D5
+            MOVE.L  D7, D5
+            LSL.L   #8, D5
+            LSL.L   #8, D5
+            LSL.L   #4, D5
+            LSR.L   #8, D5
+            LSR.L   #8, D5
+            LSR.L   #8, D5
+            LSR.L   #5, D5
+            RTS
+
+*SETS SOURCE MODE FOR MOVEB COMMAND TO D4            
+getSMODE    CLR     D4
+            MOVE.L  D7, D4
+            LSL.L   #8, D4
+            LSL.L   #8, D4
+            LSL.L   #8, D4
+            LSL.L   #2, D4
+            LSR.L   #8, D4
+            LSR.L   #8, D4
+            LSR.L   #8, D4
+            LSR.L   #5, D4
+            RTS    
+
+*GETS DESTNATION MODE FROM MOVE COMMAND, PUTS IN D3
+getDMODE    CLR     D3
+            MOVE.L  D7, D3
+            LSL.L   #8, D3
+            LSL.L   #8, D3
+            LSL.L   #7, D3
+            LSR.L   #8, D3
+            LSR.L   #8, D3
+            LSR.L   #8, D3
+            LSR.L   #5, D3
+            RTS      
     
 printDREGF   CMP.W   #0, D6
              BEQ     printDREG0
