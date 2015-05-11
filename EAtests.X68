@@ -9,7 +9,7 @@ START:                  ; first instruction of program
 
 * Put program code here
                                                
-             move.L #$103C8008, $8000            *181e = move.b (a6)+, d4 0001 110 011 000 111
+             move.L #$103C8008, $8000            *181e = move.b (a6)+, d4 0001 000 0 00 11 1 100
              MOVEA.L    #$8000, A6
              MOVE.W $8000, D7
              JSR    isMOVEB
@@ -52,27 +52,27 @@ chkDAdd     CMP.L   #0, D5
             RTS
    
 *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-wordModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+wordModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
             MOVEA.W A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
             RTS
             
 *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-longModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+longModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
             MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
             RTS
             
-*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-immediateModeS ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
-               MOVEA.W A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON (TESTED...WORKS)        
+immediateModeS ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!)PS IT TOTALLY DOES 
+               MOVEA.L A6, A5          *STORE LONG IN A5 SO IO CAN PRINT IT, .L TO AVOID SIGN EXTENTION...I DONT LIKE IT
                RTS
                
 *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-wordModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+wordModeD   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) lmsd;flm
             MOVEA.W A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
             RTS
             
 *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-longModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+longModeD   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
             MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
             RTS
          
@@ -115,7 +115,7 @@ setEAErr    CLR     D2
             MOVE.W  #$BEEF, D2
             RTS
 
-*SETS THE SOURCE REGISTER FOR A MOVEB COMMAND TO D6          
+*SETS THE SOURCE REGISTER FOR A MOVE COMMAND TO D6          
 getSREG     CLR     D6
             MOVE.L  D7, D6
             LSL.L   #8, D6
@@ -128,7 +128,7 @@ getSREG     CLR     D6
             LSR.L   #5, D6
             RTS
 
-*SETS DESTINATION REGISTER FOR MOVEB COMMAND TO D5            
+*SETS DESTINATION REGISTER FOR MOVE COMMAND TO D5            
 getDREG     CLR     D5
             MOVE.L  D7, D5
             LSL.L   #8, D5
@@ -140,7 +140,7 @@ getDREG     CLR     D5
             LSR.L   #5, D5
             RTS
 
-*SETS SOURCE MODE FOR MOVEB COMMAND TO D4            
+*SETS SOURCE MODE FOR MOVE COMMAND TO D4            
 getSMODE    CLR     D4
             MOVE.L  D7, D4
             LSL.L   #8, D4

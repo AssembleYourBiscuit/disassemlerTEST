@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 5/11/2015 10:51:57 AM
+Created On: 5/11/2015 11:46:46 AM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -13,7 +13,7 @@ Created On: 5/11/2015 10:51:57 AM
 00001000                             9  
 00001000                            10  * Put program code here
 00001000                            11                                                 
-00001000  23FC 103C8008 00008000    12               move.L #$103C8008, $8000            *181e = move.b (a6)+, d4 0001 110 011 000 111
+00001000  23FC 10DC8008 00008000    12               move.L #$10dC8008, $8000            *181e = move.b (a6)+, d4 0001 110 011 000 111
 0000100A  2C7C 00008000             13               MOVEA.L    #$8000, A6
 00001010  3E39 00008000             14               MOVE.W $8000, D7
 00001016  4EB9 00001022             15               JSR    isMOVEB
@@ -56,27 +56,27 @@ Created On: 5/11/2015 10:51:57 AM
 000010A4  4E75                      52              RTS
 000010A6                            53     
 000010A6                            54  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-000010A6  584E                      55  wordModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010A6  544E                      55  wordModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
 000010A8  3A4E                      56              MOVEA.W A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
 000010AA  4E75                      57              RTS
 000010AC                            58              
 000010AC                            59  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-000010AC  584E                      60  longModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010AC  544E                      60  longModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
 000010AE  2A4E                      61              MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
 000010B0  4E75                      62              RTS
 000010B2                            63              
 000010B2                            64  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-000010B2  584E                      65  immediateModeS ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
-000010B4  3A4E                      66                 MOVEA.W A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+000010B2  544E                      65  immediateModeS ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010B4  2A4E                      66                 MOVEA.L A6, A5          *STORE LONG IN A5 SO IO CAN PRINT IT, L TO AVOID SIGN EXTENTION
 000010B6  4E75                      67                 RTS
 000010B8                            68                 
 000010B8                            69  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-000010B8  584E                      70  wordModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010B8  544E                      70  wordModeD   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
 000010BA  384E                      71              MOVEA.W A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
 000010BC  4E75                      72              RTS
 000010BE                            73              
 000010BE                            74  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-000010BE  584E                      75  longModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010BE  544E                      75  longModeD   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
 000010C0  284E                      76              MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
 000010C2  4E75                      77              RTS
 000010C4                            78           

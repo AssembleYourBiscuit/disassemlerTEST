@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 4/30/2015 2:50:24 AM
+Created On: 5/11/2015 11:56:41 AM
 
 00000000                             1  *-------------------------------------------------------------------------------
 00000000                             2  * Title      : All possible valid commands
@@ -28,10 +28,10 @@ Created On: 4/30/2015 2:50:24 AM
 00001000                            24              * BYTE MOVES                                                      *
 00001000                            25              *-----------------------------------------------------------------*
 00001000                            26  
-00001000  1200                      27              MOVE.B D0, D1                     ;DATA REGISTER TO DATA REGISTER
-00001002  1080                      28              MOVE.B D0, (A0)                   ;DATA REGISTER TO INDIRECT ADDRESS REGISTER (NEVER USE A7)
-00001004  10C0                      29              MOVE.B D0, (A0)+                  ;DATA REGISTER TO INDIRECT ADDRESS REGISTER POST INC (NEVER USE A7)
-00001006  1100                      30              MOVE.B D0, -(A0)                  ;DATA REGISTER TO INDIRECT ADDRESS REGISTER PRE DEC (NEVER USE A7)
+00001000  1200                      27              MOVE.B D0, D1                     ;PASSED
+00001002  1080                      28              MOVE.B D0, (A0)                   ;PASSED
+00001004  10C0                      29              MOVE.B D0, (A0)+                  ;PASSED
+00001006  1100                      30              MOVE.B D0, -(A0)                  ;PASSED
 00001008  13C0 0000FFFE             31              MOVE.B D0, $FFFE                  ;DATA REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
 0000100E  11C0 FFFE                 32              MOVE.B D0, $FFFFFFFE              ;DATA REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
 00001012                            33              
@@ -42,7 +42,7 @@ Created On: 4/30/2015 2:50:24 AM
 0000101A  13D0 0000FFFE             38              MOVE.B (A0), $FFFE                ;INDIRECT ADDRESS REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
 00001020  11D0 FFFE                 39              MOVE.B (A0), $FFFFFFFE            ;INDIRECT ADDRESS REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
 00001024                            40  
-00001024  1218                      41              MOVE.B (A0)+, D1                  ;INDIRECT ADDRESS REGISTER POST INC TO DATA REGISTER
+00001024  1218                      41              MOVE.B (A0)+, D1                  ;PASSED
 00001026  1098                      42              MOVE.B (A0)+, (A0)                ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER (NEVER USE A7)
 00001028  10D8                      43              MOVE.B (A0)+, (A0)+               ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER POST INC (NEVER USE A7)
 0000102A  1118                      44              MOVE.B (A0)+, -(A0)               ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER PRE DEC (NEVER USE A7)
@@ -204,43 +204,49 @@ Created On: 4/30/2015 2:50:24 AM
 0000124C                           200  *                             DATA TO BOVE MUST BE WORD OR LONGWORD (NOT BYTE)
 0000124C                           201  *                             NOTE: I DONT UNDERSTAND MOVEA.W ABSOLUTE WORD/LONG 
 0000124C                           202  *                             WORD ADDRESS TO ADDRESS REGISTER, HOW MANY DIGITS?
-0000124C                           203  *-------------------------------------------------------------------------------  
-0000124C                           204  
-0000124C                           205              *-----------------------------------------------------------------*
-0000124C                           206              * WORD MOVES (0011)                                               *
-0000124C                           207              *-----------------------------------------------------------------*
-0000124C                           208              
-0000124C  3040                     209              MOVEA.W D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
-0000124E  3049                     210              MOVEA.W A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
-00001250  3051                     211              MOVEA.W (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
-00001252  3059                     212              MOVEA.W (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
-00001254  3061                     213              MOVEA.W -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
-00001256  3079 0000FFFE            214              MOVEA.W $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
-0000125C  3078 FFFE                215              MOVEA.W $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
-00001260  307C FFFE                216              MOVEA.W #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS!
-00001264  307C FFFE                217              MOVEA.W #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!
-00001268                           218              
-00001268                           219              *-----------------------------------------------------------------*
-00001268                           220              * LONGWORD MOVES (0010)                                           *
-00001268                           221              *-----------------------------------------------------------------*
-00001268                           222              
-00001268  2040                     223              MOVEA.L D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
-0000126A  2049                     224              MOVEA.L A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
-0000126C  2051                     225              MOVEA.L (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
-0000126E  2059                     226              MOVEA.L (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
-00001270  2061                     227              MOVEA.L -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
-00001272  2079 0000FFFE            228              MOVEA.L $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
-00001278  2078 FFFE                229              MOVEA.L $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
-0000127C  207C 0000FFFE            230              MOVEA.L #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS!
-00001282  207C FFFFFFFE            231              MOVEA.L #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!
-00001288                           232              
-00001288                           233  
+0000124C                           203  *                             MAY HAVE REDUNDANT CODE, IM NOT SURE YET!
+0000124C                           204  *-------------------------------------------------------------------------------  
+0000124C                           205  
+0000124C                           206              *-----------------------------------------------------------------*
+0000124C                           207              * WORD MOVES (0011)                                               *
+0000124C                           208              *-----------------------------------------------------------------*
+0000124C                           209              
+0000124C  3040                     210              MOVEA.W D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
+0000124E  3049                     211              MOVEA.W A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+00001250  3051                     212              MOVEA.W (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+00001252  3059                     213              MOVEA.W (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
+00001254  3061                     214              MOVEA.W -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
+00001256  3079 0000FFFE            215              MOVEA.W $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
+0000125C  3078 FFFE                216              MOVEA.W $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
+00001260  307C FFFE                217              MOVEA.W #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS!
+00001264  307C FFFE                218              MOVEA.W #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!IS THIS THE SAME AS ABOVE?
+00001268                           219              
+00001268                           220              *-----------------------------------------------------------------*
+00001268                           221              * LONGWORD MOVES (0010)                                           *
+00001268                           222              *-----------------------------------------------------------------*
+00001268                           223              
+00001268  2040                     224              MOVEA.L D0, A0                    ;DATA REGISTER TO ADDRESS REGISTER, NEVER USE A7
+0000126A  2049                     225              MOVEA.L A1, A0                    ;ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+0000126C  2051                     226              MOVEA.L (A1), A0                  ;INDIRECT ADDRESS REGISTER TO ADDRESS REGISTER, NEVER USE A7
+0000126E  2059                     227              MOVEA.L (A1)+, A0                 ;INDIRECT ADDRESS REGISTER POST INC TO ADDRESS REGISTER, NEVER USE A7
+00001270  2061                     228              MOVEA.L -(A1), A0                 ;INDIRECT ADDRESS REGISTER PRE DEC TO ADDRESS REGISTER, NEVER USE A7
+00001272  2079 0000FFFE            229              MOVEA.L $FFFE, A0                 ;ABSOLUTE WORD ADDRESS TO ADDRESS REGISTER, NEVER USE A7, (HOW MANY DIGITS???!!!!)WORD ADDRESS MUST EVEN (END IN 0, 2, 4, 6, 8, A, C, E)
+00001278  2078 FFFE                230              MOVEA.L $FFFFFFFE, A0             ;ABSOLUTE LONGWORD ADDRESS TO ADDRESS RIGISTER, NO A7! (HOW MANY DIGITS?? I STILL DONT KNOW!) MUST BE EVEN
+0000127C  207C 0000FFFE            231              MOVEA.L #$FFFE, A0                ;IMMEDIATE WORD DATA IN HEX TO ADDRESS REGISTER, NO A7! IM NOT SURE IF THIS SHOULD BE EVEN! MUST BE NO LONGER THAN 4 DIGITS! WE PROBABLY DONT NEED THIS!
+00001282  207C FFFFFFFE            232              MOVEA.L #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!
+00001288                           233              
 00001288                           234  
-00001288                           235  *-------------------------------------------------------------------------------
-00001288                           236  * END
-00001288                           237  *-------------------------------------------------------------------------------
-00001288                           238  
-00001288                           239              END        START                                *end program
+00001288                           235              *-----------------------------------------------------------------*
+00001288                           236              * ILLEGAL MOVES                                                   *
+00001288                           237              *-----------------------------------------------------------------*
+00001288                           238              *MOVE.B (A0)+, A0                  *PASSED 
+00001288                           239              
+00001288                           240  
+00001288                           241  *-------------------------------------------------------------------------------
+00001288                           242  * END
+00001288                           243  *-------------------------------------------------------------------------------
+00001288                           244  
+00001288                           245              END        START                                *end program
 
 No errors detected
 No warnings generated

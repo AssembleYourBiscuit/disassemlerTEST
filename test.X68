@@ -24,10 +24,10 @@ START
             * BYTE MOVES                                                      *
             *-----------------------------------------------------------------*
 
-            MOVE.B D0, D1                     ;DATA REGISTER TO DATA REGISTER
-            MOVE.B D0, (A0)                   ;DATA REGISTER TO INDIRECT ADDRESS REGISTER (NEVER USE A7)
-            MOVE.B D0, (A0)+                  ;DATA REGISTER TO INDIRECT ADDRESS REGISTER POST INC (NEVER USE A7)
-            MOVE.B D0, -(A0)                  ;DATA REGISTER TO INDIRECT ADDRESS REGISTER PRE DEC (NEVER USE A7)
+            MOVE.B D0, D1                     ;PASSED
+            MOVE.B D0, (A0)                   ;PASSED
+            MOVE.B D0, (A0)+                  ;PASSED
+            MOVE.B D0, -(A0)                  ;PASSED
             MOVE.B D0, $FFFE                  ;DATA REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
             MOVE.B D0, $FFFFFFFE              ;DATA REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
             
@@ -38,7 +38,7 @@ START
             MOVE.B (A0), $FFFE                ;INDIRECT ADDRESS REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
             MOVE.B (A0), $FFFFFFFE            ;INDIRECT ADDRESS REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
 
-            MOVE.B (A0)+, D1                  ;INDIRECT ADDRESS REGISTER POST INC TO DATA REGISTER
+            MOVE.B (A0)+, D1                  ;PASSED
             MOVE.B (A0)+, (A0)                ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER (NEVER USE A7)
             MOVE.B (A0)+, (A0)+               ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER POST INC (NEVER USE A7)
             MOVE.B (A0)+, -(A0)               ;INDIRECT ADDRESS REGISTER POST INC TO INDIRECT ADDRESS REGISTER PRE DEC (NEVER USE A7)
@@ -66,7 +66,7 @@ START
             MOVE.B $FFFFFFFE, $AAAA           ;ABSOLUTE LONGWORD ADDRESS IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE WORD ADDRESS IN DECIMAL (NO MORE THAN 4 DIGITS)
             MOVE.B $FFFFFFFE, $AAAAAAAA       ;ABSOLUTE LONGWORD ADDRESS IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)
             
-            MOVE.B #$AF, D1                   ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO DATA REGISTER
+            MOVE.B #$AF, D1                   ;PASSED
             MOVE.B #$AF, (A0)                 ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER
             MOVE.B #$AF, (A0)+                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER POST INC
             MOVE.B #$AF, -(A0)                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER PRE DEC
@@ -232,12 +232,18 @@ START
             MOVEA.L #$FFFFFFFE, A0            IMMEDIATE LONGWORD DATA IN HEX TO ADDRESS REGISTER, NO A7! EVEN? IDK!!! NO LONGER THAN 8 DIGITS!
             
 
+            *-----------------------------------------------------------------*
+            * ILLEGAL MOVES                                                   *
+            *-----------------------------------------------------------------*
+            *MOVE.B (A0)+, A0                  *PASSED 
+            
 
 *-------------------------------------------------------------------------------
 * END
 *-------------------------------------------------------------------------------
 
             END        START                                *end program
+
 
 
 
