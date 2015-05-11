@@ -9,7 +9,9 @@ START:                  ; first instruction of program
 
 * Put program code here
                                                
-             move.w #$1cc7, d7            *1cc7 = move.b d7, (a6)+ 0001 110 011 000 111
+             move.L #$103C8008, $8000            *181e = move.b (a6)+, d4 0001 110 011 000 111
+             MOVEA.L    #$8000, A6
+             MOVE.W $8000, D7
              JSR    isMOVEB
              
              * END PROGRAM
@@ -39,7 +41,7 @@ chkSAdd     CMP.L   #0, D6
             BEQ     wordModeS 
             CMP.L   #1, D6
             BEQ     longModeS
-            CMP.L   #2, D6
+            CMP.L   #4, D6
             BEQ     immediateModeS
             RTS
             
@@ -451,6 +453,7 @@ stringMOVEB DC.B    'MOVE.B', 0
 
 
     END    START        ; last line of source
+
 
 
 *~Font name~Courier New~
