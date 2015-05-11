@@ -117,7 +117,9 @@ getDMODE    CLR     D3
             LSR.L   #8, D3
             LSR.L   #8, D3
             LSR.L   #5, D3
-            RTS      
+            RTS    
+
+******************INGNORE CODE BELOW JUST USED TO TEST MY EA STUFF***********************  
     
 printDREGF   CMP.W   #0, D6
              BEQ     printDREG0
