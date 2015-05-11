@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 5/10/2015 4:38:58 PM
+Created On: 5/10/2015 7:41:12 PM
 
 00000000                             1  *-----------------------------------------------------------
 00000000                             2  * Title      :
@@ -20,462 +20,490 @@ Created On: 5/10/2015 4:38:58 PM
 0000100A  103C 0009                 16               MOVE.B #9, D0
 0000100E  4E4F                      17               TRAP #15
 00001010                            18             
-00001010  4EB9 0000106E             19  isMOVEB     JSR     getSREG
-00001016  4EB9 00001084             20              JSR     getDREG
-0000101C  4EB9 00001098             21              JSR     getSMODE
-00001022  4EB9 000010AE             22              JSR     getDMODE
+00001010  4EB9 000010CE             19  isMOVEB     JSR     getSREG
+00001016  4EB9 000010E4             20              JSR     getDREG
+0000101C  4EB9 000010F8             21              JSR     getSMODE
+00001022  4EB9 0000110E             22              JSR     getDMODE
 00001028                            23              *CHECK FOR ERRORS IN REGISTERS D3-D6
 00001028  4EB9 00001042             24              JSR     sModeErr
-0000102E  4EB9 0000104E             25              JSR     dModeErr
-00001034  4EB9 0000105A             26              JSR     sRegErr
-Line 27 ERROR: Undefined symbol
-0000103A  4EB9 004F052A             27              JSR     dRegErr
+0000102E  4EB9 00001062             25              JSR     dModeErr
+00001034  4EB9 0000108C             26              JSR     sRegErr
+0000103A  4EB9 0000108E             27              JSR     dRegErr
 00001040  4E75                      28              RTS
 00001042                            29         
-00001042  B8BC 00000007             30  sModeErr    CMP.L   #7, D4
-00001048  6600 001C                 31              BNE     setEAErr
-0000104C  4E75                      32              RTS
-0000104E                            33              
-0000104E  B6BC 00000007             34  dModeErr    CMP.L   #7, D3
-00001054  6600 0010                 35              BNE     setEAErr
-00001058  4E75                      36              RTS
-0000105A                            37              
-0000105A  BCBC 00000004             38  sRegErr     CMP.L   #4, D6
-00001060  6C00 0004                 39              BGE     setEAErr
-00001064  4E75                      40              RTS
-00001066                            41              
-00001066  4242                      42  setEAErr    CLR     D2
-00001068  343C BEEF                 43              MOVE.W  #$BEEF, D2
-0000106C  4E75                      44              RTS
-0000106E                            45  
-0000106E                            46  *SETS THE SOURCE REGISTER FOR A MOVEB COMMAND TO D6          
-0000106E  4246                      47  getSREG     CLR     D6
-00001070  2C07                      48              MOVE.L  D7, D6
-00001072  E18E                      49              LSL.L   #8, D6
-00001074  E18E                      50              LSL.L   #8, D6
-00001076  E18E                      51              LSL.L   #8, D6
-00001078  EB8E                      52              LSL.L   #5, D6
-0000107A  E08E                      53              LSR.L   #8, D6
-0000107C  E08E                      54              LSR.L   #8, D6
-0000107E  E08E                      55              LSR.L   #8, D6
-00001080  EA8E                      56              LSR.L   #5, D6
-00001082  4E75                      57              RTS
-00001084                            58  
-00001084                            59  *SETS DESTINATION REGISTER FOR MOVEB COMMAND TO D5            
-00001084  4245                      60  getDREG     CLR     D5
-00001086  2A07                      61              MOVE.L  D7, D5
-00001088  E18D                      62              LSL.L   #8, D5
-0000108A  E18D                      63              LSL.L   #8, D5
-0000108C  E98D                      64              LSL.L   #4, D5
-0000108E  E08D                      65              LSR.L   #8, D5
-00001090  E08D                      66              LSR.L   #8, D5
-00001092  E08D                      67              LSR.L   #8, D5
-00001094  EA8D                      68              LSR.L   #5, D5
-00001096  4E75                      69              RTS
-00001098                            70  
-00001098                            71  *SETS SOURCE MODE FOR MOVEB COMMAND TO D4            
-00001098  4244                      72  getSMODE    CLR     D4
-0000109A  2807                      73              MOVE.L  D7, D4
-0000109C  E18C                      74              LSL.L   #8, D4
-0000109E  E18C                      75              LSL.L   #8, D4
-000010A0  E18C                      76              LSL.L   #8, D4
-000010A2  E58C                      77              LSL.L   #2, D4
-000010A4  E08C                      78              LSR.L   #8, D4
-000010A6  E08C                      79              LSR.L   #8, D4
-000010A8  E08C                      80              LSR.L   #8, D4
-000010AA  EA8C                      81              LSR.L   #5, D4
-000010AC  4E75                      82              RTS    
-000010AE                            83  
-000010AE                            84  *GETS DESTNATION MODE FROM MOVE COMMAND, PUTS IN D3
-000010AE  4243                      85  getDMODE    CLR     D3
-000010B0  2607                      86              MOVE.L  D7, D3
-000010B2  E18B                      87              LSL.L   #8, D3
-000010B4  E18B                      88              LSL.L   #8, D3
-000010B6  EF8B                      89              LSL.L   #7, D3
-000010B8  E08B                      90              LSR.L   #8, D3
-000010BA  E08B                      91              LSR.L   #8, D3
-000010BC  E08B                      92              LSR.L   #8, D3
-000010BE  EA8B                      93              LSR.L   #5, D3
-000010C0  4E75                      94              RTS      
-000010C2                            95      
-000010C2  BC7C 0000                 96  printDREGF   CMP.W   #0, D6
-000010C6  6700 01A0                 97               BEQ     printDREG0
-000010CA  BC7C 0001                 98               CMP.W   #1, D6
-000010CE  6700 01A6                 99               BEQ     printDREG1
-000010D2  BC7C 0002                100               CMP.W   #2, D6
-000010D6  6700 01AC                101               BEQ     printDREG2
-000010DA  BC7C 0003                102               CMP.W   #3, D6
-000010DE  6700 01B2                103               BEQ     printDREG3
-000010E2  BC7C 0004                104               CMP.W   #4, D6
-000010E6  6700 01B8                105               BEQ     printDREG4
-000010EA  BC7C 0005                106               CMP.W   #5, D6
-000010EE  6700 01BE                107               BEQ     printDREG5
-000010F2  BC7C 0006                108               CMP.W   #6, D6
-000010F6  6700 01C4                109               BEQ     printDREG6
-000010FA  BC7C 0007                110               CMP.W   #7, D6
-000010FE  6700 01CA                111               BEQ     printDREG7
-00001102  4E75                     112               RTS
-00001104                           113               
-00001104  BA7C 0000                114  printDREGS   CMP.W   #0, D5
-00001108  6700 015E                115               BEQ     printDREG0
-0000110C  BA7C 0001                116               CMP.W   #1, D5
-00001110  6700 0164                117               BEQ     printDREG1
-00001114  BA7C 0002                118               CMP.W   #2, D5
-00001118  6700 016A                119               BEQ     printDREG2
-0000111C  BA7C 0003                120               CMP.W   #3, D5
-00001120  6700 0170                121               BEQ     printDREG3
-00001124  BA7C 0004                122               CMP.W   #4, D5
-00001128  6700 0176                123               BEQ     printDREG4
-0000112C  BA7C 0005                124               CMP.W   #5, D5
-00001130  6700 017C                125               BEQ     printDREG5
-00001134  BA7C 0006                126               CMP.W   #6, D5
-00001138  6700 0182                127               BEQ     printDREG6
-0000113C  BA7C 0007                128               CMP.W   #7, D5
-00001140  6700 0188                129               BEQ     printDREG7
-00001144  4E75                     130               RTS
-00001146                           131               
-00001146  BC7C 0000                132  printAREGF   CMP.W   #0, D6
-0000114A  6700 018C                133               BEQ     printAREG0
-0000114E  BC7C 0001                134               CMP.W   #1, D6
-00001152  6700 0192                135               BEQ     printAREG1
-00001156  BC7C 0002                136               CMP.W   #2, D6
-0000115A  6700 0198                137               BEQ     printAREG2
-0000115E  BC7C 0003                138               CMP.W   #3, D6
-00001162  6700 019E                139               BEQ     printAREG3
-00001166  BC7C 0004                140               CMP.W   #4, D6
-0000116A  6700 01A4                141               BEQ     printAREG4
-0000116E  BC7C 0005                142               CMP.W   #5, D6
-00001172  6700 01AA                143               BEQ     printAREG5
-00001176  BC7C 0006                144               CMP.W   #6, D6
-0000117A  6700 01B0                145               BEQ     printAREG6
-0000117E  4E75                     146               RTS
-00001180                           147               
-00001180  BA7C 0000                148  printAREGS   CMP.W   #0, D5
-00001184  6700 0152                149               BEQ     printAREG0
-00001188  BA7C 0001                150               CMP.W   #1, D5
-0000118C  6700 0158                151               BEQ     printAREG1
-00001190  BA7C 0002                152               CMP.W   #2, D5
-00001194  6700 015E                153               BEQ     printAREG2
-00001198  BA7C 0003                154               CMP.W   #3, D5
-0000119C  6700 0164                155               BEQ     printAREG3
-000011A0  BA7C 0004                156               CMP.W   #4, D5
-000011A4  6700 016A                157               BEQ     printAREG4
-000011A8  BA7C 0005                158               CMP.W   #5, D5
-000011AC  6700 0170                159               BEQ     printAREG5
-000011B0  BA7C 0006                160               CMP.W   #6, D5
-000011B4  6700 0176                161               BEQ     printAREG6
-000011B8  4E75                     162               RTS
-000011BA                           163               
-000011BA  BC7C 0000                164  printAPIREGF CMP.W   #0, D6
-000011BE  6700 017A                165               BEQ     printAPIREG0
-000011C2  BC7C 0001                166               CMP.W   #1, D6
-000011C6  6700 0180                167               BEQ     printAPIREG1
-000011CA  BC7C 0002                168               CMP.W   #2, D6
-000011CE  6700 0186                169               BEQ     printAPIREG2
-000011D2  BC7C 0003                170               CMP.W   #3, D6
-000011D6  6700 018C                171               BEQ     printAPIREG3
-000011DA  BC7C 0004                172               CMP.W   #4, D6
-000011DE  6700 0192                173               BEQ     printAPIREG4
-000011E2  BC7C 0005                174               CMP.W   #5, D6
-000011E6  6700 0198                175               BEQ     printAPIREG5
-000011EA  BC7C 0006                176               CMP.W   #6, D6
-000011EE  6700 019E                177               BEQ     printAPIREG6
-000011F2  4E75                     178               RTS
-000011F4                           179               
-000011F4  BA7C 0000                180  printAPIREGS CMP.W   #0, D5
-000011F8  6700 0140                181               BEQ     printAPIREG0
-000011FC  BA7C 0001                182               CMP.W   #1, D5
-00001200  6700 0146                183               BEQ     printAPIREG1
-00001204  BA7C 0002                184               CMP.W   #2, D5
-00001208  6700 014C                185               BEQ     printAPIREG2
-0000120C  BA7C 0003                186               CMP.W   #3, D5
-00001210  6700 0152                187               BEQ     printAPIREG3
-00001214  BA7C 0004                188               CMP.W   #4, D5
-00001218  6700 0158                189               BEQ     printAPIREG4
-0000121C  BA7C 0005                190               CMP.W   #5, D5
-00001220  6700 015E                191               BEQ     printAPIREG5
-00001224  BA7C 0006                192               CMP.W   #6, D5
-00001228  6700 0164                193               BEQ     printAPIREG6
-0000122C  4E75                     194               RTS
-0000122E                           195               
-0000122E  BA7C 0000                196  printAIREGS  CMP.W   #0, D5
-00001232  6700 0168                197               BEQ     printAIREG0
-00001236  BA7C 0001                198               CMP.W   #1, D5
-0000123A  6700 016E                199               BEQ     printAIREG1
-0000123E  BA7C 0002                200               CMP.W   #2, D5
-00001242  6700 0174                201               BEQ     printAIREG2
-00001246  BA7C 0003                202               CMP.W   #3, D5
-0000124A  6700 017A                203               BEQ     printAIREG3
-0000124E  BA7C 0004                204               CMP.W   #4, D5
-00001252  6700 0180                205               BEQ     printAIREG4
-00001256  BA7C 0005                206               CMP.W   #5, D5
-0000125A  6700 0186                207               BEQ     printAIREG5
-0000125E  BA7C 0006                208               CMP.W   #6, D5
-00001262  6700 018C                209               BEQ     printAIREG6
-00001266  4E75                     210               RTS
-00001268                           211              
-00001268  43F9 00001406            212  printDREG0  LEA     stringD0, A1
-0000126E  4EB9 000013FE            213              JSR     LOAD
-00001274  4E75                     214              RTS
-00001276                           215              
-00001276  43F9 00001409            216  printDREG1  LEA     stringD1, A1
-0000127C  4EB9 000013FE            217              JSR     LOAD
-00001282  4E75                     218              RTS
-00001284                           219              
-00001284  43F9 0000140C            220  printDREG2  LEA     stringD2, A1
-0000128A  4EB9 000013FE            221              JSR     LOAD
-00001290  4E75                     222              RTS
-00001292                           223              
-00001292  43F9 0000140F            224  printDREG3  LEA     stringD3, A1
-00001298  4EB9 000013FE            225              JSR     LOAD
-0000129E  4E75                     226              RTS
-000012A0                           227              
-000012A0  43F9 00001412            228  printDREG4  LEA     stringD4, A1
-000012A6  4EB9 000013FE            229              JSR     LOAD
-000012AC  4E75                     230              RTS
-000012AE                           231              
-000012AE  43F9 00001415            232  printDREG5  LEA     stringD5, A1
-000012B4  4EB9 000013FE            233              JSR     LOAD
-000012BA  4E75                     234              RTS
-000012BC                           235              
-000012BC  43F9 00001418            236  printDREG6  LEA     stringD6, A1
-000012C2  4EB9 000013FE            237              JSR     LOAD
-000012C8  4E75                     238              RTS
-000012CA                           239              
-000012CA  43F9 0000141B            240  printDREG7  LEA     stringD7, A1
-000012D0  4EB9 000013FE            241              JSR     LOAD
-000012D6  4E75                     242              RTS
-000012D8                           243              
-000012D8  43F9 0000141E            244  printAREG0  LEA     stringA0, A1
-000012DE  4EB9 000013FE            245              JSR     LOAD
-000012E4  4E75                     246              RTS
-000012E6                           247              
-000012E6  43F9 00001421            248  printAREG1  LEA     stringA1, A1
-000012EC  4EB9 000013FE            249              JSR     LOAD
-000012F2  4E75                     250              RTS
-000012F4                           251              
-000012F4  43F9 00001424            252  printAREG2  LEA     stringA2, A1
-000012FA  4EB9 000013FE            253              JSR     LOAD
-00001300  4E75                     254              RTS
-00001302                           255              
-00001302  43F9 00001427            256  printAREG3  LEA     stringA3, A1
-00001308  4EB9 000013FE            257              JSR     LOAD
-0000130E  4E75                     258              RTS
-00001310                           259              
-00001310  43F9 0000142A            260  printAREG4  LEA     stringA4, A1
-00001316  4EB9 000013FE            261              JSR     LOAD
-0000131C  4E75                     262              RTS
-0000131E                           263              
-0000131E  43F9 0000142D            264  printAREG5  LEA     stringA5, A1
-00001324  4EB9 000013FE            265              JSR     LOAD
-0000132A  4E75                     266              RTS
-0000132C                           267              
-0000132C  43F9 00001430            268  printAREG6  LEA     stringA6, A1
-00001332  4EB9 000013FE            269              JSR     LOAD
-00001338  4E75                     270              RTS
-0000133A                           271              
-0000133A  43F9 00001456            272  printAPIREG0 LEA     stringA0PI, A1
-00001340  4EB9 000013FE            273               JSR     LOAD
-00001346  4E75                     274               RTS
-00001348                           275              
-00001348  43F9 0000145C            276  printAPIREG1 LEA     stringA1PI, A1
-0000134E  4EB9 000013FE            277               JSR     LOAD
-00001354  4E75                     278               RTS
-00001356                           279              
-00001356  43F9 00001462            280  printAPIREG2 LEA     stringA2PI, A1
-0000135C  4EB9 000013FE            281               JSR     LOAD
-00001362  4E75                     282               RTS
-00001364                           283              
-00001364  43F9 00001468            284  printAPIREG3 LEA     stringA3PI, A1
-0000136A  4EB9 000013FE            285               JSR     LOAD
-00001370  4E75                     286               RTS
-00001372                           287              
-00001372  43F9 0000146E            288  printAPIREG4 LEA     stringA4PI, A1
-00001378  4EB9 000013FE            289               JSR     LOAD
-0000137E  4E75                     290               RTS
-00001380                           291              
-00001380  43F9 00001474            292  printAPIREG5 LEA     stringA5PI, A1
-00001386  4EB9 000013FE            293               JSR     LOAD
-0000138C  4E75                     294               RTS
-0000138E                           295              
-0000138E  43F9 0000147A            296  printAPIREG6 LEA     stringA6PI, A1
-00001394  4EB9 000013FE            297               JSR     LOAD
-0000139A  4E75                     298               RTS
-0000139C                           299               
-0000139C  43F9 00001433            300  printAIREG0  LEA     stringA0I, A1
-000013A2  4EB9 000013FE            301               JSR     LOAD
-000013A8  4E75                     302               RTS
-000013AA                           303              
-000013AA  43F9 00001438            304  printAIREG1  LEA     stringA1I, A1
-000013B0  4EB9 000013FE            305               JSR     LOAD
-000013B6  4E75                     306               RTS
-000013B8                           307              
-000013B8  43F9 0000143D            308  printAIREG2  LEA     stringA2I, A1
-000013BE  4EB9 000013FE            309               JSR     LOAD
-000013C4  4E75                     310               RTS
-000013C6                           311              
-000013C6  43F9 00001442            312  printAIREG3  LEA     stringA3I, A1
-000013CC  4EB9 000013FE            313               JSR     LOAD
-000013D2  4E75                     314               RTS
-000013D4                           315              
-000013D4  43F9 00001447            316  printAIREG4  LEA     stringA4I, A1
-000013DA  4EB9 000013FE            317               JSR     LOAD
-000013E0  4E75                     318               RTS
-000013E2                           319              
-000013E2  43F9 0000144C            320  printAIREG5  LEA     stringA5I, A1
-000013E8  4EB9 000013FE            321               JSR     LOAD
-000013EE  4E75                     322               RTS
-000013F0                           323              
-000013F0  43F9 00001451            324  printAIREG6  LEA     stringA6I, A1
-000013F6  4EB9 000013FE            325               JSR     LOAD
-000013FC  4E75                     326               RTS
-000013FE                           327              
-000013FE  103C 000E                328  load        MOVE.B  #14, D0
-00001402  4E4F                     329              TRAP    #15
-00001404  4E75                     330              RTS      
-00001406                           331  
-00001406                           332  * Put variables and constants here
-00001406= 44 30 00                 333  stringD0    DC.B    'D0', 0
-00001409= 44 31 00                 334  stringD1    DC.B    'D1', 0
-0000140C= 44 32 00                 335  stringD2    DC.B    'D2', 0
-0000140F= 44 33 00                 336  stringD3    DC.B    'D3', 0
-00001412= 44 34 00                 337  stringD4    DC.B    'D4', 0
-00001415= 44 35 00                 338  stringD5    DC.B    'D5', 0
-00001418= 44 36 00                 339  stringD6    DC.B    'D6', 0
-0000141B= 44 37 00                 340  stringD7    DC.B    'D7', 0
-0000141E                           341  
-0000141E= 41 30 00                 342  stringA0    DC.B    'A0', 0
-00001421= 41 31 00                 343  stringA1    DC.B    'A1', 0
-00001424= 41 32 00                 344  stringA2    DC.B    'A2', 0
-00001427= 41 33 00                 345  stringA3    DC.B    'A3', 0
-0000142A= 41 34 00                 346  stringA4    DC.B    'A4', 0
-0000142D= 41 35 00                 347  stringA5    DC.B    'A5', 0
-00001430= 41 36 00                 348  stringA6    DC.B    'A6', 0
-00001433                           349  
-00001433= 28 41 30 29 00           350  stringA0I   DC.B    '(A0)', 0
-00001438= 28 41 31 29 00           351  stringA1I   DC.B    '(A1)', 0
-0000143D= 28 41 32 29 00           352  stringA2I   DC.B    '(A2)', 0
-00001442= 28 41 33 29 00           353  stringA3I   DC.B    '(A3)', 0
-00001447= 28 41 34 29 00           354  stringA4I   DC.B    '(A4)', 0
-0000144C= 28 41 35 29 00           355  stringA5I   DC.B    '(A5)', 0
-00001451= 28 41 36 29 00           356  stringA6I   DC.B    '(A6)', 0
-00001456                           357  
-00001456= 28 41 30 29 2B 00        358  stringA0PI  DC.B    '(A0)+', 0
-0000145C= 28 41 31 29 2B 00        359  stringA1PI  DC.B    '(A1)+', 0
-00001462= 28 41 32 29 2B 00        360  stringA2PI  DC.B    '(A2)+', 0
-00001468= 28 41 33 29 2B 00        361  stringA3PI  DC.B    '(A3)+', 0
-0000146E= 28 41 34 29 2B 00        362  stringA4PI  DC.B    '(A4)+', 0
-00001474= 28 41 35 29 2B 00        363  stringA5PI  DC.B    '(A5)+', 0
-0000147A= 28 41 36 29 2B 00        364  stringA6PI  DC.B    '(A6)+', 0
-00001480                           365  
-00001480= 2D 28 41 30 29 00        366  stringA0PD  DC.B    '-(A0)', 0
-00001486= 2D 28 41 31 29 00        367  stringA1PD  DC.B    '-(A1)', 0
-0000148C= 2D 28 41 32 29 00        368  stringA2PD  DC.B    '-(A2)', 0
-00001492= 2D 28 41 33 29 00        369  stringA3PD  DC.B    '-(A3)', 0
-00001498= 2D 28 41 34 29 00        370  stringA4PD  DC.B    '-(A4)', 0
-0000149E= 2D 28 41 35 29 00        371  stringA5PD  DC.B    '-(A5)', 0
-000014A4= 2D 28 41 36 29 00        372  stringA6PD  DC.B    '-(A6)', 0
-000014AA                           373  
-000014AA= 23 00                    374  stringPOUND DC.B    '#', 0
-000014AC= 24 00                    375  stringHEX   DC.B    '$', 0
-000014AE= 42 41 44 20 44 41 ...    376  stringBADDATA DC.B  'BAD DATA', 0
-000014B7                           377  
-000014B7= 4D 4F 56 45 2E 42 00     378  stringMOVEB DC.B    'MOVE.B', 0
-000014BE                           379  
-000014BE                           380  
-000014BE                           381      END    START        ; last line of source
+00001042  B8BC 00000005             30  sModeErr    CMP.L   #5, D4
+00001048  6700 007C                 31              BEQ     setEAErr
+0000104C  B8BC 00000006             32              CMP.L   #6, D4
+00001052  6700 0072                 33              BEQ   setEAErr
+00001056  B8BC 00000007             34              CMP.L   #7, D4
+0000105C  6700 0052                 35              BEQ     sIErr
+00001060  4E75                      36              RTS
+00001062                            37              
+00001062  B6BC 00000001             38  dModeErr    CMP.L   #1, D3
+00001068  6700 005C                 39              BEQ     setEAErr
+0000106C  B6BC 00000007             40              CMP.L   #7, D3
+00001072  6700 0030                 41              BEQ     dIErr
+00001076  B6BC 00000005             42              CMP.L   #5, D3
+0000107C  6700 0048                 43              BEQ     setEAErr
+00001080  B6BC 00000006             44              CMP.L   #6, D3
+00001086  6700 003E                 45              BEQ   setEAErr
+0000108A  4E75                      46              RTS
+0000108C                            47              
+0000108C                            48  sRegErr     
+0000108C  4E75                      49              RTS
+0000108E                            50              
+0000108E  BABC 00000001             51  dRegErr     CMP.L   #1, D5
+00001094  6700 0030                 52              BEQ     setEAErr
+00001098  BABC 00000004             53              CMP.L   #4, D5
+0000109E  6E00 0026                 54              BGT     setEAErr
+000010A2  4E75                      55              RTS
+000010A4                            56              
+000010A4  BABC 00000001             57  dIErr       CMP.L   #1, D5
+000010AA  6E00 001A                 58              BGT     setEAErr
+000010AE  4E75                      59              RTS
+000010B0                            60              
+000010B0  B8BC 00000002             61  sIErr       CMP.L   #2, D4
+000010B6  6700 000E                 62              BEQ     setEAErr
+000010BA  B8BC 00000003             63              CMP.L   #3, D4
+000010C0  6700 0004                 64              BEQ     setEAErr
+000010C4  4E75                      65              RTS
+000010C6                            66              
+000010C6                            67  *D2 WILL BE SET TO BEEF (MMM)FLAG IF ERRORS ARE FOUND IN EA
+000010C6  4242                      68  setEAErr    CLR     D2
+000010C8  343C BEEF                 69              MOVE.W  #$BEEF, D2
+000010CC  4E75                      70              RTS
+000010CE                            71  
+000010CE                            72  *SETS THE SOURCE REGISTER FOR A MOVEB COMMAND TO D6          
+000010CE  4246                      73  getSREG     CLR     D6
+000010D0  2C07                      74              MOVE.L  D7, D6
+000010D2  E18E                      75              LSL.L   #8, D6
+000010D4  E18E                      76              LSL.L   #8, D6
+000010D6  E18E                      77              LSL.L   #8, D6
+000010D8  EB8E                      78              LSL.L   #5, D6
+000010DA  E08E                      79              LSR.L   #8, D6
+000010DC  E08E                      80              LSR.L   #8, D6
+000010DE  E08E                      81              LSR.L   #8, D6
+000010E0  EA8E                      82              LSR.L   #5, D6
+000010E2  4E75                      83              RTS
+000010E4                            84  
+000010E4                            85  *SETS DESTINATION REGISTER FOR MOVEB COMMAND TO D5            
+000010E4  4245                      86  getDREG     CLR     D5
+000010E6  2A07                      87              MOVE.L  D7, D5
+000010E8  E18D                      88              LSL.L   #8, D5
+000010EA  E18D                      89              LSL.L   #8, D5
+000010EC  E98D                      90              LSL.L   #4, D5
+000010EE  E08D                      91              LSR.L   #8, D5
+000010F0  E08D                      92              LSR.L   #8, D5
+000010F2  E08D                      93              LSR.L   #8, D5
+000010F4  EA8D                      94              LSR.L   #5, D5
+000010F6  4E75                      95              RTS
+000010F8                            96  
+000010F8                            97  *SETS SOURCE MODE FOR MOVEB COMMAND TO D4            
+000010F8  4244                      98  getSMODE    CLR     D4
+000010FA  2807                      99              MOVE.L  D7, D4
+000010FC  E18C                     100              LSL.L   #8, D4
+000010FE  E18C                     101              LSL.L   #8, D4
+00001100  E18C                     102              LSL.L   #8, D4
+00001102  E58C                     103              LSL.L   #2, D4
+00001104  E08C                     104              LSR.L   #8, D4
+00001106  E08C                     105              LSR.L   #8, D4
+00001108  E08C                     106              LSR.L   #8, D4
+0000110A  EA8C                     107              LSR.L   #5, D4
+0000110C  4E75                     108              RTS    
+0000110E                           109  
+0000110E                           110  *GETS DESTNATION MODE FROM MOVE COMMAND, PUTS IN D3
+0000110E  4243                     111  getDMODE    CLR     D3
+00001110  2607                     112              MOVE.L  D7, D3
+00001112  E18B                     113              LSL.L   #8, D3
+00001114  E18B                     114              LSL.L   #8, D3
+00001116  EF8B                     115              LSL.L   #7, D3
+00001118  E08B                     116              LSR.L   #8, D3
+0000111A  E08B                     117              LSR.L   #8, D3
+0000111C  E08B                     118              LSR.L   #8, D3
+0000111E  EA8B                     119              LSR.L   #5, D3
+00001120  4E75                     120              RTS      
+00001122                           121      
+00001122  BC7C 0000                122  printDREGF   CMP.W   #0, D6
+00001126  6700 01A0                123               BEQ     printDREG0
+0000112A  BC7C 0001                124               CMP.W   #1, D6
+0000112E  6700 01A6                125               BEQ     printDREG1
+00001132  BC7C 0002                126               CMP.W   #2, D6
+00001136  6700 01AC                127               BEQ     printDREG2
+0000113A  BC7C 0003                128               CMP.W   #3, D6
+0000113E  6700 01B2                129               BEQ     printDREG3
+00001142  BC7C 0004                130               CMP.W   #4, D6
+00001146  6700 01B8                131               BEQ     printDREG4
+0000114A  BC7C 0005                132               CMP.W   #5, D6
+0000114E  6700 01BE                133               BEQ     printDREG5
+00001152  BC7C 0006                134               CMP.W   #6, D6
+00001156  6700 01C4                135               BEQ     printDREG6
+0000115A  BC7C 0007                136               CMP.W   #7, D6
+0000115E  6700 01CA                137               BEQ     printDREG7
+00001162  4E75                     138               RTS
+00001164                           139               
+00001164  BA7C 0000                140  printDREGS   CMP.W   #0, D5
+00001168  6700 015E                141               BEQ     printDREG0
+0000116C  BA7C 0001                142               CMP.W   #1, D5
+00001170  6700 0164                143               BEQ     printDREG1
+00001174  BA7C 0002                144               CMP.W   #2, D5
+00001178  6700 016A                145               BEQ     printDREG2
+0000117C  BA7C 0003                146               CMP.W   #3, D5
+00001180  6700 0170                147               BEQ     printDREG3
+00001184  BA7C 0004                148               CMP.W   #4, D5
+00001188  6700 0176                149               BEQ     printDREG4
+0000118C  BA7C 0005                150               CMP.W   #5, D5
+00001190  6700 017C                151               BEQ     printDREG5
+00001194  BA7C 0006                152               CMP.W   #6, D5
+00001198  6700 0182                153               BEQ     printDREG6
+0000119C  BA7C 0007                154               CMP.W   #7, D5
+000011A0  6700 0188                155               BEQ     printDREG7
+000011A4  4E75                     156               RTS
+000011A6                           157               
+000011A6  BC7C 0000                158  printAREGF   CMP.W   #0, D6
+000011AA  6700 018C                159               BEQ     printAREG0
+000011AE  BC7C 0001                160               CMP.W   #1, D6
+000011B2  6700 0192                161               BEQ     printAREG1
+000011B6  BC7C 0002                162               CMP.W   #2, D6
+000011BA  6700 0198                163               BEQ     printAREG2
+000011BE  BC7C 0003                164               CMP.W   #3, D6
+000011C2  6700 019E                165               BEQ     printAREG3
+000011C6  BC7C 0004                166               CMP.W   #4, D6
+000011CA  6700 01A4                167               BEQ     printAREG4
+000011CE  BC7C 0005                168               CMP.W   #5, D6
+000011D2  6700 01AA                169               BEQ     printAREG5
+000011D6  BC7C 0006                170               CMP.W   #6, D6
+000011DA  6700 01B0                171               BEQ     printAREG6
+000011DE  4E75                     172               RTS
+000011E0                           173               
+000011E0  BA7C 0000                174  printAREGS   CMP.W   #0, D5
+000011E4  6700 0152                175               BEQ     printAREG0
+000011E8  BA7C 0001                176               CMP.W   #1, D5
+000011EC  6700 0158                177               BEQ     printAREG1
+000011F0  BA7C 0002                178               CMP.W   #2, D5
+000011F4  6700 015E                179               BEQ     printAREG2
+000011F8  BA7C 0003                180               CMP.W   #3, D5
+000011FC  6700 0164                181               BEQ     printAREG3
+00001200  BA7C 0004                182               CMP.W   #4, D5
+00001204  6700 016A                183               BEQ     printAREG4
+00001208  BA7C 0005                184               CMP.W   #5, D5
+0000120C  6700 0170                185               BEQ     printAREG5
+00001210  BA7C 0006                186               CMP.W   #6, D5
+00001214  6700 0176                187               BEQ     printAREG6
+00001218  4E75                     188               RTS
+0000121A                           189               
+0000121A  BC7C 0000                190  printAPIREGF CMP.W   #0, D6
+0000121E  6700 017A                191               BEQ     printAPIREG0
+00001222  BC7C 0001                192               CMP.W   #1, D6
+00001226  6700 0180                193               BEQ     printAPIREG1
+0000122A  BC7C 0002                194               CMP.W   #2, D6
+0000122E  6700 0186                195               BEQ     printAPIREG2
+00001232  BC7C 0003                196               CMP.W   #3, D6
+00001236  6700 018C                197               BEQ     printAPIREG3
+0000123A  BC7C 0004                198               CMP.W   #4, D6
+0000123E  6700 0192                199               BEQ     printAPIREG4
+00001242  BC7C 0005                200               CMP.W   #5, D6
+00001246  6700 0198                201               BEQ     printAPIREG5
+0000124A  BC7C 0006                202               CMP.W   #6, D6
+0000124E  6700 019E                203               BEQ     printAPIREG6
+00001252  4E75                     204               RTS
+00001254                           205               
+00001254  BA7C 0000                206  printAPIREGS CMP.W   #0, D5
+00001258  6700 0140                207               BEQ     printAPIREG0
+0000125C  BA7C 0001                208               CMP.W   #1, D5
+00001260  6700 0146                209               BEQ     printAPIREG1
+00001264  BA7C 0002                210               CMP.W   #2, D5
+00001268  6700 014C                211               BEQ     printAPIREG2
+0000126C  BA7C 0003                212               CMP.W   #3, D5
+00001270  6700 0152                213               BEQ     printAPIREG3
+00001274  BA7C 0004                214               CMP.W   #4, D5
+00001278  6700 0158                215               BEQ     printAPIREG4
+0000127C  BA7C 0005                216               CMP.W   #5, D5
+00001280  6700 015E                217               BEQ     printAPIREG5
+00001284  BA7C 0006                218               CMP.W   #6, D5
+00001288  6700 0164                219               BEQ     printAPIREG6
+0000128C  4E75                     220               RTS
+0000128E                           221               
+0000128E  BA7C 0000                222  printAIREGS  CMP.W   #0, D5
+00001292  6700 0168                223               BEQ     printAIREG0
+00001296  BA7C 0001                224               CMP.W   #1, D5
+0000129A  6700 016E                225               BEQ     printAIREG1
+0000129E  BA7C 0002                226               CMP.W   #2, D5
+000012A2  6700 0174                227               BEQ     printAIREG2
+000012A6  BA7C 0003                228               CMP.W   #3, D5
+000012AA  6700 017A                229               BEQ     printAIREG3
+000012AE  BA7C 0004                230               CMP.W   #4, D5
+000012B2  6700 0180                231               BEQ     printAIREG4
+000012B6  BA7C 0005                232               CMP.W   #5, D5
+000012BA  6700 0186                233               BEQ     printAIREG5
+000012BE  BA7C 0006                234               CMP.W   #6, D5
+000012C2  6700 018C                235               BEQ     printAIREG6
+000012C6  4E75                     236               RTS
+000012C8                           237              
+000012C8  43F9 00001466            238  printDREG0  LEA     stringD0, A1
+000012CE  4EB9 0000145E            239              JSR     LOAD
+000012D4  4E75                     240              RTS
+000012D6                           241              
+000012D6  43F9 00001469            242  printDREG1  LEA     stringD1, A1
+000012DC  4EB9 0000145E            243              JSR     LOAD
+000012E2  4E75                     244              RTS
+000012E4                           245              
+000012E4  43F9 0000146C            246  printDREG2  LEA     stringD2, A1
+000012EA  4EB9 0000145E            247              JSR     LOAD
+000012F0  4E75                     248              RTS
+000012F2                           249              
+000012F2  43F9 0000146F            250  printDREG3  LEA     stringD3, A1
+000012F8  4EB9 0000145E            251              JSR     LOAD
+000012FE  4E75                     252              RTS
+00001300                           253              
+00001300  43F9 00001472            254  printDREG4  LEA     stringD4, A1
+00001306  4EB9 0000145E            255              JSR     LOAD
+0000130C  4E75                     256              RTS
+0000130E                           257              
+0000130E  43F9 00001475            258  printDREG5  LEA     stringD5, A1
+00001314  4EB9 0000145E            259              JSR     LOAD
+0000131A  4E75                     260              RTS
+0000131C                           261              
+0000131C  43F9 00001478            262  printDREG6  LEA     stringD6, A1
+00001322  4EB9 0000145E            263              JSR     LOAD
+00001328  4E75                     264              RTS
+0000132A                           265              
+0000132A  43F9 0000147B            266  printDREG7  LEA     stringD7, A1
+00001330  4EB9 0000145E            267              JSR     LOAD
+00001336  4E75                     268              RTS
+00001338                           269              
+00001338  43F9 0000147E            270  printAREG0  LEA     stringA0, A1
+0000133E  4EB9 0000145E            271              JSR     LOAD
+00001344  4E75                     272              RTS
+00001346                           273              
+00001346  43F9 00001481            274  printAREG1  LEA     stringA1, A1
+0000134C  4EB9 0000145E            275              JSR     LOAD
+00001352  4E75                     276              RTS
+00001354                           277              
+00001354  43F9 00001484            278  printAREG2  LEA     stringA2, A1
+0000135A  4EB9 0000145E            279              JSR     LOAD
+00001360  4E75                     280              RTS
+00001362                           281              
+00001362  43F9 00001487            282  printAREG3  LEA     stringA3, A1
+00001368  4EB9 0000145E            283              JSR     LOAD
+0000136E  4E75                     284              RTS
+00001370                           285              
+00001370  43F9 0000148A            286  printAREG4  LEA     stringA4, A1
+00001376  4EB9 0000145E            287              JSR     LOAD
+0000137C  4E75                     288              RTS
+0000137E                           289              
+0000137E  43F9 0000148D            290  printAREG5  LEA     stringA5, A1
+00001384  4EB9 0000145E            291              JSR     LOAD
+0000138A  4E75                     292              RTS
+0000138C                           293              
+0000138C  43F9 00001490            294  printAREG6  LEA     stringA6, A1
+00001392  4EB9 0000145E            295              JSR     LOAD
+00001398  4E75                     296              RTS
+0000139A                           297              
+0000139A  43F9 000014B6            298  printAPIREG0 LEA     stringA0PI, A1
+000013A0  4EB9 0000145E            299               JSR     LOAD
+000013A6  4E75                     300               RTS
+000013A8                           301              
+000013A8  43F9 000014BC            302  printAPIREG1 LEA     stringA1PI, A1
+000013AE  4EB9 0000145E            303               JSR     LOAD
+000013B4  4E75                     304               RTS
+000013B6                           305              
+000013B6  43F9 000014C2            306  printAPIREG2 LEA     stringA2PI, A1
+000013BC  4EB9 0000145E            307               JSR     LOAD
+000013C2  4E75                     308               RTS
+000013C4                           309              
+000013C4  43F9 000014C8            310  printAPIREG3 LEA     stringA3PI, A1
+000013CA  4EB9 0000145E            311               JSR     LOAD
+000013D0  4E75                     312               RTS
+000013D2                           313              
+000013D2  43F9 000014CE            314  printAPIREG4 LEA     stringA4PI, A1
+000013D8  4EB9 0000145E            315               JSR     LOAD
+000013DE  4E75                     316               RTS
+000013E0                           317              
+000013E0  43F9 000014D4            318  printAPIREG5 LEA     stringA5PI, A1
+000013E6  4EB9 0000145E            319               JSR     LOAD
+000013EC  4E75                     320               RTS
+000013EE                           321              
+000013EE  43F9 000014DA            322  printAPIREG6 LEA     stringA6PI, A1
+000013F4  4EB9 0000145E            323               JSR     LOAD
+000013FA  4E75                     324               RTS
+000013FC                           325               
+000013FC  43F9 00001493            326  printAIREG0  LEA     stringA0I, A1
+00001402  4EB9 0000145E            327               JSR     LOAD
+00001408  4E75                     328               RTS
+0000140A                           329              
+0000140A  43F9 00001498            330  printAIREG1  LEA     stringA1I, A1
+00001410  4EB9 0000145E            331               JSR     LOAD
+00001416  4E75                     332               RTS
+00001418                           333              
+00001418  43F9 0000149D            334  printAIREG2  LEA     stringA2I, A1
+0000141E  4EB9 0000145E            335               JSR     LOAD
+00001424  4E75                     336               RTS
+00001426                           337              
+00001426  43F9 000014A2            338  printAIREG3  LEA     stringA3I, A1
+0000142C  4EB9 0000145E            339               JSR     LOAD
+00001432  4E75                     340               RTS
+00001434                           341              
+00001434  43F9 000014A7            342  printAIREG4  LEA     stringA4I, A1
+0000143A  4EB9 0000145E            343               JSR     LOAD
+00001440  4E75                     344               RTS
+00001442                           345              
+00001442  43F9 000014AC            346  printAIREG5  LEA     stringA5I, A1
+00001448  4EB9 0000145E            347               JSR     LOAD
+0000144E  4E75                     348               RTS
+00001450                           349              
+00001450  43F9 000014B1            350  printAIREG6  LEA     stringA6I, A1
+00001456  4EB9 0000145E            351               JSR     LOAD
+0000145C  4E75                     352               RTS
+0000145E                           353              
+0000145E  103C 000E                354  load        MOVE.B  #14, D0
+00001462  4E4F                     355              TRAP    #15
+00001464  4E75                     356              RTS      
+00001466                           357  
+00001466                           358  * Put variables and constants here
+00001466= 44 30 00                 359  stringD0    DC.B    'D0', 0
+00001469= 44 31 00                 360  stringD1    DC.B    'D1', 0
+0000146C= 44 32 00                 361  stringD2    DC.B    'D2', 0
+0000146F= 44 33 00                 362  stringD3    DC.B    'D3', 0
+00001472= 44 34 00                 363  stringD4    DC.B    'D4', 0
+00001475= 44 35 00                 364  stringD5    DC.B    'D5', 0
+00001478= 44 36 00                 365  stringD6    DC.B    'D6', 0
+0000147B= 44 37 00                 366  stringD7    DC.B    'D7', 0
+0000147E                           367  
+0000147E= 41 30 00                 368  stringA0    DC.B    'A0', 0
+00001481= 41 31 00                 369  stringA1    DC.B    'A1', 0
+00001484= 41 32 00                 370  stringA2    DC.B    'A2', 0
+00001487= 41 33 00                 371  stringA3    DC.B    'A3', 0
+0000148A= 41 34 00                 372  stringA4    DC.B    'A4', 0
+0000148D= 41 35 00                 373  stringA5    DC.B    'A5', 0
+00001490= 41 36 00                 374  stringA6    DC.B    'A6', 0
+00001493                           375  
+00001493= 28 41 30 29 00           376  stringA0I   DC.B    '(A0)', 0
+00001498= 28 41 31 29 00           377  stringA1I   DC.B    '(A1)', 0
+0000149D= 28 41 32 29 00           378  stringA2I   DC.B    '(A2)', 0
+000014A2= 28 41 33 29 00           379  stringA3I   DC.B    '(A3)', 0
+000014A7= 28 41 34 29 00           380  stringA4I   DC.B    '(A4)', 0
+000014AC= 28 41 35 29 00           381  stringA5I   DC.B    '(A5)', 0
+000014B1= 28 41 36 29 00           382  stringA6I   DC.B    '(A6)', 0
+000014B6                           383  
+000014B6= 28 41 30 29 2B 00        384  stringA0PI  DC.B    '(A0)+', 0
+000014BC= 28 41 31 29 2B 00        385  stringA1PI  DC.B    '(A1)+', 0
+000014C2= 28 41 32 29 2B 00        386  stringA2PI  DC.B    '(A2)+', 0
+000014C8= 28 41 33 29 2B 00        387  stringA3PI  DC.B    '(A3)+', 0
+000014CE= 28 41 34 29 2B 00        388  stringA4PI  DC.B    '(A4)+', 0
+000014D4= 28 41 35 29 2B 00        389  stringA5PI  DC.B    '(A5)+', 0
+000014DA= 28 41 36 29 2B 00        390  stringA6PI  DC.B    '(A6)+', 0
+000014E0                           391  
+000014E0= 2D 28 41 30 29 00        392  stringA0PD  DC.B    '-(A0)', 0
+000014E6= 2D 28 41 31 29 00        393  stringA1PD  DC.B    '-(A1)', 0
+000014EC= 2D 28 41 32 29 00        394  stringA2PD  DC.B    '-(A2)', 0
+000014F2= 2D 28 41 33 29 00        395  stringA3PD  DC.B    '-(A3)', 0
+000014F8= 2D 28 41 34 29 00        396  stringA4PD  DC.B    '-(A4)', 0
+000014FE= 2D 28 41 35 29 00        397  stringA5PD  DC.B    '-(A5)', 0
+00001504= 2D 28 41 36 29 00        398  stringA6PD  DC.B    '-(A6)', 0
+0000150A                           399  
+0000150A= 23 00                    400  stringPOUND DC.B    '#', 0
+0000150C= 24 00                    401  stringHEX   DC.B    '$', 0
+0000150E= 42 41 44 20 44 41 ...    402  stringBADDATA DC.B  'BAD DATA', 0
+00001517                           403  
+00001517= 4D 4F 56 45 2E 42 00     404  stringMOVEB DC.B    'MOVE.B', 0
+0000151E                           405  
+0000151E                           406  
+0000151E                           407      END    START        ; last line of source
 
-1 error detected
+No errors detected
 No warnings generated
 
 
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-DMODEERR            104E
-GETDMODE            10AE
-GETDREG             1084
-GETSMODE            1098
-GETSREG             106E
+DIERR               10A4
+DMODEERR            1062
+DREGERR             108E
+GETDMODE            110E
+GETDREG             10E4
+GETSMODE            10F8
+GETSREG             10CE
 ISMOVEB             1010
-LOAD                13FE
-PRINTAIREG0         139C
-PRINTAIREG1         13AA
-PRINTAIREG2         13B8
-PRINTAIREG3         13C6
-PRINTAIREG4         13D4
-PRINTAIREG5         13E2
-PRINTAIREG6         13F0
-PRINTAIREGS         122E
-PRINTAPIREG0        133A
-PRINTAPIREG1        1348
-PRINTAPIREG2        1356
-PRINTAPIREG3        1364
-PRINTAPIREG4        1372
-PRINTAPIREG5        1380
-PRINTAPIREG6        138E
-PRINTAPIREGF        11BA
-PRINTAPIREGS        11F4
-PRINTAREG0          12D8
-PRINTAREG1          12E6
-PRINTAREG2          12F4
-PRINTAREG3          1302
-PRINTAREG4          1310
-PRINTAREG5          131E
-PRINTAREG6          132C
-PRINTAREGF          1146
-PRINTAREGS          1180
-PRINTDREG0          1268
-PRINTDREG1          1276
-PRINTDREG2          1284
-PRINTDREG3          1292
-PRINTDREG4          12A0
-PRINTDREG5          12AE
-PRINTDREG6          12BC
-PRINTDREG7          12CA
-PRINTDREGF          10C2
-PRINTDREGS          1104
-SETEAERR            1066
+LOAD                145E
+PRINTAIREG0         13FC
+PRINTAIREG1         140A
+PRINTAIREG2         1418
+PRINTAIREG3         1426
+PRINTAIREG4         1434
+PRINTAIREG5         1442
+PRINTAIREG6         1450
+PRINTAIREGS         128E
+PRINTAPIREG0        139A
+PRINTAPIREG1        13A8
+PRINTAPIREG2        13B6
+PRINTAPIREG3        13C4
+PRINTAPIREG4        13D2
+PRINTAPIREG5        13E0
+PRINTAPIREG6        13EE
+PRINTAPIREGF        121A
+PRINTAPIREGS        1254
+PRINTAREG0          1338
+PRINTAREG1          1346
+PRINTAREG2          1354
+PRINTAREG3          1362
+PRINTAREG4          1370
+PRINTAREG5          137E
+PRINTAREG6          138C
+PRINTAREGF          11A6
+PRINTAREGS          11E0
+PRINTDREG0          12C8
+PRINTDREG1          12D6
+PRINTDREG2          12E4
+PRINTDREG3          12F2
+PRINTDREG4          1300
+PRINTDREG5          130E
+PRINTDREG6          131C
+PRINTDREG7          132A
+PRINTDREGF          1122
+PRINTDREGS          1164
+SETEAERR            10C6
+SIERR               10B0
 SMODEERR            1042
-SREGERR             105A
+SREGERR             108C
 START               1000
-STRINGA0            141E
-STRINGA0I           1433
-STRINGA0PD          1480
-STRINGA0PI          1456
-STRINGA1            1421
-STRINGA1I           1438
-STRINGA1PD          1486
-STRINGA1PI          145C
-STRINGA2            1424
-STRINGA2I           143D
-STRINGA2PD          148C
-STRINGA2PI          1462
-STRINGA3            1427
-STRINGA3I           1442
-STRINGA3PD          1492
-STRINGA3PI          1468
-STRINGA4            142A
-STRINGA4I           1447
-STRINGA4PD          1498
-STRINGA4PI          146E
-STRINGA5            142D
-STRINGA5I           144C
-STRINGA5PD          149E
-STRINGA5PI          1474
-STRINGA6            1430
-STRINGA6I           1451
-STRINGA6PD          14A4
-STRINGA6PI          147A
-STRINGBADDATA       14AE
-STRINGD0            1406
-STRINGD1            1409
-STRINGD2            140C
-STRINGD3            140F
-STRINGD4            1412
-STRINGD5            1415
-STRINGD6            1418
-STRINGD7            141B
-STRINGHEX           14AC
-STRINGMOVEB         14B7
-STRINGPOUND         14AA
+STRINGA0            147E
+STRINGA0I           1493
+STRINGA0PD          14E0
+STRINGA0PI          14B6
+STRINGA1            1481
+STRINGA1I           1498
+STRINGA1PD          14E6
+STRINGA1PI          14BC
+STRINGA2            1484
+STRINGA2I           149D
+STRINGA2PD          14EC
+STRINGA2PI          14C2
+STRINGA3            1487
+STRINGA3I           14A2
+STRINGA3PD          14F2
+STRINGA3PI          14C8
+STRINGA4            148A
+STRINGA4I           14A7
+STRINGA4PD          14F8
+STRINGA4PI          14CE
+STRINGA5            148D
+STRINGA5I           14AC
+STRINGA5PD          14FE
+STRINGA5PI          14D4
+STRINGA6            1490
+STRINGA6I           14B1
+STRINGA6PD          1504
+STRINGA6PI          14DA
+STRINGBADDATA       150E
+STRINGD0            1466
+STRINGD1            1469
+STRINGD2            146C
+STRINGD3            146F
+STRINGD4            1472
+STRINGD5            1475
+STRINGD6            1478
+STRINGD7            147B
+STRINGHEX           150C
+STRINGMOVEB         1517
+STRINGPOUND         150A

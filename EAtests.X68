@@ -27,24 +27,44 @@ isMOVEB     JSR     getSREG
             JSR     dRegErr
             RTS
        
-sModeErr    CMP.L   #7, D4
-            BNE     setEAErr
+sModeErr    CMP.L   #5, D4
+            BEQ     setEAErr
+            CMP.L   #6, D4
+            BEQ   setEAErr
+            CMP.L   #7, D4
+            BEQ     sIErr
             RTS
             
-dModeErr    CMP.L   #7, D3
-            BNE     setEAErr
+dModeErr    CMP.L   #1, D3
+            BEQ     setEAErr
+            CMP.L   #7, D3
+            BEQ     dIErr
+            CMP.L   #5, D3
+            BEQ     setEAErr
+            CMP.L   #6, D3
+            BEQ   setEAErr
             RTS
             
-sRegErr     CMP.L   #4, D6
-            BGE     setEAErr
+sRegErr     
             RTS
             
 dRegErr     CMP.L   #1, D5
             BEQ     setEAErr
             CMP.L   #4, D5
-            BGE     setEAErr
+            BGT     setEAErr
             RTS
             
+dIErr       CMP.L   #1, D5
+            BGT     setEAErr
+            RTS
+            
+sIErr       CMP.L   #2, D4
+            BEQ     setEAErr
+            CMP.L   #3, D4
+            BEQ     setEAErr
+            RTS
+            
+*D2 WILL BE SET TO BEEF (MMM)FLAG IF ERRORS ARE FOUND IN EA
 setEAErr    CLR     D2
             MOVE.W  #$BEEF, D2
             RTS
