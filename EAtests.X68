@@ -16,52 +16,96 @@ START:                  ; first instruction of program
              MOVE.B #9, D0
              TRAP #15
            
-isMOVEB     JSR     getSREG
+isMOVEB     JSR     getSREG         *PARSE REGISTERS AND MODES
             JSR     getDREG
             JSR     getSMODE
             JSR     getDMODE
-            *CHECK FOR ERRORS IN REGISTERS D3-D6
-            JSR     sModeErr
+            JSR     sModeErr        *CHECK FOR ERRORS IN REGISTERS D3 and D4 (source and destination modes)
             JSR     dModeErr
-            JSR     sRegErr
-            JSR     dRegErr
+            CMP.L   #$BEEF, D2      *CHECK FOR ERROR FLAG BEEF (MMM) AND RETURN IF SET
+            BNE     chkAddM         *CHECK ADDRESSING MODES
             RTS
-       
-sModeErr    CMP.L   #5, D4
+ 
+*CHECKS ADDRESSING MODES FOR IMMEDIATE DATA OR ABSOLUTE ADDRESSING SO THEY CAN BE APPENDED BY IO  
+chkAddM     MOVEA   #0, A5
+            MOVEA   #0, A4
+            CMP.L   #7, D4          
+            BEQ     chkSAdd  
+            CMP.L   #7, D3          
+            BEQ     chkDAdd  
+            RTS  
+
+chkSAdd     CMP.L   #0, D6
+            BEQ     wordModeS 
+            CMP.L   #1, D6
+            BEQ     longModeS
+            CMP.L   #2, D6
+            BEQ     immediateModeS
+            RTS
+            
+chkDAdd     CMP.L   #0, D5
+            BEQ     wordModeD 
+            CMP.L   #1, D5
+            BEQ     longModeD
+            RTS
+   
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+wordModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+            MOVEA.W A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
+            RTS
+            
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+longModeS   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+            MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+            RTS
+            
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+immediateModeS ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+               MOVEA.W A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+               RTS
+               
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+wordModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+            MOVEA.W A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
+            RTS
+            
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+longModeD   ADDQ.W  #4, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+            MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
+            RTS
+         
+*CHECK FOR ERRORS CONTAINED IN SOURCE MODE      
+sModeErr    CMP.L   #5, D4          *MODE CANNOT BE 5
             BEQ     setEAErr
-            CMP.L   #6, D4
-            BEQ   setEAErr
-            CMP.L   #7, D4
+            CMP.L   #6, D4          *MODE CANNOT BE 6
+            BEQ     setEAErr
+            CMP.L   #7, D4          *IF MODE IS 7 CHECK REGISTERS FOR ERRORS
             BEQ     sIErr
             RTS
-            
-dModeErr    CMP.L   #1, D3
+    
+*CHECK FOR ERRORS CONTAINED IN DESTINATION MODE        
+dModeErr    CMP.L   #1, D3          *DESTINATION MODE CANNOT BE 1
             BEQ     setEAErr
-            CMP.L   #7, D3
+            CMP.L   #7, D3          *IF MODE IS 7 CHECK REGISTERS FOR ERRORS
             BEQ     dIErr
-            CMP.L   #5, D3
+            CMP.L   #5, D3          *MODE CANNOT BE 5
             BEQ     setEAErr
-            CMP.L   #6, D3
-            BEQ   setEAErr
-            RTS
-            
-sRegErr     
-            RTS
-            
-dRegErr     CMP.L   #1, D5
+            CMP.L   #6, D3          *MODE CANNOT BE 6
             BEQ     setEAErr
-            CMP.L   #4, D5
+            RTS
+ 
+*CHECK FOR ERRORS IN DESTINATION ADDRESSING MODES ABSOLUTE AND IMMEDIATE           
+dIErr       CMP.L   #1, D5          *DESTINATION REGISTER CANNOT BE GREATER THAN 1 WITH MODE 7
             BGT     setEAErr
             RTS
-            
-dIErr       CMP.L   #1, D5
+    
+*CHECK FOR ERRORS IN SOURCE ADDRESSING MODES ABSOLUTE AND IMMEDIATE        
+sIErr       CMP.L   #2, D6          *REGISTER 2 CANNOT BE USED WITH MODE 7
+            BEQ     setEAErr
+            CMP.L   #3, D6          *REGISTER 3 CANNOT BE USED WITH MODE 7
+            BEQ     setEAErr
+            CMP.L   #4, D6          *ALL REGISTERS GREATER THAN 4 CANNOT BE USED WITH MODE 7
             BGT     setEAErr
-            RTS
-            
-sIErr       CMP.L   #2, D4
-            BEQ     setEAErr
-            CMP.L   #3, D4
-            BEQ     setEAErr
             RTS
             
 *D2 WILL BE SET TO BEEF (MMM)FLAG IF ERRORS ARE FOUND IN EA
@@ -407,6 +451,7 @@ stringMOVEB DC.B    'MOVE.B', 0
 
 
     END    START        ; last line of source
+
 
 *~Font name~Courier New~
 *~Font size~10~
