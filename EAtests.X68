@@ -9,7 +9,7 @@ START:                  ; first instruction of program
 
 * Put program code here
                                                
-             move.L #$103C8008, $8000            *181e = move.b (a6)+, d4 0001 000 0 00 11 1 100
+             move.L #$103C8008, $8000         
              MOVEA.L    #$8000, A6
              MOVE.W $8000, D7
              JSR    isMOVEB
@@ -61,8 +61,8 @@ longModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!
             MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
             RTS
             
-*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON (TESTED...WORKS)        
-immediateModeS ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!)PS IT TOTALLY DOES 
+*if immediate mode found get pointer to data in a5 so IO can print       
+immediateModeS ADDQ.W  #2, A6          *increment A6 by 1 WORD so A6 points to immediate data
                MOVEA.L A6, A5          *STORE LONG IN A5 SO IO CAN PRINT IT, .L TO AVOID SIGN EXTENTION...I DONT LIKE IT
                RTS
                
@@ -165,9 +165,11 @@ getDMODE    CLR     D3
             LSR.L   #5, D3
             RTS    
 
-
+             
 
     END    START        ; last line of source
+
+
 
 
 
