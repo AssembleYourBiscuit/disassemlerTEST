@@ -28,8 +28,8 @@ START
             MOVE.B D0, (A0)                   ;PASSED
             MOVE.B D0, (A0)+                  ;PASSED
             MOVE.B D0, -(A0)                  ;PASSED
-            MOVE.B D0, $FFFE                  ;DATA REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
-            MOVE.B D0, $FFFFFFFE              ;DATA REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
+            MOVE.B D0, $FFFE                  ;PASSED
+            MOVE.B D0, $FFFFFFFE              ;PASSED
             
             MOVE.B (A0), D0                   ;INDIRECT ADDRESS REGISTER TO DATA REGISTER
             MOVE.B (A0), (A1)                 ;INDIRECT ADDRESS REGISTER TO INDIRECT ADDRESS REGISTER
@@ -70,8 +70,8 @@ START
             MOVE.B #$AF, (A0)                 ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER
             MOVE.B #$AF, (A0)+                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER POST INC
             MOVE.B #$AF, -(A0)                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER PRE DEC
-            MOVE.B #$AF, $AAAA                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO ABSOLUTE WORD ADDRESS IN DECIMAL (NO MORE THAN 4 DIGITS)
-            MOVE.B #$AF, $AAAAAAAA            ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)
+            MOVE.B #$AF, $AAAA                ;PASSED
+            MOVE.B #$AF, $AAAAAAAA            ;PASSED
             
             *-----------------------------------------------------------------*
             * WORD MOVES                                                      *
@@ -243,6 +243,7 @@ START
 *-------------------------------------------------------------------------------
 
             END        START                                *end program
+
 
 
 
