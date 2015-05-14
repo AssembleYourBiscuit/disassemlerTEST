@@ -18,7 +18,64 @@ START:                  ; first instruction of program
              * END PROGRAM
 end          MOVE.B #9, D0
              TRAP #15
-             
+
+*---------------------------------------------------------------------------------------------------------
+*isMOVEAW          (IS MOVEA.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
+*                  D7 IS A KNOWN MOVE.B OR MOVEA.W COMMAND.
+*
+*PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
+*
+*POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
+*                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+*                  TO DISASSEMBLE, IF A5 CONTAINS A NON-ZERO ADDRESS, ABSOLUTE AND OR IMMEDIATE 
+*                  ADRESSING WAS USED AND DATA POINTED TO BY A5 NEEDS TO BE PRINTED.
+*---------------------------------------------------------------------------------------------------------
+isMOVEAW    ADDQ.W  #2, A6          *KEEP A6 CURRENT
+            JSR     getSREG         *PARSE REGISTERS AND MODES
+            JSR     getDREG
+            JSR     getSMODE
+            JSR     getDMODE
+            JSR     sModeErr        *CHECK FOR ERRORS IN REGISTERS D3 and D4 (source and destination modes)
+            JSR     dModeErrAW
+            CMP.L   #$BEEF, D2      *CHECK FOR ERROR FLAG BEEF (MMM) AND RETURN IF SET
+            BNE     chkAddMAW       *CHECK ADDRESSING MODES FOR WORDB SPECS
+            RTS
+            
+*CHECK FOR ERRORS CONTAINED IN DESTINATION MODE (DESTINATION MODE ERROR MOVEA.W)       
+dModeErrAW  CMP.L   #1, D3          *DESTINATION MODE MUST BE 1
+            BNE     setEAErr        *SET EFFECTIVE ADDRESS ERROR
+            RTS
+            
+*CHECKS ADDRESSING MODES FOR IMMEDIATE DATA OR ABSOLUTE ADDRESSING SO THEY CAN BE APPENDED BY IO  
+chkAddMAW   MOVEA.l  #0, A5
+            MOVEA.l  #0, A4
+            CMP.L    #7, D4          
+            BEQ      chkSAddAW  
+rtn_cAMAW   RTS 
+
+chkSAddAW   CMP.L   #0, D6
+            BEQ     wordModeSAW 
+            CMP.L   #1, D6
+            BEQ     longModeSAW
+            CMP.L   #4, D6
+            BEQ     immediateModeSAW
+            RTS
+            
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+wordModeSAW MOVEA.L A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
+            ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
+            JMP rtn_cAMAW
+            
+*I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+longModeSAW MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+            ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+            JMP rtn_cAMAW
+            
+*if immediate mode found get pointer to data in a5 so IO can print       
+immediateModeSAW MOVEA.L  A6, A5
+                 ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
+                 JMP rtn_cAMAW
+          
 *---------------------------------------------------------------------------------------------------------
 *isMOVEBW          (IS MOVE.B OR MOVE.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
 *                  D7 IS A KNOWN MOVE.B OR MOVE.W COMMAND. EA IS IDENTICLE FOR MOVE.B AND MOVE.W.
@@ -70,8 +127,7 @@ wordModeS   MOVEA.L A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
             JMP rtn_cAM
             
 *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
-longModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
-            MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+longModeS   MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
             ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
             JMP rtn_cAM
             
@@ -228,8 +284,7 @@ wordModeSL  MOVEA.L A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
             ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
             JMP rtn_cAML
             
-longModeSL  ADDQ.W  #2, A6         
-            MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+longModeSL  MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
             ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
             JMP rtn_cAML
             
@@ -252,6 +307,7 @@ longModeDL  MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
              
 
     END    START        ; last line of source
+
 
 
 
