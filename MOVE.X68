@@ -13,11 +13,11 @@ START:                  ; first instruction of program
              *move.W #$AFFE, $8004           *DOING
              MOVEA.L    #$8000, A6           *SOME
              MOVE.W $8000, D7                *TESTING
-             JSR    isMOVEBW
+             JSR    isMOVEBW                 *MUST
              
-             * END PROGRAM
-end          MOVE.B #9, D0
-             TRAP #15
+             * END PROGRAM                   *REMOVE
+end          MOVE.B #9, D0                   *THESE
+             TRAP #15                        *LINES
              
 *---------------------------------------------------------------------------------------------------------
 *isMOVEBW          (IS MOVE.B OR MOVE.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
@@ -26,7 +26,7 @@ end          MOVE.B #9, D0
 *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
 *
 *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
-*                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+*                  MODE RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
 *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
 *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
 *---------------------------------------------------------------------------------------------------------
@@ -187,7 +187,7 @@ getDMODE    CLR     D3
 *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
 *
 *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
-*                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+*                  MODE RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
 *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
 *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
 *--------------------------------------------------------------------------------------------------------- 
