@@ -1,0 +1,299 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.02
+Created On: 5/13/2015 8:41:54 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00001000                             7      ORG    $1000
+00001000                             8  START:                  ; first instruction of program
+00001000                             9  
+00001000                            10  * Put program code here
+00001000  11C0 7EEF                 11               move.b D0, $7EEF                *STUFF                  
+00001004  23FC 11C07EEF 00008000    12               move.L #$11C07EEF, $8000        *FOR
+0000100E                            13               *move.W #$AFFE, $8004           *DOING
+0000100E  2C7C 00008000             14               MOVEA.L    #$8000, A6           *SOME
+00001014  3E39 00008000             15               MOVE.W $8000, D7                *TESTING
+0000101A  4EB9 00001026             16               JSR    isMOVEBW
+00001020                            17               
+00001020                            18               * END PROGRAM
+00001020  103C 0009                 19  end          MOVE.B #9, D0
+00001024  4E4F                      20               TRAP #15
+00001026                            21               
+00001026                            22  *---------------------------------------------------------------------------------------------------------
+00001026                            23  *isMOVEBW          (IS MOVE.B OR MOVE.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
+00001026                            24  *                  D7 IS A KNOWN MOVE.B OR MOVE.W COMMAND. EA IS IDENTICLE FOR MOVE.B AND MOVE.W.
+00001026                            25  *
+00001026                            26  *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
+00001026                            27  *
+00001026                            28  *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
+00001026                            29  *                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+00001026                            30  *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
+00001026                            31  *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
+00001026                            32  *---------------------------------------------------------------------------------------------------------
+00001026  544E                      33  isMOVEBW    ADDQ.W  #2, A6          *KEEP A6 CURRENT
+00001028  4EB9 00001158             34              JSR     getSREG         *PARSE REGISTERS AND MODES
+0000102E  4EB9 0000116E             35              JSR     getDREG
+00001034  4EB9 00001182             36              JSR     getSMODE
+0000103A  4EB9 00001198             37              JSR     getDMODE
+00001040  4EB9 000010DA             38              JSR     sModeErr        *CHECK FOR ERRORS IN REGISTERS D3 and D4 (source and destination modes)
+00001046  4EB9 000010FA             39              JSR     dModeErr
+0000104C  B4BC 0000BEEF             40              CMP.L   #$BEEF, D2      *CHECK FOR ERROR FLAG BEEF (MMM) AND RETURN IF SET
+00001052  6600 0004                 41              BNE     chkAddM         *CHECK ADDRESSING MODES FOR WORDB SPECS
+00001056  4E75                      42              RTS
+00001058                            43              
+00001058                            44  *CHECKS ADDRESSING MODES FOR IMMEDIATE DATA OR ABSOLUTE ADDRESSING SO THEY CAN BE APPENDED BY IO  
+00001058  2A7C 00000000             45  chkAddM     MOVEA.l  #0, A5
+0000105E  287C 00000000             46              MOVEA.l  #0, A4
+00001064  B8BC 00000007             47              CMP.L    #7, D4          
+0000106A  6700 000E                 48              BEQ      chkSAdd  
+0000106E  B6BC 00000007             49  rtn_cAM     CMP.L    #7, D3          
+00001074  6700 0024                 50              BEQ      chkDAdd  
+00001078  4E75                      51  rtn_cAM2    RTS  
+0000107A                            52  
+0000107A  BCBC 00000000             53  chkSAdd     CMP.L   #0, D6
+00001080  6700 002E                 54              BEQ     wordModeS 
+00001084  BCBC 00000001             55              CMP.L   #1, D6
+0000108A  6700 002C                 56              BEQ     longModeS
+0000108E  BCBC 00000004             57              CMP.L   #4, D6
+00001094  6700 002C                 58              BEQ     immediateModeS
+00001098  4E75                      59              RTS
+0000109A                            60              
+0000109A  BABC 00000000             61  chkDAdd     CMP.L   #0, D5
+000010A0  6700 0028                 62              BEQ     wordModeD 
+000010A4  BABC 00000001             63              CMP.L   #1, D5
+000010AA  6700 0026                 64              BEQ     longModeD
+000010AE  4E75                      65              RTS
+000010B0                            66     
+000010B0                            67  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+000010B0  2A4E                      68  wordModeS   MOVEA.L A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
+000010B2  544E                      69              ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
+000010B4  4EF8 106E                 70              JMP rtn_cAM
+000010B8                            71              
+000010B8                            72  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+000010B8  544E                      73  longModeS   ADDQ.W  #2, A6          *SHIFT A6 1 WORD (NOT SURE IF THIS WORKS...!!!!!!) 
+000010BA  2A4E                      74              MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+000010BC  584E                      75              ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+000010BE  4EF8 106E                 76              JMP rtn_cAM
+000010C2                            77              
+000010C2                            78  *if immediate mode found get pointer to data in a5 so IO can print       
+000010C2  2A4E                      79  immediateModeS MOVEA.L  A6, A5
+000010C4  544E                      80                 ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
+000010C6  4EF8 106E                 81                 JMP rtn_cAM
+000010CA                            82                 
+000010CA                            83  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+000010CA  284E                      84  wordModeD   MOVEA.L A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
+000010CC  544E                      85              ADDQ.W  #2, A6          *
+000010CE  4EF8 1078                 86              JMP rtn_cAM2
+000010D2                            87              
+000010D2                            88  *IDENTICAL TO WORDMODED CLEAN UP LATER!       
+000010D2  284E                      89  longModeD   MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
+000010D4  584E                      90              ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+000010D6  4EF8 1078                 91              JMP rtn_cAM2
+000010DA                            92           
+000010DA                            93  *CHECK FOR ERRORS CONTAINED IN SOURCE MODE      
+000010DA  B8BC 00000005             94  sModeErr    CMP.L   #5, D4          *MODE CANNOT BE 5
+000010E0  6700 006E                 95              BEQ     setEAErr
+000010E4  B8BC 00000006             96              CMP.L   #6, D4          *MODE CANNOT BE 6
+000010EA  6700 0064                 97              BEQ     setEAErr
+000010EE  B8BC 00000007             98              CMP.L   #7, D4          *IF MODE IS 7 CHECK REGISTERS FOR ERRORS
+000010F4  6700 003A                 99              BEQ     sIErr
+000010F8  4E75                     100              RTS
+000010FA                           101      
+000010FA                           102  *CHECK FOR ERRORS CONTAINED IN DESTINATION MODE        
+000010FA  B6BC 00000001            103  dModeErr    CMP.L   #1, D3          *DESTINATION MODE CANNOT BE 1
+00001100  6700 004E                104              BEQ     setEAErr
+00001104  B6BC 00000007            105              CMP.L   #7, D3          *IF MODE IS 7 CHECK REGISTERS FOR ERRORS
+0000110A  6700 0018                106              BEQ     dIErr
+0000110E  B6BC 00000005            107              CMP.L   #5, D3          *MODE CANNOT BE 5
+00001114  6700 003A                108              BEQ     setEAErr
+00001118  B6BC 00000006            109              CMP.L   #6, D3          *MODE CANNOT BE 6
+0000111E  6700 0030                110              BEQ     setEAErr
+00001122  4E75                     111              RTS
+00001124                           112   
+00001124                           113  *CHECK FOR ERRORS IN DESTINATION ADDRESSING MODES ABSOLUTE AND IMMEDIATE           
+00001124  BABC 00000001            114  dIErr       CMP.L   #1, D5          *DESTINATION REGISTER CANNOT BE GREATER THAN 1 WITH MODE 7
+0000112A  6E00 0024                115              BGT     setEAErr
+0000112E  4E75                     116              RTS
+00001130                           117      
+00001130                           118  *CHECK FOR ERRORS IN SOURCE ADDRESSING MODES ABSOLUTE AND IMMEDIATE        
+00001130  BCBC 00000002            119  sIErr       CMP.L   #2, D6          *REGISTER 2 CANNOT BE USED WITH MODE 7
+00001136  6700 0018                120              BEQ     setEAErr
+0000113A  BCBC 00000003            121              CMP.L   #3, D6          *REGISTER 3 CANNOT BE USED WITH MODE 7
+00001140  6700 000E                122              BEQ     setEAErr
+00001144  BCBC 00000004            123              CMP.L   #4, D6          *ALL REGISTERS GREATER THAN 4 CANNOT BE USED WITH MODE 7
+0000114A  6E00 0004                124              BGT     setEAErr
+0000114E  4E75                     125              RTS
+00001150                           126              
+00001150                           127  *D2 WILL BE SET TO BEEF (MMM)FLAG IF ERRORS ARE FOUND IN EA
+00001150  4242                     128  setEAErr    CLR     D2
+00001152  343C BEEF                129              MOVE.W  #$BEEF, D2
+00001156  4E75                     130              RTS
+00001158                           131  
+00001158                           132  *SETS THE SOURCE REGISTER FOR A MOVE COMMAND TO D6          
+00001158  4246                     133  getSREG     CLR     D6
+0000115A  2C07                     134              MOVE.L  D7, D6
+0000115C  E18E                     135              LSL.L   #8, D6
+0000115E  E18E                     136              LSL.L   #8, D6
+00001160  E18E                     137              LSL.L   #8, D6
+00001162  EB8E                     138              LSL.L   #5, D6
+00001164  E08E                     139              LSR.L   #8, D6
+00001166  E08E                     140              LSR.L   #8, D6
+00001168  E08E                     141              LSR.L   #8, D6
+0000116A  EA8E                     142              LSR.L   #5, D6
+0000116C  4E75                     143              RTS
+0000116E                           144  
+0000116E                           145  *SETS DESTINATION REGISTER FOR MOVE COMMAND TO D5            
+0000116E  4245                     146  getDREG     CLR     D5
+00001170  2A07                     147              MOVE.L  D7, D5
+00001172  E18D                     148              LSL.L   #8, D5
+00001174  E18D                     149              LSL.L   #8, D5
+00001176  E98D                     150              LSL.L   #4, D5
+00001178  E08D                     151              LSR.L   #8, D5
+0000117A  E08D                     152              LSR.L   #8, D5
+0000117C  E08D                     153              LSR.L   #8, D5
+0000117E  EA8D                     154              LSR.L   #5, D5
+00001180  4E75                     155              RTS
+00001182                           156  
+00001182                           157  *SETS SOURCE MODE FOR MOVE COMMAND TO D4            
+00001182  4244                     158  getSMODE    CLR     D4
+00001184  2807                     159              MOVE.L  D7, D4
+00001186  E18C                     160              LSL.L   #8, D4
+00001188  E18C                     161              LSL.L   #8, D4
+0000118A  E18C                     162              LSL.L   #8, D4
+0000118C  E58C                     163              LSL.L   #2, D4
+0000118E  E08C                     164              LSR.L   #8, D4
+00001190  E08C                     165              LSR.L   #8, D4
+00001192  E08C                     166              LSR.L   #8, D4
+00001194  EA8C                     167              LSR.L   #5, D4
+00001196  4E75                     168              RTS    
+00001198                           169  
+00001198                           170  *GETS DESTNATION MODE FROM MOVE COMMAND, PUTS IN D3
+00001198  4243                     171  getDMODE    CLR     D3
+0000119A  2607                     172              MOVE.L  D7, D3
+0000119C  E18B                     173              LSL.L   #8, D3
+0000119E  E18B                     174              LSL.L   #8, D3
+000011A0  EF8B                     175              LSL.L   #7, D3
+000011A2  E08B                     176              LSR.L   #8, D3
+000011A4  E08B                     177              LSR.L   #8, D3
+000011A6  E08B                     178              LSR.L   #8, D3
+000011A8  EA8B                     179              LSR.L   #5, D3
+000011AA  4E75                     180              RTS    
+000011AC                           181  
+000011AC                           182             
+000011AC                           183  *---------------------------------------------------------------------------------------------------------
+000011AC                           184  *isMOVEL           (IS MOVE.L)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
+000011AC                           185  *                  D7 IS A KNOWN MOVE.L COMMAND.
+000011AC                           186  *
+000011AC                           187  *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
+000011AC                           188  *
+000011AC                           189  *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
+000011AC                           190  *                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+000011AC                           191  *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
+000011AC                           192  *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
+000011AC                           193  *--------------------------------------------------------------------------------------------------------- 
+000011AC  544E                     194  isMOVEL     ADDQ.W  #2, A6          *KEEP A6 CURRENT
+000011AE  4EB8 1158                195              JSR     getSREG
+000011B2  4EB8 116E                196              JSR     getDREG
+000011B6  4EB8 1182                197              JSR     getSMODE
+000011BA  4EB8 1198                198              JSR     getDMODE
+000011BE  4EB8 10DA                199              JSR     sModeErr        *CHECK FOR ERRORS IN REGISTERS D3 and D4 (source and destination modes)
+000011C2  4EB8 10FA                200              JSR     dModeErr
+000011C6  B4BC 0000BEEF            201              CMP.L   #$BEEF, D2      *CHECK FOR ERROR FLAG BEEF (MMM) AND RETURN IF SET
+000011CC  6600 0004                202              BNE     chkAddML        *CHECK ADDRESSING MODE FOR MOVEW SPECS
+000011D0  4E75                     203              RTS
+000011D2                           204              
+000011D2  2A7C 00000000            205  chkAddML    MOVEA.l  #0, A5         *CLEAR ADDRESS REGISTERS 5 AND 4
+000011D8  287C 00000000            206              MOVEA.l  #0, A4 
+000011DE  B8BC 00000007            207              CMP.L    #7, D4         *IS SOURCE MODE 111?
+000011E4  6700 000E                208              BEQ      chkSAddL       *THEN CHECK FOR WORD, LONG, OR IMMEDIATE ADDRESSING
+000011E8  B6BC 00000007            209  rtn_cAML    CMP.L    #7, D3         *IS DESTINATION REGISTER 111? 
+000011EE  6700 0024                210              BEQ      chkDAddL       *THEN CHECK FOR WORD OR LONG ADDRESSING
+000011F2  4E75                     211  rtn_cAM2L   RTS 
+000011F4                           212  
+000011F4  BCBC 00000000            213  chkSAddL    CMP.L   #0, D6
+000011FA  6700 002E                214              BEQ     wordModeSL 
+000011FE  BCBC 00000001            215              CMP.L   #1, D6
+00001204  6700 002C                216              BEQ     longModeSL
+00001208  BCBC 00000004            217              CMP.L   #4, D6
+0000120E  6700 002C                218              BEQ     immediateModeSL
+00001212  4E75                     219              RTS
+00001214                           220              
+00001214  BABC 00000000            221  chkDAddL    CMP.L   #0, D5
+0000121A  6700 0028                222              BEQ     wordModeDL 
+0000121E  BABC 00000001            223              CMP.L   #1, D5
+00001224  6700 0026                224              BEQ     longModeDL
+00001228  4E75                     225              RTS
+0000122A                           226              
+0000122A  2A4E                     227  wordModeSL  MOVEA.L A6, A5          *STORE WORD IN A5 SO IO CAN PRINT IT
+0000122C  544E                     228              ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
+0000122E  4EF8 11E8                229              JMP rtn_cAML
+00001232                           230              
+00001232  544E                     231  longModeSL  ADDQ.W  #2, A6         
+00001234  2A4E                     232              MOVEA.L A6, A5          *STORE LING IN A5 SO IO CAN PRINT IT
+00001236  584E                     233              ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+00001238  4EF8 11E8                234              JMP rtn_cAML
+0000123C                           235              
+0000123C                           236  *if immediate mode found get pointer to data in a5 so IO can print       
+0000123C  2A4E                     237  immediateModeSL MOVEA.L  A6, A5
+0000123E  584E                     238                  ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+00001240  4EF8 11E8                239                  JMP rtn_cAML
+00001244                           240              
+00001244                           241  *I HAVE NO IDEA IF THIS WORKS, MIGHT WANNA TEST SOME TIME SOON         
+00001244  284E                     242  wordModeDL  MOVEA.L A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
+00001246  544E                     243              ADDQ.W  #2, A6          *
+00001248  4EF8 11F2                244              JMP rtn_cAM2L
+0000124C                           245              
+0000124C                           246  *IDENTICAL TO WORDMODED CLEAN UP LATER!       
+0000124C  284E                     247  longModeDL  MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
+0000124E  584E                     248              ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
+00001250  4EF8 11F2                249              JMP rtn_cAM2L 
+00001254                           250   
+00001254                           251  
+00001254                           252               
+00001254                           253  
+00001254                           254      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+CHKADDM             1058
+CHKADDML            11D2
+CHKDADD             109A
+CHKDADDL            1214
+CHKSADD             107A
+CHKSADDL            11F4
+DIERR               1124
+DMODEERR            10FA
+END                 1020
+GETDMODE            1198
+GETDREG             116E
+GETSMODE            1182
+GETSREG             1158
+IMMEDIATEMODES      10C2
+IMMEDIATEMODESL     123C
+ISMOVEBW            1026
+ISMOVEL             11AC
+LONGMODED           10D2
+LONGMODEDL          124C
+LONGMODES           10B8
+LONGMODESL          1232
+RTN_CAM             106E
+RTN_CAM2            1078
+RTN_CAM2L           11F2
+RTN_CAML            11E8
+SETEAERR            1150
+SIERR               1130
+SMODEERR            10DA
+START               1000
+WORDMODED           10CA
+WORDMODEDL          1244
+WORDMODES           10B0
+WORDMODESL          122A
