@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 5/11/2015 11:56:41 AM
+Created On: 5/14/2015 5:08:05 PM
 
 00000000                             1  *-------------------------------------------------------------------------------
 00000000                             2  * Title      : All possible valid commands
@@ -32,8 +32,8 @@ Created On: 5/11/2015 11:56:41 AM
 00001002  1080                      28              MOVE.B D0, (A0)                   ;PASSED
 00001004  10C0                      29              MOVE.B D0, (A0)+                  ;PASSED
 00001006  1100                      30              MOVE.B D0, -(A0)                  ;PASSED
-00001008  13C0 0000FFFE             31              MOVE.B D0, $FFFE                  ;DATA REGISTER TO ABSOLUTE WORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) CAN BE SHORTER, NO MORE THAN 4 DIGITS
-0000100E  11C0 FFFE                 32              MOVE.B D0, $FFFFFFFE              ;DATA REGISTER TO ABSOLUTE LONGWORD ADDRESS IN HEX, MUST BE EVEN (END IN 0, 2, 4, 6, 8, A, C, E) NO MORE THAN 8 DIGITS
+00001008  13C0 0000FFFE             31              MOVE.B D0, $FFFE                  ;PASSED
+0000100E  11C0 FFFE                 32              MOVE.B D0, $FFFFFFFE              ;PASSED
 00001012                            33              
 00001012  1010                      34              MOVE.B (A0), D0                   ;INDIRECT ADDRESS REGISTER TO DATA REGISTER
 00001014  1290                      35              MOVE.B (A0), (A1)                 ;INDIRECT ADDRESS REGISTER TO INDIRECT ADDRESS REGISTER
@@ -70,12 +70,12 @@ Created On: 5/11/2015 11:56:41 AM
 00001084  13F8 FFFE 0000AAAA        66              MOVE.B $FFFFFFFE, $AAAA           ;ABSOLUTE LONGWORD ADDRESS IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE WORD ADDRESS IN DECIMAL (NO MORE THAN 4 DIGITS)
 0000108C  13F8 FFFE AAAAAAAA        67              MOVE.B $FFFFFFFE, $AAAAAAAA       ;ABSOLUTE LONGWORD ADDRESS IN HEX (NO MORE THAN 8 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)
 00001094                            68              
-00001094  123C 00AF                 69              MOVE.B #$AF, D1                   ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO DATA REGISTER
+00001094  123C 00AF                 69              MOVE.B #$AF, D1                   ;PASSED
 00001098  10BC 00AF                 70              MOVE.B #$AF, (A0)                 ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER
 0000109C  10FC 00AF                 71              MOVE.B #$AF, (A0)+                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER POST INC
 000010A0  113C 00AF                 72              MOVE.B #$AF, -(A0)                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO INDIRECT ADDRESS REGISTER PRE DEC
-000010A4  13FC 00AF 0000AAAA        73              MOVE.B #$AF, $AAAA                ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO ABSOLUTE WORD ADDRESS IN DECIMAL (NO MORE THAN 4 DIGITS)
-000010AC  13FC 00AF AAAAAAAA        74              MOVE.B #$AF, $AAAAAAAA            ;IMMEDIATE BYTE DATA IN HEX (NO MORE THAN 2 DIGITS) TO ABSOLUTE LONGWORD ADDRESS IN DECIMAL (NO MORE THAN 8 DIGITS)
+000010A4  13FC 00AF 0000AAAA        73              MOVE.B #$AF, $AAAA                ;PASSED
+000010AC  13FC 00AF AAAAAAAA        74              MOVE.B #$AF, $AAAAAAAA            ;PASSED
 000010B4                            75              
 000010B4                            76              *-----------------------------------------------------------------*
 000010B4                            77              * WORD MOVES                                                      *
@@ -241,14 +241,17 @@ Created On: 5/11/2015 11:56:41 AM
 00001288                           237              *-----------------------------------------------------------------*
 00001288                           238              *MOVE.B (A0)+, A0                  *PASSED 
 00001288                           239              
-00001288                           240  
-00001288                           241  *-------------------------------------------------------------------------------
-00001288                           242  * END
+Line 240 ERROR: Invalid opcode
+00001288                           240   moveB     dc.b  'move.b', 0
+00001288                           241              
+00001288                           242  
 00001288                           243  *-------------------------------------------------------------------------------
-00001288                           244  
-00001288                           245              END        START                                *end program
+00001288                           244  * END
+00001288                           245  *-------------------------------------------------------------------------------
+00001288                           246  
+00001288                           247              END        START                                *end program
 
-No errors detected
+1 error detected
 No warnings generated
 
 

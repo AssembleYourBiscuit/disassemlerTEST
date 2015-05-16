@@ -13,9 +13,8 @@ START:                  ; first instruction of program
              *move.W #$AFFE, $8004           *DOING
              MOVEA.L    #$8000, A6           *SOME
              MOVE.W $8000, D7                *TESTING
-             JSR    isMOVEBW                 *MUST
+             JSR    isMOVEBW
              
-<<<<<<< HEAD
              * END PROGRAM
 end          MOVE.B #9, D0
              TRAP #15
@@ -31,7 +30,9 @@ end          MOVE.B #9, D0
 *                  TO DISASSEMBLE, IF A5 CONTAINS A NON-ZERO ADDRESS, ABSOLUTE AND OR IMMEDIATE 
 *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 NEEDS TO BE PRINTED.
 *---------------------------------------------------------------------------------------------------------
-isMOVEAW    ADDQ.W  #2, A6          *KEEP A6 CURRENT
+isMOVEAW    ADDQ    #8 ,A2         *INC A2 SO EA CAN BE APPENDED
+            ADDQ    #6 ,A2         *INC A2 SO EA CAN BE APPENDED
+            ADDQ.W  #2, A6          *KEEP A6 CURRENT
             JSR     getSREG         *PARSE REGISTERS AND MODES
             JSR     getDREG
             JSR     getSMODE
@@ -77,12 +78,6 @@ immediateModeSAW MOVEA.L  A6, A5
                  ADDQ.W  #2, A6          *KEEP A6 ON CURRENT INSTRUCTION
                  JMP rtn_cAMAW
           
-=======
-             * END PROGRAM                   *REMOVE
-end          MOVE.B #9, D0                   *THESE
-             TRAP #15                        *LINES
-             
->>>>>>> origin/master
 *---------------------------------------------------------------------------------------------------------
 *isMOVEBW          (IS MOVE.B OR MOVE.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 AND INSIDE 
 *                  D7 IS A KNOWN MOVE.B OR MOVE.W COMMAND. EA IS IDENTICLE FOR MOVE.B AND MOVE.W.
@@ -90,11 +85,13 @@ end          MOVE.B #9, D0                   *THESE
 *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
 *
 *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
-*                  MODE RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+*                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
 *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
 *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
 *---------------------------------------------------------------------------------------------------------
-isMOVEBW    ADDQ.W  #2, A6          *KEEP A6 CURRENT
+isMOVEBW    ADDQ    #8, A2         *INC A2 BY 12 DIGITS FOR STRING MOVE.B/W EACH CHAR IS 2 DIGITS IN HEX
+            ADDQ    #6, A2         *INC A2 BY 12 DIGITS FOR STRING MOVE.B/W EACH CHAR IS 2 DIGITS IN HEX
+            ADDQ.W  #2, A6          *KEEP A6 CURRENT
             JSR     getSREG         *PARSE REGISTERS AND MODES
             JSR     getDREG
             JSR     getSMODE
@@ -250,7 +247,7 @@ getDMODE    CLR     D3
 *PRE CONDITIONS -  A6 POINTS TO CURRENT INSTRUCTION, D7 CONTAINS CURRENT INSTRUCTION
 *
 *POST CONDITIONS - D6, D5, D4, D3 CONTAIN SOURCE REGISTER, DESTINATION REGISTER, SOURCE MODE, DESTINATION
-*                  MODE RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
+*                  REGISTER RESPECTIVELY. iF ERRORS, D2 CONTAINS $BEEF (YUM). A6 POINTS TO NEXT INSTRUCTION 
 *                  TO DISASSEMBLE, IF A5 OR A4 CONTAIN NON-ZERO ADDRESSES, ABSOLUTE AND OR IMMEDIATE 
 *                  ADRESSING WAS USED AND DATA POINTED TO BY A5 AND OR A4 NEED TO BE PRINTED IN THAT ORDER.
 *--------------------------------------------------------------------------------------------------------- 
@@ -309,11 +306,15 @@ wordModeDL  MOVEA.L A6, A4          *STORE WORD IN A4 SO IO CAN PRINT IT
 longModeDL  MOVEA.L A6, A4          *STORE LING IN A4 SO IO CAN PRINT IT
             ADDQ.W  #4, A6          *KEEP A6 ON CURRENT INSTRUCTION
             JMP rtn_cAM2L 
- 
+
+
+
 
              
 
     END    START        ; last line of source
+
+
 
 
 
