@@ -1,12 +1,12 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 5/16/2015 11:19:57 PM
+Created On: 5/17/2015 12:12:21 AM
 
 00000000                             1  *-----------------------------------------------------------
-00000000                             2  * Title      :HEY ASSHOLE! UPDATE A6! DONT FORGETTTTTTTT
-00000000                             3  * Written by :
-00000000                             4  * Date       :
-00000000                             5  * Description:
+00000000                             2  * Title      :NICOLAS MICHAEL
+00000000                             3  * Written by :NICOLAS   
+00000000                             4  * Date       :MICHAEL
+00000000                             5  * Description:BLAHBLAHBLACKSHEEP
 00000000                             6  *-----------------------------------------------------------
 00001000                             7      ORG    $1000
 00001000                             8  START:                  ; first instruction of program
@@ -15,275 +15,298 @@ Created On: 5/16/2015 11:19:57 PM
 00001000                            11           
 00001000  247C 00010000             12          MOVE.L  #$10000, A2         *0100 0001 1111 1000  000 111 010 000 lea 0100 0001 1101 0000
 00001006  2C7C 00008000             13          MOVE.L  #$08000, A6
-0000100C  23FC 41F8AB4D 00008000    14          MOVE.L  #$41F8AB4D, $08000
-00001016  4EB9 00001022             15          JSR isLEA
-0000101C                            16  
-0000101C  103C 0009                 17          move.b #9, d0
-00001020  4E4F                      18          trap #15            ; halt simulator 
-00001022                            19  
-00001022                            20  isLEA            *CLEAR ALL UNUSED REGISTERS NOW!!!!!!!! OR WHEN YOU GET A CHANCE...THANKS
-00001022  3E1E                      21                   MOVE.W (A6)+, D7       *GET CURRENT OP CODE DATA TO D7
-00001024  564A                      22                   ADDQ   #3, A2          *inc a2 BY 4 TO MAKE ROOM FOR "lea"
-00001026  14BC 0009                 23                   MOVE.B #TAB, (A2)      *ADD TAB AFTER OP CODE
-0000102A  524A                      24                   ADDQ   #1, A2          *MAKE ROOM FOR TAB CHARACTER
-0000102C  4EB9 0000125A             25                   JSR    GETLEADREG
-00001032  4EB9 0000126C             26                   JSR    GETLEASREG
-00001038  4EB9 00001280             27                   JSR    GETLEASMODE
-0000103E  4EB9 00001294             28                   JSR    LEAERRORCHK
-00001044  4EB9 0000104C             29                   JSR    APPENDLEA
-0000104A  4E75                      30  LEARTN           RTS
-0000104C                            31      
-0000104C  4EB9 00001068             32  APPENDLEA       JSR     LEAAPPSOURCE
-00001052  14BC 002C                 33                  MOVE.B  #',', (A2)      *ADD SPACE BETWEEN ADDRESSES
-00001056  524A                      34                  ADDQ    #1, A2
-00001058  14BC 0020                 35                  MOVE.B  #' ', (A2)      *ADD COMMA BETWEEN ADDRESSES
-0000105C  524A                      36                  ADDQ    #1, A2
-0000105E  4EB9 00001200             37                  JSR     APPENDDREG
-00001064  544A                      38                  ADDQ    #2, A2
-00001066  4E75                      39                  RTS
-00001068                            40                  
-00001068  B8BC 00000002             41  LEAAPPSOURCE    CMP.L   #2, D4          *IS ADDRESS INDIRECT?
-0000106E  6700 00E0                 42                  BEQ     LEAAPPAI
-00001072  B8BC 00000007             43                  CMP.L   #7, D4          *IS ABSOLUTE WORD OR LONG?
-00001078  6700 0004                 44                  BEQ     LEAWORL         *LEA WORD OR LONG
-0000107C  4E75                      45  RTN_LEAAPP      RTS
-0000107E                            46      
-0000107E  14FC 0024                 47  LEAWORL         MOVE.B  #$24, (A2)+     *24 = $ DOLLAR SIGN DO NOT TRY MOVE '$', DOES NOT WORK
-00001082  BABC 00000000             48                  CMP.L   #0, D5
-00001088  6700 0010                 49                  BEQ     LEAWORD         *LEA WORD
-0000108C  BABC 00000001             50                  CMP.L   #1, D5
-00001092  6700 00B6                 51                  BEQ     LEALONG         *LEA LONG
-00001096  4EF8 107C                 52  RTN_WORL        JMP RTN_LEAAPP          *RETURN TO CALLING ROUTINE
-0000109A                            53  
-0000109A  341E                      54  LEAWORD         MOVE.W  (A6)+, D2
-0000109C  4243                      55                  CLR     D3              *CLEAR REG, SHITS ABOUT TO GET REAL
-0000109E  4244                      56                  CLR     D4
-000010A0  4245                      57                  CLR     D5
-000010A2  4246                      58                  CLR     D6
-000010A4  4EB9 0000112C             59                  JSR     LEAWORDPARSE
-000010AA  4EB9 000010B4             60                  JSR     LEACONVERTWORD
-000010B0  4EF8 1096                 61                  JMP     RTN_WORL
-000010B4                            62                 
-000010B4  1203                      63  LEACONVERTWORD  MOVE.B  D3, D1
-000010B6  4EB9 000010E6             64                  JSR     LEANUMORLETT
-000010BC  14C1                      65                  MOVE.B  D1, (A2)+
-000010BE  4241                      66                  CLR     D1
-000010C0  1204                      67                  MOVE.B  D4, D1
-000010C2  4EB9 000010E6             68                  JSR     LEANUMORLETT
-000010C8  14C1                      69                  MOVE.B  D1, (A2)+
-000010CA  4241                      70                  CLR     D1
-000010CC  1205                      71                  MOVE.B  D5, D1
-000010CE  4EB9 000010E6             72                  JSR     LEANUMORLETT
-000010D4  14C1                      73                  MOVE.B  D1, (A2)+
-000010D6  4241                      74                  CLR     D1
-000010D8  1206                      75                  MOVE.B  D6, D1
-000010DA  4EB9 000010E6             76                  JSR     LEANUMORLETT
-000010E0  14C1                      77                  MOVE.B  D1, (A2)+
-000010E2  4241                      78                  CLR     D1
-000010E4  4E75                      79                  RTS
-000010E6                            80  
-000010E6  B23C 000A                 81  LEANUMORLETT    CMP.B   #$0A, D1
-000010EA  6700 0038                 82                  BEQ     LEAADD55 
-000010EE  B23C 000B                 83                  CMP.B   #$0B, D1
-000010F2  6700 0030                 84                  BEQ     LEAADD55
-000010F6  B23C 000C                 85                  CMP.B   #$0C, D1
-000010FA  6700 0028                 86                  BEQ     LEAADD55
-000010FE  B23C 000D                 87                  CMP.B   #$0D, D1
-00001102  6700 0020                 88                  BEQ     LEAADD55
-00001106  B23C 000E                 89                  CMP.B   #$0E, D1
-0000110A  6700 0018                 90                  BEQ     LEAADD55
-0000110E  B23C 000F                 91                  CMP.B   #$0F, D1
-00001112  6700 0010                 92                  BEQ     LEAADD55
-00001116  4EB9 0000111E             93                  JSR     LEAADD48
-0000111C  4E75                      94  RTN_LEANUMLET   RTS
-0000111E                            95  
-0000111E  0601 0030                 96  LEAADD48        ADD.B   #48, D1
-00001122  4E75                      97                  RTS
-00001124                            98  
-00001124  0601 0037                 99  LEAADD55        ADD.B   #55, D1
-00001128  4EF8 111C                100                  JMP     RTN_LEANUMLET
-0000112C                           101                  
-0000112C  3602                     102  LEAWORDPARSE    MOVE.W  D2, D3 
-0000112E  3802                     103                  MOVE.W  D2, D4
-00001130  3A02                     104                  MOVE.W  D2, D5
-00001132  1C02                     105                  MOVE.B  D2, D6        
-00001134  E08B                     106                  LSR.L   #8, D3
-00001136  E88B                     107                  LSR.L   #4, D3
-00001138  E94C                     108                  LSL.W   #4, D4
-0000113A  E08C                     109                  LSR.L   #8, D4
-0000113C  E88C                     110                  LSR.L   #4, D4
-0000113E  E14D                     111                  LSL.W   #8, D5
-00001140  E08D                     112                  LSR.L   #8, D5
-00001142  E88D                     113                  LSR.L   #4, D5
-00001144  E90E                     114                  LSL.B   #4, D6
-00001146  E80E                     115                  LSR.B   #4, D6
-00001148  4E75                     116                  RTS
-0000114A                           117                  
-0000114A  361E                     118  LEALONG         MOVE.W  (A6)+, D3
-0000114C  4EF8 1096                119                  JMP     RTN_WORL
-00001150                           120              
-00001150  14BC 0028                121  LEAAPPAI        MOVE.B  #'(', (A2)
-00001154  524A                     122                  ADDQ    #1, A2
-00001156  14BC 0041                123                  MOVE.B  #ASTRING, (A2)
-0000115A  524A                     124                  ADDQ    #1, A2
-0000115C  4EB9 0000116E            125                  JSR     LEAGETAN
-00001162  524A                     126                  ADDQ    #1, A2
-00001164  14BC 0029                127                  MOVE.B  #')', (A2)
-00001168  524A                     128                  ADDQ    #1, A2
-0000116A  4EF8 107C                129                  JMP     RTN_LEAAPP
-0000116E                           130                  
-0000116E  BABC 00000000            131  LEAGETAN        CMP.L   #0, D5
-00001174  6700 004A                132                  BEQ     SAPP0
-00001178  BABC 00000001            133                  CMP.L   #1, D5
-0000117E  6700 0048                134                  BEQ     SAPP1
-00001182  BABC 00000002            135                  CMP.L   #2, D5
-00001188  6700 0046                136                  BEQ     SAPP2
-0000118C  BABC 00000003            137                  CMP.L   #3, D5
-00001192  6700 0044                138                  BEQ     SAPP3
-00001196  BABC 00000004            139                  CMP.L   #4, D5
-0000119C  6700 0042                140                  BEQ     SAPP4
-000011A0  BABC 00000005            141                  CMP.L   #5, D5
-000011A6  6700 0040                142                  BEQ     SAPP5
-000011AA  BABC 00000006            143                  CMP.L   #6, D5
-000011B0  6700 003E                144                  BEQ     SAPP6
-000011B4  BABC 00000007            145                  CMP.L   #7, D5
-000011BA  6700 003C                146                  BEQ     SAPP7
-000011BE  4E75                     147  RTN_SAPP        RTS
-000011C0                           148  
-000011C0  14BC 0030                149  SAPP0           MOVE.B  #'0', (A2)
-000011C4  4EF8 11BE                150                  JMP     RTN_SAPP 
-000011C8  14BC 0031                151  SAPP1           MOVE.B  #'1', (A2)
-000011CC  4EF8 11BE                152                  JMP     RTN_SAPP
-000011D0  14BC 0032                153  SAPP2           MOVE.B  #'2', (A2)
-000011D4  4EF8 11BE                154                  JMP     RTN_SAPP
-000011D8  14BC 0033                155  SAPP3           MOVE.B  #'3', (A2)
-000011DC  4EF8 11BE                156                  JMP     RTN_SAPP
-000011E0  14BC 0034                157  SAPP4           MOVE.B  #'4', (A2)
-000011E4  4EF8 11BE                158                  JMP     RTN_SAPP
-000011E8  14BC 0035                159  SAPP5           MOVE.B  #'5', (A2)
-000011EC  4EF8 11BE                160                  JMP     RTN_SAPP
-000011F0  14BC 0036                161  SAPP6           MOVE.B  #'6', (A2)
-000011F4  4EF8 11BE                162                  JMP     RTN_SAPP
-000011F8  14BC 0037                163  SAPP7           MOVE.B  #'7', (A2)
-000011FC  4EF8 11BE                164                  JMP     RTN_SAPP
-00001200                           165                  
-00001200                           166                  
-00001200  14BC 0041                167  APPENDDREG      MOVE.B  #ASTRING, (A2)  *ADD 'A'
-00001204  524A                     168                  ADDQ    #1, A2
-00001206  BCBC 00000000            169                  CMP.L   #0, D6
-0000120C  6700 0118                170                  BEQ     APPEND0
-00001210  BCBC 00000001            171  RTNAPP0         CMP.L   #1, D6
-00001216  6700 0116                172                  BEQ     APPEND1
-0000121A  BCBC 00000002            173  RTNAPP1         CMP.L   #2, D6
-00001220  6700 0114                174                  BEQ     APPEND2
-00001224  BCBC 00000003            175  RTNAPP2         CMP.L   #3, D6
-0000122A  6700 0112                176                  BEQ     APPEND3
-0000122E  BCBC 00000004            177  RTNAPP3         CMP.L   #4, D6
-00001234  6700 0110                178                  BEQ     APPEND4
-00001238  BCBC 00000005            179  RTNAPP4         CMP.L   #5, D6
-0000123E  6700 010E                180                  BEQ     APPEND5
-00001242  BCBC 00000006            181  RTNAPP5         CMP.L   #6, D6
-00001248  6700 010C                182                  BEQ     APPEND6
-0000124C  BCBC 00000007            183  RTNAPP6         CMP.L   #7, D6
-00001252  6700 010A                184                  BEQ     APPEND7
-00001256  524A                     185  RTNAPP7         ADDQ    #1, A2          *UPDATE A2
-00001258  4E75                     186                  RTS
-0000125A                           187      
-0000125A  3C07                     188  GETLEADREG      MOVE.W  D7, D6
-0000125C  E98E                     189                  LSL.L   #4, D6
-0000125E  E18E                     190                  LSL.L   #8, D6
-00001260  E18E                     191                  LSL.L   #8, D6
-00001262  E08E                     192                  LSR.L   #8, D6
-00001264  E08E                     193                  LSR.L   #8, D6
-00001266  E08E                     194                  LSR.L   #8, D6
-00001268  EA8E                     195                  LSR.L   #5, D6
-0000126A  4E75                     196                  RTS
-0000126C                           197                  
-0000126C  1A07                     198  GETLEASREG      MOVE.B  D7, D5
-0000126E  E18D                     199                  LSL.L   #8, D5
-00001270  EB8D                     200                  LSL.L   #5, D5 
-00001272  E18D                     201                  LSL.L   #8, D5
-00001274  E18D                     202                  LSL.L   #8, D5
-00001276  E08D                     203                  LSR.L   #8, D5
-00001278  E08D                     204                  LSR.L   #8, D5
-0000127A                           205  
-0000127A  E08D                     206                  LSR.L   #8, D5
-0000127C  EA8D                     207                  LSR.L   #5, D5  
-0000127E  4E75                     208                  RTS
-00001280                           209                  
-00001280  3807                     210  GETLEASMODE     MOVE.W  D7, D4
-00001282  E18C                     211                  LSL.L   #8, D4
-00001284  E58C                     212                  LSL.L   #2, D4
-00001286  E18C                     213                  LSL.L   #8, D4
-00001288  E18C                     214                  LSL.L   #8, D4
-0000128A  E08C                     215                  LSR.L   #8, D4
-0000128C  E08C                     216                  LSR.L   #8, D4
-0000128E                           217  
-0000128E  E08C                     218                  LSR.L   #8, D4
-00001290  EA8C                     219                  LSR.L   #5, D4
-00001292  4E75                     220                  RTS
-00001294                           221                  
-00001294  B8BC 00000000            222  LEAERRORCHK     CMP.L   #0, D4
-0000129A  6700 0080                223                  BEQ     LEAERROR
-0000129E  B8BC 00000001            224                  CMP.L   #1, D4
-000012A4  6700 0076                225                  BEQ     LEAERROR
-000012A8  B8BC 00000003            226                  CMP.L   #3, D4
-000012AE  6700 006C                227                  BEQ     LEAERROR
-000012B2  B8BC 00000004            228                  CMP.L   #4, D4
-000012B8  6700 0062                229                  BEQ     LEAERROR
-000012BC  B8BC 00000005            230                  CMP.L   #5, D4
-000012C2  6700 0058                231                  BEQ     LEAERROR
-000012C6  B8BC 00000006            232                  CMP.L   #6, D4
-000012CC  6700 004E                233                  BEQ     LEAERROR
-000012D0  B8BC 00000007            234                  CMP.L   #7, D4
-000012D6  6700 0004                235                  BEQ     LEACHKREGERR
-000012DA  4E75                     236  RTNLEAERRCHK    RTS
-000012DC                           237                  
-000012DC  BABC 00000002            238  LEACHKREGERR    CMP.L   #2, D5
-000012E2  6700 0038                239                  BEQ     LEAERROR
-000012E6  BABC 00000003            240                  CMP.L   #3, D5
-000012EC  6700 002E                241                  BEQ     LEAERROR
-000012F0  BABC 00000004            242                  CMP.L   #4, D5
-000012F6  6700 0024                243                  BEQ     LEAERROR
-000012FA  BABC 00000005            244                  CMP.L   #5, D5
-00001300  6700 001A                245                  BEQ     LEAERROR
-00001304  BABC 00000006            246                  CMP.L   #6, D5
-0000130A  6700 0010                247                  BEQ     LEAERROR
-0000130E  BABC 00000007            248                  CMP.L   #7, D5
-00001314  6700 0006                249                  BEQ     LEAERROR
-00001318  4EF8 12DA                250                  JMP     RTNLEAERRCHK
-0000131C                           251                  
-0000131C  243C 0000BEEF            252  LEAERROR        MOVE.L  #$0BEEF, D2     *BEEF ERROR, RETURN
-00001322  4EF8 104A                253                  JMP     LEARTN
-00001326                           254                  
-00001326  14BC 0030                255  APPEND0         MOVE.B  #'0', (A2)
-0000132A  4EF8 1210                256                  JMP     RTNAPP0
-0000132E                           257                  
-0000132E  14BC 0031                258  APPEND1         MOVE.B  #'1', (A2)
-00001332  4EF8 121A                259                  JMP     RTNAPP1
-00001336                           260             
-00001336  14BC 0032                261  APPEND2         MOVE.B  #'2', (A2)
-0000133A  4EF8 1224                262                  JMP     RTNAPP2
-0000133E                           263                  
-0000133E  14BC 0033                264  APPEND3         MOVE.B  #'3', (A2)
-00001342  4EF8 122E                265                  JMP     RTNAPP3
-00001346                           266                  
-00001346  14BC 0034                267  APPEND4         MOVE.B  #'4', (A2)
-0000134A  4EF8 1238                268                  JMP     RTNAPP4
-0000134E                           269                  
-0000134E  14BC 0035                270  APPEND5         MOVE.B  #'5', (A2)
-00001352  4EF8 1242                271                  JMP     RTNAPP5
-00001356                           272                  
-00001356  14BC 0036                273  APPEND6         MOVE.B  #'6', (A2)
-0000135A  4EF8 124C                274                  JMP     RTNAPP6
-0000135E                           275                  
-0000135E  14BC 0037                276  APPEND7         MOVE.B  #'7', (A2)
-00001362  4EF8 1256                277                  JMP     RTNAPP7
-00001366                           278                  
-00001366                           279  * Put variables and constants here
-00001366  =00000009                280  TAB     EQU     $09 *TAB CHARACTER
-00001366  =00000041                281  ASTRING EQU     'A'
-00001366                           282      END    START        ; last line of source
+0000100C  23FC 41F9AABB 00008000    14          MOVE.L  #$41F9AABB, $08000      *IGNORE THE TEST CODE
+00001016  33FC CC76 00008004        15          MOVE.W  #$CC76, $08004
+0000101E  4EB9 0000102A             16          JSR isLEA
+00001024                            17  
+00001024  103C 0009                 18          move.b #9, d0
+00001028  4E4F                      19          trap #15            ; halt simulator 
+0000102A                            20  
+0000102A  4EB9 00001060             21  isLEA            JSR    LEACLEAR        *CLEARS ALL REGISTERS I WILL USE, BETTER SAVE YOUR STUFF!
+00001030  3E1E                      22                   MOVE.W (A6)+, D7       *GET CURRENT OP CODE DATA TO D7
+00001032  564A                      23                   ADDQ   #3, A2          *inc a2 BY 4 TO MAKE ROOM FOR "lea"
+00001034  14BC 0009                 24                   MOVE.B #TAB, (A2)      *ADD TAB AFTER OP CODE
+00001038  524A                      25                   ADDQ   #1, A2          *MAKE ROOM FOR TAB CHARACTER
+0000103A  4EB9 000012A2             26                   JSR    GETLEADREG
+00001040  4EB9 000012B4             27                   JSR    GETLEASREG
+00001046  4EB9 000012C8             28                   JSR    GETLEASMODE
+0000104C  4EB9 000012DC             29                   JSR    LEAERRORCHK
+00001052  48B8 0070 0500            30                   MOVEM   D4-D6, $500     *SAVE REGISTERS TO $500
+00001058  4EB9 0000106C             31                   JSR    APPENDLEA
+0000105E  4E75                      32  LEARTN           RTS
+00001060                            33  
+00001060  4242                      34  LEACLEAR        CLR     D2
+00001062  4243                      35                  CLR     D3
+00001064  4244                      36                  CLR     D4
+00001066  4245                      37                  CLR     D5
+00001068  4246                      38                  CLR     D6
+0000106A  4E75                      39                  RTS
+0000106C                            40      
+0000106C  4EB9 0000108C             41  APPENDLEA       JSR     LEAAPPSOURCE
+00001072  14BC 002C                 42                  MOVE.B  #',', (A2)      *ADD SPACE BETWEEN ADDRESSES
+00001076  524A                      43                  ADDQ    #1, A2
+00001078  14BC 0020                 44                  MOVE.B  #' ', (A2)      *ADD COMMA BETWEEN ADDRESSES
+0000107C  524A                      45                  ADDQ    #1, A2
+0000107E  4CB8 0070 0500            46                  MOVEM   $500, D4-D6     *RETREIVE REGISTERS
+00001084  4EB9 00001248             47                  JSR     APPENDDREG
+0000108A  4E75                      48                  RTS
+0000108C                            49                  
+0000108C  B8BC 00000002             50  LEAAPPSOURCE    CMP.L   #2, D4          *IS ADDRESS INDIRECT?
+00001092  6700 0104                 51                  BEQ     LEAAPPAI
+00001096  B8BC 00000007             52                  CMP.L   #7, D4          *IS ABSOLUTE WORD OR LONG?
+0000109C  6700 0004                 53                  BEQ     LEAWORL         *LEA WORD OR LONG
+000010A0  4E75                      54  RTN_LEAAPP      RTS
+000010A2                            55      
+000010A2  14FC 0024                 56  LEAWORL         MOVE.B  #$24, (A2)+     *24 = $ DOLLAR SIGN DO NOT TRY MOVE '$', DOES NOT WORK
+000010A6  BABC 00000000             57                  CMP.L   #0, D5
+000010AC  6700 0010                 58                  BEQ     LEAWORD         *LEA WORD
+000010B0  BABC 00000001             59                  CMP.L   #1, D5
+000010B6  6700 00B6                 60                  BEQ     LEALONG         *LEA LONG
+000010BA  4EF8 10A0                 61  RTN_WORL        JMP RTN_LEAAPP          *RETURN TO CALLING ROUTINE
+000010BE                            62  
+000010BE  341E                      63  LEAWORD         MOVE.W  (A6)+, D2
+000010C0  4243                      64                  CLR     D3              *CLEAR REG, SHITS ABOUT TO GET REAL
+000010C2  4244                      65                  CLR     D4
+000010C4  4245                      66                  CLR     D5
+000010C6  4246                      67                  CLR     D6
+000010C8  4EB9 00001150             68                  JSR     LEAWORDPARSE
+000010CE  4EB9 000010D8             69                  JSR     LEACONVERTWORD
+000010D4  4EF8 10BA                 70                  JMP     RTN_WORL
+000010D8                            71                 
+000010D8  1203                      72  LEACONVERTWORD  MOVE.B  D3, D1
+000010DA  4EB9 0000110A             73                  JSR     LEANUMORLETT
+000010E0  14C1                      74                  MOVE.B  D1, (A2)+
+000010E2  4241                      75                  CLR     D1
+000010E4  1204                      76                  MOVE.B  D4, D1
+000010E6  4EB9 0000110A             77                  JSR     LEANUMORLETT
+000010EC  14C1                      78                  MOVE.B  D1, (A2)+
+000010EE  4241                      79                  CLR     D1
+000010F0  1205                      80                  MOVE.B  D5, D1
+000010F2  4EB9 0000110A             81                  JSR     LEANUMORLETT
+000010F8  14C1                      82                  MOVE.B  D1, (A2)+
+000010FA  4241                      83                  CLR     D1
+000010FC  1206                      84                  MOVE.B  D6, D1
+000010FE  4EB9 0000110A             85                  JSR     LEANUMORLETT
+00001104  14C1                      86                  MOVE.B  D1, (A2)+
+00001106  4241                      87                  CLR     D1
+00001108  4E75                      88                  RTS
+0000110A                            89  
+0000110A  B23C 000A                 90  LEANUMORLETT    CMP.B   #$0A, D1
+0000110E  6700 0038                 91                  BEQ     LEAADD55 
+00001112  B23C 000B                 92                  CMP.B   #$0B, D1
+00001116  6700 0030                 93                  BEQ     LEAADD55
+0000111A  B23C 000C                 94                  CMP.B   #$0C, D1
+0000111E  6700 0028                 95                  BEQ     LEAADD55
+00001122  B23C 000D                 96                  CMP.B   #$0D, D1
+00001126  6700 0020                 97                  BEQ     LEAADD55
+0000112A  B23C 000E                 98                  CMP.B   #$0E, D1
+0000112E  6700 0018                 99                  BEQ     LEAADD55
+00001132  B23C 000F                100                  CMP.B   #$0F, D1
+00001136  6700 0010                101                  BEQ     LEAADD55
+0000113A  4EB9 00001142            102                  JSR     LEAADD48
+00001140  4E75                     103  RTN_LEANUMLET   RTS
+00001142                           104  
+00001142  0601 0030                105  LEAADD48        ADD.B   #48, D1
+00001146  4E75                     106                  RTS
+00001148                           107  
+00001148  0601 0037                108  LEAADD55        ADD.B   #55, D1
+0000114C  4EF8 1140                109                  JMP     RTN_LEANUMLET
+00001150                           110                  
+00001150  3602                     111  LEAWORDPARSE    MOVE.W  D2, D3 
+00001152  3802                     112                  MOVE.W  D2, D4
+00001154  3A02                     113                  MOVE.W  D2, D5
+00001156  1C02                     114                  MOVE.B  D2, D6        
+00001158  E08B                     115                  LSR.L   #8, D3
+0000115A  E88B                     116                  LSR.L   #4, D3
+0000115C  E94C                     117                  LSL.W   #4, D4
+0000115E  E08C                     118                  LSR.L   #8, D4
+00001160  E88C                     119                  LSR.L   #4, D4
+00001162  E14D                     120                  LSL.W   #8, D5
+00001164  E08D                     121                  LSR.L   #8, D5
+00001166  E88D                     122                  LSR.L   #4, D5
+00001168  E90E                     123                  LSL.B   #4, D6
+0000116A  E80E                     124                  LSR.B   #4, D6
+0000116C  4E75                     125                  RTS
+0000116E                           126                  
+0000116E  341E                     127  LEALONG         MOVE.W  (A6)+, D2
+00001170  4243                     128                  CLR     D3              *CLEAR REG, SHITS ABOUT TO GET REAL
+00001172  4244                     129                  CLR     D4
+00001174  4245                     130                  CLR     D5
+00001176  4246                     131                  CLR     D6
+00001178  4EB8 1150                132                  JSR     LEAWORDPARSE
+0000117C  4EB8 10D8                133                  JSR     LEACONVERTWORD
+00001180  4242                     134                  CLR     D2
+00001182  341E                     135                  MOVE.W  (A6)+, D2
+00001184  4243                     136                  CLR     D3              *CLEAR REG, SHITS ABOUT TO GET REAL
+00001186  4244                     137                  CLR     D4
+00001188  4245                     138                  CLR     D5
+0000118A  4246                     139                  CLR     D6
+0000118C  4EB8 1150                140                  JSR     LEAWORDPARSE
+00001190  4EB8 10D8                141                  JSR     LEACONVERTWORD
+00001194  4EF8 10BA                142                  JMP     RTN_WORL    
+00001198                           143              
+00001198  14BC 0028                144  LEAAPPAI        MOVE.B  #'(', (A2)
+0000119C  524A                     145                  ADDQ    #1, A2
+0000119E  14BC 0041                146                  MOVE.B  #ASTRING, (A2)
+000011A2  524A                     147                  ADDQ    #1, A2
+000011A4  4EB9 000011B6            148                  JSR     LEAGETAN
+000011AA  524A                     149                  ADDQ    #1, A2
+000011AC  14BC 0029                150                  MOVE.B  #')', (A2)
+000011B0  524A                     151                  ADDQ    #1, A2
+000011B2  4EF8 10A0                152                  JMP     RTN_LEAAPP
+000011B6                           153                  
+000011B6  BABC 00000000            154  LEAGETAN        CMP.L   #0, D5
+000011BC  6700 004A                155                  BEQ     SAPP0
+000011C0  BABC 00000001            156                  CMP.L   #1, D5
+000011C6  6700 0048                157                  BEQ     SAPP1
+000011CA  BABC 00000002            158                  CMP.L   #2, D5
+000011D0  6700 0046                159                  BEQ     SAPP2
+000011D4  BABC 00000003            160                  CMP.L   #3, D5
+000011DA  6700 0044                161                  BEQ     SAPP3
+000011DE  BABC 00000004            162                  CMP.L   #4, D5
+000011E4  6700 0042                163                  BEQ     SAPP4
+000011E8  BABC 00000005            164                  CMP.L   #5, D5
+000011EE  6700 0040                165                  BEQ     SAPP5
+000011F2  BABC 00000006            166                  CMP.L   #6, D5
+000011F8  6700 003E                167                  BEQ     SAPP6
+000011FC  BABC 00000007            168                  CMP.L   #7, D5
+00001202  6700 003C                169                  BEQ     SAPP7
+00001206  4E75                     170  RTN_SAPP        RTS
+00001208                           171  
+00001208  14BC 0030                172  SAPP0           MOVE.B  #'0', (A2)
+0000120C  4EF8 1206                173                  JMP     RTN_SAPP 
+00001210  14BC 0031                174  SAPP1           MOVE.B  #'1', (A2)
+00001214  4EF8 1206                175                  JMP     RTN_SAPP
+00001218  14BC 0032                176  SAPP2           MOVE.B  #'2', (A2)
+0000121C  4EF8 1206                177                  JMP     RTN_SAPP
+00001220  14BC 0033                178  SAPP3           MOVE.B  #'3', (A2)
+00001224  4EF8 1206                179                  JMP     RTN_SAPP
+00001228  14BC 0034                180  SAPP4           MOVE.B  #'4', (A2)
+0000122C  4EF8 1206                181                  JMP     RTN_SAPP
+00001230  14BC 0035                182  SAPP5           MOVE.B  #'5', (A2)
+00001234  4EF8 1206                183                  JMP     RTN_SAPP
+00001238  14BC 0036                184  SAPP6           MOVE.B  #'6', (A2)
+0000123C  4EF8 1206                185                  JMP     RTN_SAPP
+00001240  14BC 0037                186  SAPP7           MOVE.B  #'7', (A2)
+00001244  4EF8 1206                187                  JMP     RTN_SAPP
+00001248                           188                  
+00001248                           189                  
+00001248  14BC 0041                190  APPENDDREG      MOVE.B  #ASTRING, (A2)  *ADD 'A'
+0000124C  524A                     191                  ADDQ    #1, A2
+0000124E  BCBC 00000000            192                  CMP.L   #0, D6
+00001254  6700 0118                193                  BEQ     APPEND0
+00001258  BCBC 00000001            194  RTNAPP0         CMP.L   #1, D6
+0000125E  6700 0116                195                  BEQ     APPEND1
+00001262  BCBC 00000002            196  RTNAPP1         CMP.L   #2, D6
+00001268  6700 0114                197                  BEQ     APPEND2
+0000126C  BCBC 00000003            198  RTNAPP2         CMP.L   #3, D6
+00001272  6700 0112                199                  BEQ     APPEND3
+00001276  BCBC 00000004            200  RTNAPP3         CMP.L   #4, D6
+0000127C  6700 0110                201                  BEQ     APPEND4
+00001280  BCBC 00000005            202  RTNAPP4         CMP.L   #5, D6
+00001286  6700 010E                203                  BEQ     APPEND5
+0000128A  BCBC 00000006            204  RTNAPP5         CMP.L   #6, D6
+00001290  6700 010C                205                  BEQ     APPEND6
+00001294  BCBC 00000007            206  RTNAPP6         CMP.L   #7, D6
+0000129A  6700 010A                207                  BEQ     APPEND7
+0000129E  524A                     208  RTNAPP7         ADDQ    #1, A2          *UPDATE A2
+000012A0  4E75                     209                  RTS
+000012A2                           210      
+000012A2  3C07                     211  GETLEADREG      MOVE.W  D7, D6
+000012A4  E98E                     212                  LSL.L   #4, D6
+000012A6  E18E                     213                  LSL.L   #8, D6
+000012A8  E18E                     214                  LSL.L   #8, D6
+000012AA  E08E                     215                  LSR.L   #8, D6
+000012AC  E08E                     216                  LSR.L   #8, D6
+000012AE  E08E                     217                  LSR.L   #8, D6
+000012B0  EA8E                     218                  LSR.L   #5, D6
+000012B2  4E75                     219                  RTS
+000012B4                           220                  
+000012B4  1A07                     221  GETLEASREG      MOVE.B  D7, D5
+000012B6  E18D                     222                  LSL.L   #8, D5
+000012B8  EB8D                     223                  LSL.L   #5, D5 
+000012BA  E18D                     224                  LSL.L   #8, D5
+000012BC  E18D                     225                  LSL.L   #8, D5
+000012BE  E08D                     226                  LSR.L   #8, D5
+000012C0  E08D                     227                  LSR.L   #8, D5
+000012C2                           228  
+000012C2  E08D                     229                  LSR.L   #8, D5
+000012C4  EA8D                     230                  LSR.L   #5, D5  
+000012C6  4E75                     231                  RTS
+000012C8                           232                  
+000012C8  3807                     233  GETLEASMODE     MOVE.W  D7, D4
+000012CA  E18C                     234                  LSL.L   #8, D4
+000012CC  E58C                     235                  LSL.L   #2, D4
+000012CE  E18C                     236                  LSL.L   #8, D4
+000012D0  E18C                     237                  LSL.L   #8, D4
+000012D2  E08C                     238                  LSR.L   #8, D4
+000012D4  E08C                     239                  LSR.L   #8, D4
+000012D6                           240  
+000012D6  E08C                     241                  LSR.L   #8, D4
+000012D8  EA8C                     242                  LSR.L   #5, D4
+000012DA  4E75                     243                  RTS
+000012DC                           244                  
+000012DC  B8BC 00000000            245  LEAERRORCHK     CMP.L   #0, D4
+000012E2  6700 0080                246                  BEQ     LEAERROR
+000012E6  B8BC 00000001            247                  CMP.L   #1, D4
+000012EC  6700 0076                248                  BEQ     LEAERROR
+000012F0  B8BC 00000003            249                  CMP.L   #3, D4
+000012F6  6700 006C                250                  BEQ     LEAERROR
+000012FA  B8BC 00000004            251                  CMP.L   #4, D4
+00001300  6700 0062                252                  BEQ     LEAERROR
+00001304  B8BC 00000005            253                  CMP.L   #5, D4
+0000130A  6700 0058                254                  BEQ     LEAERROR
+0000130E  B8BC 00000006            255                  CMP.L   #6, D4
+00001314  6700 004E                256                  BEQ     LEAERROR
+00001318  B8BC 00000007            257                  CMP.L   #7, D4
+0000131E  6700 0004                258                  BEQ     LEACHKREGERR
+00001322  4E75                     259  RTNLEAERRCHK    RTS
+00001324                           260                  
+00001324  BABC 00000002            261  LEACHKREGERR    CMP.L   #2, D5
+0000132A  6700 0038                262                  BEQ     LEAERROR
+0000132E  BABC 00000003            263                  CMP.L   #3, D5
+00001334  6700 002E                264                  BEQ     LEAERROR
+00001338  BABC 00000004            265                  CMP.L   #4, D5
+0000133E  6700 0024                266                  BEQ     LEAERROR
+00001342  BABC 00000005            267                  CMP.L   #5, D5
+00001348  6700 001A                268                  BEQ     LEAERROR
+0000134C  BABC 00000006            269                  CMP.L   #6, D5
+00001352  6700 0010                270                  BEQ     LEAERROR
+00001356  BABC 00000007            271                  CMP.L   #7, D5
+0000135C  6700 0006                272                  BEQ     LEAERROR
+00001360  4EF8 1322                273                  JMP     RTNLEAERRCHK
+00001364                           274                  
+00001364  243C 0000BEEF            275  LEAERROR        MOVE.L  #$0BEEF, D2     *BEEF ERROR, RETURN
+0000136A  4EF8 105E                276                  JMP     LEARTN
+0000136E                           277                  
+0000136E  14BC 0030                278  APPEND0         MOVE.B  #'0', (A2)
+00001372  4EF8 1258                279                  JMP     RTNAPP0
+00001376                           280                  
+00001376  14BC 0031                281  APPEND1         MOVE.B  #'1', (A2)
+0000137A  4EF8 1262                282                  JMP     RTNAPP1
+0000137E                           283             
+0000137E  14BC 0032                284  APPEND2         MOVE.B  #'2', (A2)
+00001382  4EF8 126C                285                  JMP     RTNAPP2
+00001386                           286                  
+00001386  14BC 0033                287  APPEND3         MOVE.B  #'3', (A2)
+0000138A  4EF8 1276                288                  JMP     RTNAPP3
+0000138E                           289                  
+0000138E  14BC 0034                290  APPEND4         MOVE.B  #'4', (A2)
+00001392  4EF8 1280                291                  JMP     RTNAPP4
+00001396                           292                  
+00001396  14BC 0035                293  APPEND5         MOVE.B  #'5', (A2)
+0000139A  4EF8 128A                294                  JMP     RTNAPP5
+0000139E                           295                  
+0000139E  14BC 0036                296  APPEND6         MOVE.B  #'6', (A2)
+000013A2  4EF8 1294                297                  JMP     RTNAPP6
+000013A6                           298                  
+000013A6  14BC 0037                299  APPEND7         MOVE.B  #'7', (A2)
+000013AA  4EF8 129E                300                  JMP     RTNAPP7
+000013AE                           301                  
+000013AE                           302  * Put variables and constants here
+000013AE  =00000009                303  TAB     EQU     $09 *TAB CHARACTER
+000013AE  =00000041                304  ASTRING EQU     'A'
+000013AE                           305      END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -292,56 +315,57 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-APPEND0             1326
-APPEND1             132E
-APPEND2             1336
-APPEND3             133E
-APPEND4             1346
-APPEND5             134E
-APPEND6             1356
-APPEND7             135E
-APPENDDREG          1200
-APPENDLEA           104C
+APPEND0             136E
+APPEND1             1376
+APPEND2             137E
+APPEND3             1386
+APPEND4             138E
+APPEND5             1396
+APPEND6             139E
+APPEND7             13A6
+APPENDDREG          1248
+APPENDLEA           106C
 ASTRING             41
-GETLEADREG          125A
-GETLEASMODE         1280
-GETLEASREG          126C
-ISLEA               1022
-LEAADD48            111E
-LEAADD55            1124
-LEAAPPAI            1150
-LEAAPPSOURCE        1068
-LEACHKREGERR        12DC
-LEACONVERTWORD      10B4
-LEAERROR            131C
-LEAERRORCHK         1294
-LEAGETAN            116E
-LEALONG             114A
-LEANUMORLETT        10E6
-LEARTN              104A
-LEAWORD             109A
-LEAWORDPARSE        112C
-LEAWORL             107E
-RTNAPP0             1210
-RTNAPP1             121A
-RTNAPP2             1224
-RTNAPP3             122E
-RTNAPP4             1238
-RTNAPP5             1242
-RTNAPP6             124C
-RTNAPP7             1256
-RTNLEAERRCHK        12DA
-RTN_LEAAPP          107C
-RTN_LEANUMLET       111C
-RTN_SAPP            11BE
-RTN_WORL            1096
-SAPP0               11C0
-SAPP1               11C8
-SAPP2               11D0
-SAPP3               11D8
-SAPP4               11E0
-SAPP5               11E8
-SAPP6               11F0
-SAPP7               11F8
+GETLEADREG          12A2
+GETLEASMODE         12C8
+GETLEASREG          12B4
+ISLEA               102A
+LEAADD48            1142
+LEAADD55            1148
+LEAAPPAI            1198
+LEAAPPSOURCE        108C
+LEACHKREGERR        1324
+LEACLEAR            1060
+LEACONVERTWORD      10D8
+LEAERROR            1364
+LEAERRORCHK         12DC
+LEAGETAN            11B6
+LEALONG             116E
+LEANUMORLETT        110A
+LEARTN              105E
+LEAWORD             10BE
+LEAWORDPARSE        1150
+LEAWORL             10A2
+RTNAPP0             1258
+RTNAPP1             1262
+RTNAPP2             126C
+RTNAPP3             1276
+RTNAPP4             1280
+RTNAPP5             128A
+RTNAPP6             1294
+RTNAPP7             129E
+RTNLEAERRCHK        1322
+RTN_LEAAPP          10A0
+RTN_LEANUMLET       1140
+RTN_SAPP            1206
+RTN_WORL            10BA
+SAPP0               1208
+SAPP1               1210
+SAPP2               1218
+SAPP3               1220
+SAPP4               1228
+SAPP5               1230
+SAPP6               1238
+SAPP7               1240
 START               1000
 TAB                 9
