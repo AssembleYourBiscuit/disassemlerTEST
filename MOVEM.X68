@@ -8,9 +8,10 @@
 START:                  ; first instruction of program
 
 * Put program code here
-    MOVEM.L     $00, D0-D7
+    movea.l     #$09000, a2
+    MOVEM.l     d0/D2/D5/A1, -(a1)
     MOVEA.L  #$08000, A6
-    MOVE.L  #$48F800FF, (A6)
+    MOVE.L  #$48e2EfFF, (A6)
     JSR         ISMOVEMB
 DIE MOVE.B      #9, D0
     TRAP        #15
@@ -41,31 +42,39 @@ REGTOMEMI
                 
 APPLISTRTM      CMPI.B  #4, D5
                 BEQ     BACKWARDLIST
+                CLR     D0
+                CLR     D1
+                CLR     D2
 RTN_LIST        RTS
 
-BACKWARDLIST    MOVE.B  #8, D1
-                LSL.W   #1, D3
-                BCS     APPENDD
-                ADDI.B  #1, D0
-                MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
+BACKWARDLIST    MOVE.B  #15, D1
 BCKWRDLOOP      LSL.W   #1, D3
-                BCS     APPENDD
-                ADDI.B  #1, D0
-RTN_APPD        CMP     D0, D1
+                BCS     APPENDDORA
+RTN_APPD        ADDI.B  #1, D0
+                CMP     D1, D0
                 BLT     BCKWRDLOOP
                 JMP     RTN_LIST 
                 
-APPENDD         MOVE.B  'D', (A2)+
-                ADDI.B  #30, D2
+APPENDDORA      CMPI.B  #7, D0
+                BGT     APPA
+                MOVE.B  #'D', (A2)+
+                ADDI.B  #48, D2
                 ADD.B   D0, D2
                 MOVE.B  D2, (A2)+
-                CMP.L   #0, D3
+RTN_APPA        CMP.W   #$8000, D3
                 BNE     APPENDSLASH
 RTN_SLASH       CLR     D2
                 JMP     RTN_APPD
                 
 APPENDSLASH     MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
                 JMP     RTN_SLASH 
+                
+APPA           MOVE.B  #'A', (A2)+
+                ADDI.B  #41, D2
+                ADD.B   D0, D2
+                MOVE.B  D2, (A2)+
+                JMP     RTN_APPA
+
 
 GETLISTMASK     MOVE.W  (A6)+, D3  
                 RTS     
@@ -102,6 +111,8 @@ MOVEMCLRREG    CLR      D0
 
 
     END    START        ; last line of source
+
+
 
 *~Font name~Courier New~
 *~Font size~10~
