@@ -7,10 +7,11 @@
                 ORG    $1000
     
 START:          MOVE.L  #$7000, A6      ;THESE ARE FOR TESTING! (NEED TO BE REMOVED AFTER DONE)
-                MOVE.L  #$3200, (A6)    
+                MOVE.L  #$5B40, (A6)
+                MOVEA.L #$10000, A2     ;INITIATE STARTING LOCATION FOR OUTPUT MEMORY REGION    
                 
 *----------------------------------------------------------------------------------------------------
-* DISASSEMBLIE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE
+* DISASSEMBLIE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE TO MNEMONIC INSTRUCTION
 * PRECONDITION: - D2, D3, AND A2 MUST NOT BE IN USED
 *               - A6 STORING AN APPROPRIATE STARTING ADDRESS
 * POSTCONDITION: - IF THE INSTRUCTION IS IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE STORED
@@ -18,128 +19,132 @@ START:          MOVE.L  #$7000, A6      ;THESE ARE FOR TESTING! (NEED TO BE REMO
 *                - IF THE INSTRUCTION IS NOT IN THE REQUIREMENT, FOR NOW IT WILL BE IGNORED
 *----------------------------------------------------------------------------------------------------
 
-DISASSEMBLE     MOVEA.L #$A000, A2      ;INITIATE STARTING LOCATION FOR OUTPUT MEMORY REGION  
-                MOVE.L  (A6), D2        ;RETRIEVE HEXADECIMAL INSTRUCTION FROM ADDRESS POINTED BY A6
-                MOVE.L  D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+DISASSEMBLE     MOVE.L  (A6), D2        ;RETRIEVE ORIGINAL INSTRUCTION TO D2 (NO CHANGE ALLOWED)
+                MOVE.L  D2, D3          ;COPY ORIGINAL INSTRUCTION TO D3 (CHANGE ALLOW)
 
                 LSR     #8, D3          ;GET THE FIRST 4 BITS
-                LSR     #4, D3          
-                JSR     MAINTABLE
+                LSR     #4, D3
+                MULU    #6, D3
                 
-*----------------------------------------------------------------------------------------------------
-* MAINTABLE: JUMP TABLE FOR THE FIRST 4 BITS IN THE HEXADECIMAL INSTRUCTION TO DETERMIND TYPES OF
-*            OPCODES
-*----------------------------------------------------------------------------------------------------
-MAINTABLE       ;JSR     CODE0000
-                JSR     CODE0001
-                JSR     CODE0010
-                JSR     CODE0011
-                ;JSR     CODE0100
-                ;JSR     CODE0101
-                ;JSR     CODE0110
-                ;JSR     CODE1000
-                ;JSR     CODE1001
-                ;JSR     CODE1011
-                ;JSR     CODE1100
-                ;JSR     CODE1101
-                ;JSR     CODE1110
+                LEA     MAINTABLE, A3   ;LOAD INDEX INTO THE TABLE
+                JSR     0(A3, D3)       ;JUMP INDIRECT WITH INDEX
                 RTS
-   
+                                
 *----------------------------------------------------------------------------------------------------
-* CODE0000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0000 INTO BCLR OR CMPI INSTRUCTION
+* MAINTABLE: THIS IS A PRIMARY JUMP TABLE FOR DETERMINING TYPES OF OPCODES INSTRUCTION BY LOOKING  AT
+*            THE FIRST 4 BITS IN THE HEXADECIMAL INSTRUCTION 
 *----------------------------------------------------------------------------------------------------
-CODE0000        CMPI.W      #%0000, D3      ;CHECK IF THE FIRST 4 BITS ARE 0000
-                BEQ         RETURN0000
-                MOVE.L      D2,D3
+MAINTABLE       JMP     CODE0000
+                JMP     CODE0001
+                JMP     CODE0010
+                JMP     CODE0011
+                JMP     CODE0100
+                JMP     CODE0101
+                JMP     CODE0110
+                JMP     CODE1000
+                JMP     CODE1001
+                JMP     CODE1011
+                JMP     CODE1100
+                JMP     CODE1101
+                JMP     CODE1110
+FINISHE         RTS
+
+*----------------------------------------------------------------------------------------------------
+* CODE0000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0000 INTO BCLR, ORI, OR CMPI
+*           INSTRUCTION
+*----------------------------------------------------------------------------------------------------
+CODE0000        MOVE.L      D2, D3
                 LSL         #4, D3
                 LSR         #8, D3
-                
-                
-RETURN0000      RTS
-; NEED A JUMP TABLE TO DETERMIND EITHER THIS IS A BCLR OR CMPI
-; - BCLR
-; - CMPI
-; - ORI
+                BRA         FINISHE
 
-;TABLE0000   JSR             BCLR1
-;            JSR             CMPI
-;            JSR             ORI
+
+TABLE0000      JMP         ORI
+               JMP         CMPI
+               JMP         ORI
             
-;BCLR    
+ORI             MOVE.B      #'O', (A2)+
+                MOVE.B      #'R', (A2)+
+                MOVE.B      #'I', (A2)+
+                MOVE.B      #'.', (A2)+
+                JSR         GET_SIZE
+                ;JSR         ISORI
+
+CMPI            MOVE.B      #'C', (A2)+
+                MOVE.B      #'M', (A2)+
+                MOVE.B      #'P', (A2)+
+                MOVE.B      #'I', (A2)+
+                MOVE.B      #'.', (A2)+
+                JSR         GET_SIZE
+                ;JSR         ISCMPI
+                
+;BCLR                
 
 *----------------------------------------------------------------------------------------------------
 * CODE0001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0001 INTO MOVE.B INSTRUCTION
 *----------------------------------------------------------------------------------------------------
-CODE0001        CMPI.W      #%0001, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-                BNE         RETURN0001
-                MOVE.B      #'M', (A2)+
+CODE0001        MOVE.B      #'M', (A2)+
                 MOVE.B      #'O', (A2)+
                 MOVE.B      #'V', (A2)+
                 MOVE.B      #'E', (A2)+
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'B', (A2)+
                 ;JSR         ISMOVEB
-RETURN0001      RTS
+                BRA         FINISHE
            
 *----------------------------------------------------------------------------------------------------
 * CODE0010: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0010 INTO MOVE.L OR MOVEA.L
 *           INSTRUCTION
 *----------------------------------------------------------------------------------------------------
-
-CODE0010        CMPI.W      #%0010, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0010
-                BNE         RETURN0010      
-                MOVE.B      #'M', (A2)+
+CODE0010        MOVE.B      #'M', (A2)+
                 MOVE.B      #'O', (A2)+
                 MOVE.B      #'V', (A2)+
                 MOVE.B      #'E', (A2)+
-                BRA         MOVEAL
-RETURN0010      RTS
+                JSR         MOVEAL
+                BRA         FINISHE
 
 MOVEL           MOVE.B      #'.', (A2)+
                 MOVE.B      #'L', (A2)+
                 ;JSR         ISMOVEL
-                BRA         RETURN0010
+                RTS
           
-MOVEAL          MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+MOVEAL          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
                 LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
                 LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
                 CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
                 BNE         MOVEL           ;IF THE INSTRUCTION IS NOT MOVEA, IT MUST BE MOVE
-                MOVE.B      #'A',(A2)+
+                MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'L', (A2)+
                 ;JSR         ISMOVEAL
-                BRA         RETURN0010
-
+                RTS
 
 *----------------------------------------------------------------------------------------------------
 * CODE0011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0011 INTO MOVE.W OR MOVEA.W
 *           INSTRUCTION
 *----------------------------------------------------------------------------------------------------
-CODE0011        CMPI.W      #%0011, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0011
-                BNE         RETURN0011
-                MOVE.B      #'M', (A2)+
+CODE0011        MOVE.B      #'M', (A2)+
                 MOVE.B      #'O', (A2)+
                 MOVE.B      #'V', (A2)+
                 MOVE.B      #'E', (A2)+
-                BRA         MOVEAW
-RETURN0011      RTS
+                JSR         MOVEAW
+                BRA         FINISHE
 
 MOVEW           MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
                 ;JSR         ISMOVEW
-                BRA         RETURN0011
+                RTS
           
-MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
                 LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
                 LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
                 CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
                 BNE         MOVEW           ;IF THE INSTRUCTION ISNOT MOVEA, IT MUST BE MOVE
-                MOVE.B      #'A',(A2)+
+                MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
                 ;JSR         ISMOVEAW
-                BRA         RETURN0011
+                RTS
 
 *---------------------------------------------------------------------
 * CODE0100: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0100
@@ -158,21 +163,15 @@ CODE0100
 * CODE0101: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0101
 *           INTO SUBQ INSTRUCTION
 *---------------------------------------------------------------------
-CODE0101        CMPI.W      #%0101, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-                BEQ         SUBQ
-RETURN0101      RTS
-     
-SUBQ            MOVE.B      #'S', (A2)+
+CODE0101        MOVE.B      #'S', (A2)+
                 MOVE.B      #'U', (A2)+
                 MOVE.B      #'B', (A2)+
                 MOVE.B      #'Q', (A2)+
                 MOVE.B      #'.', (A2)+
-GETTYPE         MOVE.L      D2, D3          ;RETRIEVE THE FULL HEXADECIMAL INSTRUCTION
-                LSL         #8, D3          ;SHIFT TO THE LEFT 8 BITS
-                LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
-                JSR         TABLESIZE
-                ;JSR         EAMOVEB
-                BRA         RETURN0001
+                
+                JSR         GET_SIZE
+                ;JSR         EASUBQ
+                BRA         FINISHE
 
 *---------------------------------------------------------------------
 * CODE0110: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0110
@@ -190,20 +189,23 @@ CODE0110
 *----------------------------------------------------------------------------------------------------
 * CODE1000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1000 INTO OR INSTRUCTION
 *----------------------------------------------------------------------------------------------------
-CODE1000        CMPI.W      #%1000, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-                BNE         RETURN1000
-                MOVE.B      #'O', (A6)+
-                MOVE.B      #'R', (A6)+
+CODE1000        MOVE.B      #'O', (A2)+
+                MOVE.B      #'R', (A2)+
+                MOVE.B      #'.', (A2)+
+                JSR         GET_OPMODE
                 ;JSR        ISOR
 RETURN1000      RTS
 
-*---------------------------------------------------------------------
-* CODE1001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1001
-*           INTO SUB INSTRUCTION
-*---------------------------------------------------------------------
-CODE1001
-; SUB
-
+*----------------------------------------------------------------------------------------------------
+* CODE1001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1001 INTO SUB INSTRUCTION
+*----------------------------------------------------------------------------------------------------
+CODE1001        MOVE.B      #'S', (A2)+
+                MOVE.B      #'U', (A2)+
+                MOVE.B      #'B', (A2)+
+                MOVE.B      #'.', (A2)+
+                JSR         GET_OPMODE
+                ;JSR        ISSUB
+RETURN1001      RTS
 *---------------------------------------------------------------------
 * CODE1011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1011
 *           INTO EOR OR CMP INSTRUCTION
@@ -240,41 +242,76 @@ CODE1110
 ; ROL
 ; ROR
 
-TABLEOPMODE
 
 *----------------------------------------------------------------------------------------------------
-* TABLESIZE : THIS IS A JUMP TABLE USED FOR DETERMINDING THE SIZE OF THE INSTRUCTION
+* GET_OPMODE: THIS IS FUNCTION FOR DETERMINDING THE OPMODE OF THE INSTRUCTION (NOT YET COMPLETE)
 *----------------------------------------------------------------------------------------------------
+GET_OPMODE      MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+                LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
+                LSR         #4, D3          ;SHIFT TO THE RIGHT 4 BITS
+                LSR         #7, D3          ;SHIFT TO THE RIGHT 7 BITS
+                MULU        #6, D3
+                
+                LEA         TABLEOPMODE, A3
+                JSR         0(A3, D3)
+                RTS
+  
+TABLEOPMODE     JSR         MODE_BYTE2
+                JSR         MODE_WORD2
+                JSR         MODE_LONG2
+                JSR         MODE_BYTE3
+                JSR         MODE_WORD3
+                JSR         MODE_LONG3
+RETURN_OPMODE   RTS
+                
+MODE_BYTE2      MOVE.B      #'B', (A2)+
+                BRA         RETURN_OPMODE
 
-TABLESIZE       JSR     BYTESIZE
-                JSR     WORDSIZE
-                JSR     LONGSIZE
-RETURNSIZE      RTS
+MODE_WORD2      MOVE.B      #'W', (A2)+
+                BRA         RETURN_OPMODE
+
+MODE_LONG2      MOVE.B      #'L', (A2)+
+                BRA         RETURN_OPMODE
+
+MODE_BYTE3      MOVE.B      #'B', (A2)+
+                BRA         RETURN_OPMODE
+
+MODE_WORD3      MOVE.B      #'W', (A2)+
+                BRA         RETURN_OPMODE
                 
-BYTESIZE        CMPI.W      #%01, D3
-                BNE         RETURNSIZE
-                MOVE.B      #'B', (A2)+
-                RTS
+MODE_LONG3      MOVE.B      #'L', (A2)+
+                BRA         RETURN_OPMODE
                 
-WORDSIZE        CMPI.W      #%11, D3
-                BNE         RETURNSIZE
-                MOVE.B      #'W', (A2)+
-                RTS
+*----------------------------------------------------------------------------------------------------
+* GET_SIZE : THIS IS A FUNCTION FOR DETERMINDING THE SIZE OF THE INSTRUCTION
+*----------------------------------------------------------------------------------------------------
+GET_SIZE        MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+                LSL         #8, D3          ;SHIFT TO THE LEFT 8 BITS
+                LSR         #6, D3          ;SHIFT TO THE RIGHT 6 BITS
+                LSR         #8, D3          ;SHIFT TO THE RIGHT 8 BITS
+                MULU        #6, D3
                 
-LONGSIZE        CMPI.W      #%10, D3
-                BNE         RETURNSIZE
-                MOVE.B      #'L', (A2)+
+                LEA         TABLESIZE, A3
+                JSR         0(A3, D3)
                 RTS
+
+TABLESIZE       JMP         SIZE_BYTE1
+                JMP         SIZE_WORD1
+                JMP         SIZE_LONG1
+RETURN_SIZE     RTS
+                
+SIZE_BYTE1      MOVE.B      #'B', (A2)+
+                BRA         RETURN_SIZE
+                
+SIZE_WORD1      MOVE.B      #'W', (A2)+
+                BRA         RETURN_SIZE
+                
+SIZE_LONG1      MOVE.B      #'L', (A2)+
+                BRA         RETURN_SIZE
+                
+                
 
                 END    START        ; last line of source
-
-
-
-
-
-
-
-
 
 
 *~Font name~Courier New~
