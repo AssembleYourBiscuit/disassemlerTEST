@@ -1,6 +1,6 @@
 00001000 Starting Address
 Assembler used: EASy68K Editor/Assembler v5.15.02
-Created On: 5/16/2015 10:35:30 AM
+Created On: 5/17/2015 7:19:25 PM
 
 00000000                             1  *----------------------------------------------------------------------------------------------------
 00000000                             2  * Title      : OP-CODE PROGRAM
@@ -11,266 +11,310 @@ Created On: 5/16/2015 10:35:30 AM
 00001000                             7                  ORG    $1000
 00001000                             8      
 00001000  2C7C 00007000              9  START:          MOVE.L  #$7000, A6      ;THESE ARE FOR TESTING! (NEED TO BE REMOVED AFTER DONE)
-00001006  2CBC 00003200             10                  MOVE.L  #$3200, (A6)    
-0000100C                            11                  
-0000100C                            12  *----------------------------------------------------------------------------------------------------
-0000100C                            13  * DISASSEMBLIE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE
-0000100C                            14  * PRECONDITION: - D2, D3, AND A2 MUST NOT BE IN USED
-0000100C                            15  *               - A6 STORING AN APPROPRIATE STARTING ADDRESS
-0000100C                            16  * POSTCONDITION: - IF THE INSTRUCTION IS IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE STORED
-0000100C                            17  *                  IN OUTPUT MEMORY REGION POINTED BY A2
-0000100C                            18  *                - IF THE INSTRUCTION IS NOT IN THE REQUIREMENT, FOR NOW IT WILL BE IGNORED
-0000100C                            19  *----------------------------------------------------------------------------------------------------
-0000100C                            20  
-0000100C  247C 0000A000             21  DISASSEMBLE     MOVEA.L #$A000, A2      ;INITIATE STARTING LOCATION FOR OUTPUT MEMORY REGION  
-00001012  2416                      22                  MOVE.L  (A6), D2        ;RETRIEVE HEXADECIMAL INSTRUCTION FROM ADDRESS POINTED BY A6
-00001014  2602                      23                  MOVE.L  D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+00001006  2CBC 00005B40             10                  MOVE.L  #$5B40, (A6)
+0000100C  247C 00010000             11                  MOVEA.L #$10000, A2     ;INITIATE STARTING LOCATION FOR OUTPUT MEMORY REGION    
+00001012                            12                  
+00001012                            13  *----------------------------------------------------------------------------------------------------
+00001012                            14  * DISASSEMBLIE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE TO MNEMONIC INSTRUCTION
+00001012                            15  * PRECONDITION: - D2, D3, AND A2 MUST NOT BE IN USED
+00001012                            16  *               - A6 STORING AN APPROPRIATE STARTING ADDRESS
+00001012                            17  * POSTCONDITION: - IF THE INSTRUCTION IS IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE STORED
+00001012                            18  *                  IN OUTPUT MEMORY REGION POINTED BY A2
+00001012                            19  *                - IF THE INSTRUCTION IS NOT IN THE REQUIREMENT, FOR NOW IT WILL BE IGNORED
+00001012                            20  *----------------------------------------------------------------------------------------------------
+00001012                            21  
+00001012  2416                      22  DISASSEMBLE     MOVE.L  (A6), D2        ;RETRIEVE ORIGINAL INSTRUCTION TO D2 (NO CHANGE ALLOWED)
+00001014  2602                      23                  MOVE.L  D2, D3          ;COPY ORIGINAL INSTRUCTION TO D3 (CHANGE ALLOW)
 00001016                            24  
 00001016  E04B                      25                  LSR     #8, D3          ;GET THE FIRST 4 BITS
-00001018  E84B                      26                  LSR     #4, D3          
-0000101A  4EB9 00001020             27                  JSR     MAINTABLE
-00001020                            28                  
-00001020                            29  *----------------------------------------------------------------------------------------------------
-00001020                            30  * MAINTABLE: JUMP TABLE FOR THE FIRST 4 BITS IN THE HEXADECIMAL INSTRUCTION TO DETERMIND TYPES OF
-00001020                            31  *            OPCODES
-00001020                            32  *----------------------------------------------------------------------------------------------------
-00001020                            33  MAINTABLE       ;JSR     CODE0000
-00001020  4EB9 00001044             34                  JSR     CODE0001
-00001026  4EB9 00001066             35                  JSR     CODE0010
-0000102C  4EB9 000010A8             36                  JSR     CODE0011
-00001032                            37                  ;JSR     CODE0100
-00001032                            38                  ;JSR     CODE0101
-00001032                            39                  ;JSR     CODE0110
-00001032                            40                  ;JSR     CODE1000
-00001032                            41                  ;JSR     CODE1001
-00001032                            42                  ;JSR     CODE1011
-00001032                            43                  ;JSR     CODE1100
-00001032                            44                  ;JSR     CODE1101
-00001032                            45                  ;JSR     CODE1110
-00001032  4E75                      46                  RTS
-00001034                            47     
-00001034                            48  *----------------------------------------------------------------------------------------------------
-00001034                            49  * CODE0000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0000 INTO BCLR OR CMPI INSTRUCTION
-00001034                            50  *----------------------------------------------------------------------------------------------------
-00001034  0C43 0000                 51  CODE0000        CMPI.W      #%0000, D3      ;CHECK IF THE FIRST 4 BITS ARE 0000
-00001038  6700 0008                 52                  BEQ         RETURN0000
-0000103C  2602                      53                  MOVE.L      D2,D3
-0000103E  E94B                      54                  LSL         #4, D3
-00001040  E04B                      55                  LSR         #8, D3
-00001042                            56                  
-00001042                            57                  
-00001042  4E75                      58  RETURN0000      RTS
-00001044                            59  ; NEED A JUMP TABLE TO DETERMIND EITHER THIS IS A BCLR OR CMPI
-00001044                            60  ; - BCLR
-00001044                            61  ; - CMPI
-00001044                            62  ; - ORI
-00001044                            63  
-00001044                            64  ;TABLE0000   JSR             BCLR1
-00001044                            65  ;            JSR             CMPI
-00001044                            66  ;            JSR             ORI
-00001044                            67              
-00001044                            68  ;BCLR    
-00001044                            69  
-00001044                            70  *----------------------------------------------------------------------------------------------------
-00001044                            71  * CODE0001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0001 INTO MOVE.B INSTRUCTION
-00001044                            72  *----------------------------------------------------------------------------------------------------
-00001044  0C43 0001                 73  CODE0001        CMPI.W      #%0001, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-00001048  6600 001A                 74                  BNE         RETURN0001
-0000104C  14FC 004D                 75                  MOVE.B      #'M', (A2)+
-00001050  14FC 004F                 76                  MOVE.B      #'O', (A2)+
-00001054  14FC 0056                 77                  MOVE.B      #'V', (A2)+
-00001058  14FC 0045                 78                  MOVE.B      #'E', (A2)+
-0000105C  14FC 002E                 79                  MOVE.B      #'.', (A2)+
-00001060  14FC 0042                 80                  MOVE.B      #'B', (A2)+
-00001064                            81                  ;JSR         ISMOVEB
-00001064  4E75                      82  RETURN0001      RTS
-00001066                            83             
-00001066                            84  *----------------------------------------------------------------------------------------------------
-00001066                            85  * CODE0010: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0010 INTO MOVE.L OR MOVEA.L
-00001066                            86  *           INSTRUCTION
-00001066                            87  *----------------------------------------------------------------------------------------------------
-00001066                            88  
-00001066  0C43 0002                 89  CODE0010        CMPI.W      #%0010, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0010
-0000106A  6600 0016                 90                  BNE         RETURN0010      
-0000106E  14FC 004D                 91                  MOVE.B      #'M', (A2)+
-00001072  14FC 004F                 92                  MOVE.B      #'O', (A2)+
-00001076  14FC 0056                 93                  MOVE.B      #'V', (A2)+
-0000107A  14FC 0045                 94                  MOVE.B      #'E', (A2)+
-0000107E  6000 000E                 95                  BRA         MOVEAL
-00001082  4E75                      96  RETURN0010      RTS
-00001084                            97  
-00001084  14FC 002E                 98  MOVEL           MOVE.B      #'.', (A2)+
-00001088  14FC 004C                 99                  MOVE.B      #'L', (A2)+
-0000108C                           100                  ;JSR         ISMOVEL
-0000108C  60F4                     101                  BRA         RETURN0010
-0000108E                           102            
-0000108E  2602                     103  MOVEAL          MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
-00001090  EF4B                     104                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
-00001092  E84B                     105                  LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
-00001094  0C43 0001                106                  CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
-00001098  66EA                     107                  BNE         MOVEL           ;IF THE INSTRUCTION IS NOT MOVEA, IT MUST BE MOVE
-0000109A  14FC 0041                108                  MOVE.B      #'A',(A2)+
-0000109E  14FC 002E                109                  MOVE.B      #'.', (A2)+
-000010A2  14FC 004C                110                  MOVE.B      #'L', (A2)+
-000010A6                           111                  ;JSR         ISMOVEAL
-000010A6  60DA                     112                  BRA         RETURN0010
-000010A8                           113  
-000010A8                           114  
-000010A8                           115  *----------------------------------------------------------------------------------------------------
-000010A8                           116  * CODE0011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0011 INTO MOVE.W OR MOVEA.W
-000010A8                           117  *           INSTRUCTION
-000010A8                           118  *----------------------------------------------------------------------------------------------------
-000010A8  0C43 0003                119  CODE0011        CMPI.W      #%0011, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0011
-000010AC  6600 0016                120                  BNE         RETURN0011
-000010B0  14FC 004D                121                  MOVE.B      #'M', (A2)+
-000010B4  14FC 004F                122                  MOVE.B      #'O', (A2)+
-000010B8  14FC 0056                123                  MOVE.B      #'V', (A2)+
-000010BC  14FC 0045                124                  MOVE.B      #'E', (A2)+
-000010C0  6000 000E                125                  BRA         MOVEAW
-000010C4  4E75                     126  RETURN0011      RTS
-000010C6                           127  
-000010C6  14FC 002E                128  MOVEW           MOVE.B      #'.', (A2)+
-000010CA  14FC 0057                129                  MOVE.B      #'W', (A2)+
-000010CE                           130                  ;JSR         ISMOVEW
-000010CE  60F4                     131                  BRA         RETURN0011
-000010D0                           132            
-000010D0  2602                     133  MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
-000010D2  EF4B                     134                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
-000010D4  E84B                     135                  LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
-000010D6  0C43 0001                136                  CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
-000010DA  66EA                     137                  BNE         MOVEW           ;IF THE INSTRUCTION ISNOT MOVEA, IT MUST BE MOVE
-000010DC  14FC 0041                138                  MOVE.B      #'A',(A2)+
-000010E0  14FC 002E                139                  MOVE.B      #'.', (A2)+
-000010E4  14FC 0057                140                  MOVE.B      #'W', (A2)+
-000010E8                           141                  ;JSR         ISMOVEAW
-000010E8  60DA                     142                  BRA         RETURN0011
-000010EA                           143  
-000010EA                           144  *---------------------------------------------------------------------
-000010EA                           145  * CODE0100: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0100
-000010EA                           146  *           INTO MOVEM, DIVS, LEA, NEG, JSR, OR RTS INSTRUCTION
-000010EA                           147  *---------------------------------------------------------------------
-000010EA                           148  CODE0100
-000010EA                           149  ; NEED A JUMP TABLE TO DETERMIND THIS:
-000010EA                           150  ; - MOVEM
-000010EA                           151  ; - DIVS
-000010EA                           152  ; - LEA
-000010EA                           153  ; - NEG
-000010EA                           154  ; - JSR
-000010EA                           155  ; - RTS
-000010EA                           156  
-000010EA                           157  *---------------------------------------------------------------------
-000010EA                           158  * CODE0101: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0101
-000010EA                           159  *           INTO SUBQ INSTRUCTION
-000010EA                           160  *---------------------------------------------------------------------
-000010EA  0C43 0005                161  CODE0101        CMPI.W      #%0101, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-000010EE  6700 0004                162                  BEQ         SUBQ
-000010F2  4E75                     163  RETURN0101      RTS
-000010F4                           164       
-000010F4  14FC 0053                165  SUBQ            MOVE.B      #'S', (A2)+
-000010F8  14FC 0055                166                  MOVE.B      #'U', (A2)+
-000010FC  14FC 0042                167                  MOVE.B      #'B', (A2)+
-00001100  14FC 0051                168                  MOVE.B      #'Q', (A2)+
-00001104  14FC 002E                169                  MOVE.B      #'.', (A2)+
-00001108  2602                     170  GETTYPE         MOVE.L      D2, D3          ;RETRIEVE THE FULL HEXADECIMAL INSTRUCTION
-0000110A  E14B                     171                  LSL         #8, D3          ;SHIFT TO THE LEFT 8 BITS
-0000110C  E84B                     172                  LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
-0000110E  4EB9 0000112A            173                  JSR         TABLESIZE
-00001114                           174                  ;JSR         EAMOVEB
-00001114  6000 FF4E                175                  BRA         RETURN0001
-00001118                           176  
-00001118                           177  *---------------------------------------------------------------------
-00001118                           178  * CODE0110: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0110
-00001118                           179  *           INTO OR BCC, BCS, BGE, BLT, BVC, OR BRA INSTRUCTION
-00001118                           180  *---------------------------------------------------------------------
-00001118                           181  CODE0110
-00001118                           182  ; NEED A JUMP TABLE TO DETERMIND EITHER THIS IS A BCLR OR CMPI
-00001118                           183  ; - BCC
-00001118                           184  ; - BCS
-00001118                           185  ; - BGE
-00001118                           186  ; - BLT
-00001118                           187  ; - BVC
-00001118                           188  ; - BRA
-00001118                           189  
-00001118                           190  *----------------------------------------------------------------------------------------------------
-00001118                           191  * CODE1000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1000 INTO OR INSTRUCTION
-00001118                           192  *----------------------------------------------------------------------------------------------------
-00001118  0C43 0008                193  CODE1000        CMPI.W      #%1000, D3      ;CHECK IF THE FIRST 4 DIGITS IS 0001
-0000111C  6600 000A                194                  BNE         RETURN1000
-00001120  1CFC 004F                195                  MOVE.B      #'O', (A6)+
-00001124  1CFC 0052                196                  MOVE.B      #'R', (A6)+
-00001128                           197                  ;JSR        ISOR
-00001128  4E75                     198  RETURN1000      RTS
-0000112A                           199  
-0000112A                           200  *---------------------------------------------------------------------
-0000112A                           201  * CODE1001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1001
-0000112A                           202  *           INTO SUB INSTRUCTION
-0000112A                           203  *---------------------------------------------------------------------
-0000112A                           204  CODE1001
-0000112A                           205  ; SUB
-0000112A                           206  
-0000112A                           207  *---------------------------------------------------------------------
-0000112A                           208  * CODE1011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1011
-0000112A                           209  *           INTO EOR OR CMP INSTRUCTION
-0000112A                           210  *---------------------------------------------------------------------
-0000112A                           211  CODE1011
-0000112A                           212  ; EOR
-0000112A                           213  ; CMP
-0000112A                           214  
-0000112A                           215  
-0000112A                           216  *---------------------------------------------------------------------
-0000112A                           217  * CODE1100: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1100
-0000112A                           218  *           INTO MUL INSTRUCTION
-0000112A                           219  *---------------------------------------------------------------------
-0000112A                           220  CODE1100
-0000112A                           221  ;MULS
-0000112A                           222  
-0000112A                           223  *---------------------------------------------------------------------
-0000112A                           224  * CODE1101: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1101
-0000112A                           225  *           INTO ADDA INSTRUCTION
-0000112A                           226  *---------------------------------------------------------------------
-0000112A                           227  CODE1101
-0000112A                           228  ; ADD
-0000112A                           229  ; ADDA
-0000112A                           230  
-0000112A                           231  *---------------------------------------------------------------------
-0000112A                           232  * CODE1110: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1110
-0000112A                           233  *           INTO LSR, LSL, ASR, ASL, ROL, OR ROR INSTRUCTION
-0000112A                           234  *---------------------------------------------------------------------
-0000112A                           235  CODE1110
-0000112A                           236  ; LSR
-0000112A                           237  ; LSL
-0000112A                           238  ; ASR
-0000112A                           239  ; ASL
-0000112A                           240  ; ROL
-0000112A                           241  ; ROR
-0000112A                           242  
-0000112A                           243  TABLEOPMODE
-0000112A                           244  
-0000112A                           245  *----------------------------------------------------------------------------------------------------
-0000112A                           246  * TABLESIZE : THIS IS A JUMP TABLE USED FOR DETERMINDING THE SIZE OF THE INSTRUCTION
-0000112A                           247  *----------------------------------------------------------------------------------------------------
-0000112A                           248  
-0000112A  4EB9 0000113E            249  TABLESIZE       JSR     BYTESIZE
-00001130  4EB9 0000114A            250                  JSR     WORDSIZE
-00001136  4EB9 00001156            251                  JSR     LONGSIZE
-0000113C  4E75                     252  RETURNSIZE      RTS
-0000113E                           253                  
-0000113E  0C43 0001                254  BYTESIZE        CMPI.W      #%01, D3
-00001142  66F8                     255                  BNE         RETURNSIZE
-00001144  14FC 0042                256                  MOVE.B      #'B', (A2)+
-00001148  4E75                     257                  RTS
-0000114A                           258                  
-0000114A  0C43 0003                259  WORDSIZE        CMPI.W      #%11, D3
-0000114E  66EC                     260                  BNE         RETURNSIZE
-00001150  14FC 0057                261                  MOVE.B      #'W', (A2)+
-00001154  4E75                     262                  RTS
-00001156                           263                  
-00001156  0C43 0002                264  LONGSIZE        CMPI.W      #%10, D3
-0000115A  66E0                     265                  BNE         RETURNSIZE
-0000115C  14FC 004C                266                  MOVE.B      #'L', (A2)+
-00001160  4E75                     267                  RTS
-00001162                           268  
-00001162                           269                  END    START        ; last line of source
+00001018  E84B                      26                  LSR     #4, D3
+0000101A  C6FC 0006                 27                  MULU    #6, D3
+0000101E                            28                  
+0000101E  47F9 0000102A             29                  LEA     MAINTABLE, A3   ;LOAD INDEX INTO THE TABLE
+00001024  4EB3 3000                 30                  JSR     0(A3, D3)       ;JUMP INDIRECT WITH INDEX
+00001028  4E75                      31                  RTS
+0000102A                            32                                  
+0000102A                            33  *----------------------------------------------------------------------------------------------------
+0000102A                            34  * MAINTABLE: THIS IS A PRIMARY JUMP TABLE FOR DETERMINING TYPES OF OPCODES INSTRUCTION BY LOOKING  AT
+0000102A                            35  *            THE FIRST 4 BITS IN THE HEXADECIMAL INSTRUCTION 
+0000102A                            36  *----------------------------------------------------------------------------------------------------
+0000102A  4EF9 0000107A             37  MAINTABLE       JMP     CODE0000
+00001030  4EF9 000010C4             38                  JMP     CODE0001
+00001036  4EF9 000010DE             39                  JMP     CODE0010
+0000103C  4EF9 0000111A             40                  JMP     CODE0011
+00001042  4EF9 00001158             41                  JMP     CODE0100
+00001048  4EF9 00001158             42                  JMP     CODE0101
+0000104E  4EF9 00001176             43                  JMP     CODE0110
+00001054  4EF9 00001176             44                  JMP     CODE1000
+0000105A  4EF9 00001180             45                  JMP     CODE1001
+00001060  4EF9 00001198             46                  JMP     CODE1011
+00001066  4EF9 00001198             47                  JMP     CODE1100
+0000106C  4EF9 00001198             48                  JMP     CODE1101
+00001072  4EF9 00001198             49                  JMP     CODE1110
+00001078  4E75                      50  FINISHE         RTS
+0000107A                            51  
+0000107A                            52  *----------------------------------------------------------------------------------------------------
+0000107A                            53  * CODE0000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0000 INTO BCLR, ORI, OR CMPI
+0000107A                            54  *           INSTRUCTION
+0000107A                            55  *----------------------------------------------------------------------------------------------------
+0000107A  2602                      56  CODE0000        MOVE.L      D2, D3
+0000107C  E94B                      57                  LSL         #4, D3
+0000107E  E04B                      58                  LSR         #8, D3
+00001080  60F6                      59                  BRA         FINISHE
+00001082                            60  
+00001082                            61  
+00001082  4EF9 00001094             62  TABLE0000      JMP         ORI
+00001088  4EF9 000010AA             63                 JMP         CMPI
+0000108E  4EF9 00001094             64                 JMP         ORI
+00001094                            65              
+00001094  14FC 004F                 66  ORI             MOVE.B      #'O', (A2)+
+00001098  14FC 0052                 67                  MOVE.B      #'R', (A2)+
+0000109C  14FC 0049                 68                  MOVE.B      #'I', (A2)+
+000010A0  14FC 002E                 69                  MOVE.B      #'.', (A2)+
+000010A4  4EB9 000011FA             70                  JSR         GET_SIZE
+000010AA                            71                  ;JSR         ISORI
+000010AA                            72  
+000010AA  14FC 0043                 73  CMPI            MOVE.B      #'C', (A2)+
+000010AE  14FC 004D                 74                  MOVE.B      #'M', (A2)+
+000010B2  14FC 0050                 75                  MOVE.B      #'P', (A2)+
+000010B6  14FC 0049                 76                  MOVE.B      #'I', (A2)+
+000010BA  14FC 002E                 77                  MOVE.B      #'.', (A2)+
+000010BE  4EB9 000011FA             78                  JSR         GET_SIZE
+000010C4                            79                  ;JSR         ISCMPI
+000010C4                            80                  
+000010C4                            81  ;BCLR                
+000010C4                            82  
+000010C4                            83  *----------------------------------------------------------------------------------------------------
+000010C4                            84  * CODE0001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0001 INTO MOVE.B INSTRUCTION
+000010C4                            85  *----------------------------------------------------------------------------------------------------
+000010C4  14FC 004D                 86  CODE0001        MOVE.B      #'M', (A2)+
+000010C8  14FC 004F                 87                  MOVE.B      #'O', (A2)+
+000010CC  14FC 0056                 88                  MOVE.B      #'V', (A2)+
+000010D0  14FC 0045                 89                  MOVE.B      #'E', (A2)+
+000010D4  14FC 002E                 90                  MOVE.B      #'.', (A2)+
+000010D8  14FC 0042                 91                  MOVE.B      #'B', (A2)+
+000010DC                            92                  ;JSR         ISMOVEB
+000010DC  609A                      93                  BRA         FINISHE
+000010DE                            94             
+000010DE                            95  *----------------------------------------------------------------------------------------------------
+000010DE                            96  * CODE0010: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0010 INTO MOVE.L OR MOVEA.L
+000010DE                            97  *           INSTRUCTION
+000010DE                            98  *----------------------------------------------------------------------------------------------------
+000010DE  14FC 004D                 99  CODE0010        MOVE.B      #'M', (A2)+
+000010E2  14FC 004F                100                  MOVE.B      #'O', (A2)+
+000010E6  14FC 0056                101                  MOVE.B      #'V', (A2)+
+000010EA  14FC 0045                102                  MOVE.B      #'E', (A2)+
+000010EE  4EB9 00001100            103                  JSR         MOVEAL
+000010F4  6082                     104                  BRA         FINISHE
+000010F6                           105  
+000010F6  14FC 002E                106  MOVEL           MOVE.B      #'.', (A2)+
+000010FA  14FC 004C                107                  MOVE.B      #'L', (A2)+
+000010FE                           108                  ;JSR         ISMOVEL
+000010FE  4E75                     109                  RTS
+00001100                           110            
+00001100  2602                     111  MOVEAL          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+00001102  EF4B                     112                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
+00001104  E84B                     113                  LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
+00001106  0C43 0001                114                  CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
+0000110A  66EA                     115                  BNE         MOVEL           ;IF THE INSTRUCTION IS NOT MOVEA, IT MUST BE MOVE
+0000110C  14FC 0041                116                  MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
+00001110  14FC 002E                117                  MOVE.B      #'.', (A2)+
+00001114  14FC 004C                118                  MOVE.B      #'L', (A2)+
+00001118                           119                  ;JSR         ISMOVEAL
+00001118  4E75                     120                  RTS
+0000111A                           121  
+0000111A                           122  *----------------------------------------------------------------------------------------------------
+0000111A                           123  * CODE0011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0011 INTO MOVE.W OR MOVEA.W
+0000111A                           124  *           INSTRUCTION
+0000111A                           125  *----------------------------------------------------------------------------------------------------
+0000111A  14FC 004D                126  CODE0011        MOVE.B      #'M', (A2)+
+0000111E  14FC 004F                127                  MOVE.B      #'O', (A2)+
+00001122  14FC 0056                128                  MOVE.B      #'V', (A2)+
+00001126  14FC 0045                129                  MOVE.B      #'E', (A2)+
+0000112A  4EB9 0000113E            130                  JSR         MOVEAW
+00001130  6000 FF46                131                  BRA         FINISHE
+00001134                           132  
+00001134  14FC 002E                133  MOVEW           MOVE.B      #'.', (A2)+
+00001138  14FC 0057                134                  MOVE.B      #'W', (A2)+
+0000113C                           135                  ;JSR         ISMOVEW
+0000113C  4E75                     136                  RTS
+0000113E                           137            
+0000113E  2602                     138  MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+00001140  EF4B                     139                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
+00001142  E84B                     140                  LSR         #4, D3          ;SHIT TO THE RIGHT 4 BITS
+00001144  0C43 0001                141                  CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
+00001148  66EA                     142                  BNE         MOVEW           ;IF THE INSTRUCTION ISNOT MOVEA, IT MUST BE MOVE
+0000114A  14FC 0041                143                  MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
+0000114E  14FC 002E                144                  MOVE.B      #'.', (A2)+
+00001152  14FC 0057                145                  MOVE.B      #'W', (A2)+
+00001156                           146                  ;JSR         ISMOVEAW
+00001156  4E75                     147                  RTS
+00001158                           148  
+00001158                           149  *---------------------------------------------------------------------
+00001158                           150  * CODE0100: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0100
+00001158                           151  *           INTO MOVEM, DIVS, LEA, NEG, JSR, OR RTS INSTRUCTION
+00001158                           152  *---------------------------------------------------------------------
+00001158                           153  CODE0100
+00001158                           154  ; NEED A JUMP TABLE TO DETERMIND THIS:
+00001158                           155  ; - MOVEM
+00001158                           156  ; - DIVS
+00001158                           157  ; - LEA
+00001158                           158  ; - NEG
+00001158                           159  ; - JSR
+00001158                           160  ; - RTS
+00001158                           161  
+00001158                           162  *---------------------------------------------------------------------
+00001158                           163  * CODE0101: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0101
+00001158                           164  *           INTO SUBQ INSTRUCTION
+00001158                           165  *---------------------------------------------------------------------
+00001158  14FC 0053                166  CODE0101        MOVE.B      #'S', (A2)+
+0000115C  14FC 0055                167                  MOVE.B      #'U', (A2)+
+00001160  14FC 0042                168                  MOVE.B      #'B', (A2)+
+00001164  14FC 0051                169                  MOVE.B      #'Q', (A2)+
+00001168  14FC 002E                170                  MOVE.B      #'.', (A2)+
+0000116C                           171                  
+0000116C  4EB9 000011FA            172                  JSR         GET_SIZE
+00001172                           173                  ;JSR         EASUBQ
+00001172  6000 FF04                174                  BRA         FINISHE
+00001176                           175  
+00001176                           176  *---------------------------------------------------------------------
+00001176                           177  * CODE0110: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0110
+00001176                           178  *           INTO OR BCC, BCS, BGE, BLT, BVC, OR BRA INSTRUCTION
+00001176                           179  *---------------------------------------------------------------------
+00001176                           180  CODE0110
+00001176                           181  ; NEED A JUMP TABLE TO DETERMIND EITHER THIS IS A BCLR OR CMPI
+00001176                           182  ; - BCC
+00001176                           183  ; - BCS
+00001176                           184  ; - BGE
+00001176                           185  ; - BLT
+00001176                           186  ; - BVC
+00001176                           187  ; - BRA
+00001176                           188  
+00001176                           189  *----------------------------------------------------------------------------------------------------
+00001176                           190  * CODE1000: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1000 INTO OR INSTRUCTION
+00001176                           191  *----------------------------------------------------------------------------------------------------
+00001176  14FC 004F                192  CODE1000        MOVE.B      #'O', (A2)+
+0000117A  14FC 0052                193                  MOVE.B      #'R', (A2)+
+0000117E                           194                  
+0000117E                           195                  ;JSR        ISOR
+0000117E  4E75                     196  RETURN1000      RTS
+00001180                           197  
+00001180                           198  *----------------------------------------------------------------------------------------------------
+00001180                           199  * CODE1001: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1001 INTO SUB INSTRUCTION
+00001180                           200  *----------------------------------------------------------------------------------------------------
+00001180  14FC 0053                201  CODE1001        MOVE.B      #'S', (A2)+
+00001184  14FC 0055                202                  MOVE.B      #'U', (A2)+
+00001188  14FC 0042                203                  MOVE.B      #'B', (A2)+
+0000118C  14FC 002E                204                  MOVE.B      #'.', (A2)+
+00001190  4EB9 00001198            205                  JSR         GET_OPMODE
+00001196                           206                  ;JSR        ISSUB
+00001196  4E75                     207  RETURN1001      RTS
+00001198                           208  *---------------------------------------------------------------------
+00001198                           209  * CODE1011: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1011
+00001198                           210  *           INTO EOR OR CMP INSTRUCTION
+00001198                           211  *---------------------------------------------------------------------
+00001198                           212  CODE1011
+00001198                           213  ; EOR
+00001198                           214  ; CMP
+00001198                           215  
+00001198                           216  
+00001198                           217  *---------------------------------------------------------------------
+00001198                           218  * CODE1100: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1100
+00001198                           219  *           INTO MUL INSTRUCTION
+00001198                           220  *---------------------------------------------------------------------
+00001198                           221  CODE1100
+00001198                           222  ;MULS
+00001198                           223  
+00001198                           224  *---------------------------------------------------------------------
+00001198                           225  * CODE1101: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1101
+00001198                           226  *           INTO ADDA INSTRUCTION
+00001198                           227  *---------------------------------------------------------------------
+00001198                           228  CODE1101
+00001198                           229  ; ADD
+00001198                           230  ; ADDA
+00001198                           231  
+00001198                           232  *---------------------------------------------------------------------
+00001198                           233  * CODE1110: DIASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1110
+00001198                           234  *           INTO LSR, LSL, ASR, ASL, ROL, OR ROR INSTRUCTION
+00001198                           235  *---------------------------------------------------------------------
+00001198                           236  CODE1110
+00001198                           237  ; LSR
+00001198                           238  ; LSL
+00001198                           239  ; ASR
+00001198                           240  ; ASL
+00001198                           241  ; ROL
+00001198                           242  ; ROR
+00001198                           243  
+00001198                           244  
+00001198                           245  *----------------------------------------------------------------------------------------------------
+00001198                           246  * GET_OPMODE: THIS IS FUNCTION FOR DETERMINDING THE OPMODE OF THE INSTRUCTION
+00001198                           247  *----------------------------------------------------------------------------------------------------
+00001198  2602                     248  GET_OPMODE      MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+0000119A  EF4B                     249                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
+0000119C  E84B                     250                  LSR         #4, D3          ;SHIFT TO THE RIGHT 4 BITS
+0000119E  EE4B                     251                  LSR         #7, D3          ;SHIFT TO THE RIGHT 7 BITS
+000011A0  C6FC 0006                252                  MULU        #6, D3
+000011A4                           253                  
+000011A4  47F9 000011B0            254                  LEA         TABLEOPMODE, A3
+000011AA  4EB3 3000                255                  JSR         0(A3, D3)
+000011AE  4E75                     256                  RTS
+000011B0                           257    
+000011B0  4EB9 000011D6            258  TABLEOPMODE     JSR         MODE_BYTE2
+000011B6  4EB9 000011DC            259                  JSR         MODE_WORD2
+000011BC  4EB9 000011E2            260                  JSR         MODE_LONG2
+000011C2  4EB9 000011E8            261                  JSR         MODE_BYTE3
+000011C8  4EB9 000011EE            262                  JSR         MODE_WORD3
+000011CE  4EB9 000011F4            263                  JSR         MODE_LONG3
+000011D4  4E75                     264  RETURN_OPMODE   RTS
+000011D6                           265                  
+000011D6  14FC 0042                266  MODE_BYTE2      MOVE.B      #'B', (A2)+
+000011DA  60F8                     267                  BRA         RETURN_OPMODE
+000011DC                           268  
+000011DC  14FC 0057                269  MODE_WORD2      MOVE.B      #'W', (A2)+
+000011E0  60F2                     270                  BRA         RETURN_OPMODE
+000011E2                           271  
+000011E2  14FC 004C                272  MODE_LONG2      MOVE.B      #'L', (A2)+
+000011E6  60EC                     273                  BRA         RETURN_OPMODE
+000011E8                           274  
+000011E8  14FC 0042                275  MODE_BYTE3      MOVE.B      #'B', (A2)+
+000011EC  60E6                     276                  BRA         RETURN_OPMODE
+000011EE                           277  
+000011EE  14FC 0057                278  MODE_WORD3      MOVE.B      #'W', (A2)+
+000011F2  60E0                     279                  BRA         RETURN_OPMODE
+000011F4                           280                  
+000011F4  14FC 004C                281  MODE_LONG3      MOVE.B      #'L', (A2)+
+000011F8  60DA                     282                  BRA         RETURN_OPMODE
+000011FA                           283                  
+000011FA                           284  *----------------------------------------------------------------------------------------------------
+000011FA                           285  * GET_SIZE : THIS IS A FUNCTION FOR DETERMINDING THE SIZE OF THE INSTRUCTION
+000011FA                           286  *----------------------------------------------------------------------------------------------------
+000011FA  2602                     287  GET_SIZE        MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+000011FC  E14B                     288                  LSL         #8, D3          ;SHIFT TO THE LEFT 8 BITS
+000011FE  EC4B                     289                  LSR         #6, D3          ;SHIFT TO THE RIGHT 6 BITS
+00001200  E04B                     290                  LSR         #8, D3          ;SHIFT TO THE RIGHT 8 BITS
+00001202  C6FC 0006                291                  MULU        #6, D3
+00001206                           292                  
+00001206  47F9 00001212            293                  LEA         TABLESIZE, A3
+0000120C  4EB3 3000                294                  JSR         0(A3, D3)
+00001210  4E75                     295                  RTS
+00001212                           296  
+00001212  4EF9 00001226            297  TABLESIZE       JMP         SIZE_BYTE1
+00001218  4EF9 0000122C            298                  JMP         SIZE_WORD1
+0000121E  4EF9 00001232            299                  JMP         SIZE_LONG1
+00001224  4E75                     300  RETURN_SIZE     RTS
+00001226                           301                  
+00001226  14FC 0042                302  SIZE_BYTE1      MOVE.B      #'B', (A2)+
+0000122A  60F8                     303                  BRA         RETURN_SIZE
+0000122C                           304                  
+0000122C  14FC 0057                305  SIZE_WORD1      MOVE.B      #'W', (A2)+
+00001230  60F2                     306                  BRA         RETURN_SIZE
+00001232                           307                  
+00001232  14FC 004C                308  SIZE_LONG1      MOVE.B      #'L', (A2)+
+00001236  60EC                     309                  BRA         RETURN_SIZE
+00001238                           310                  
+00001238                           311                  
+00001238                           312  
+00001238                           313                  END    START        ; last line of source
 
 No errors detected
 No warnings generated
@@ -279,37 +323,44 @@ No warnings generated
 SYMBOL TABLE INFORMATION
 Symbol-name         Value
 -------------------------
-BYTESIZE            113E
-CODE0000            1034
-CODE0001            1044
-CODE0010            1066
-CODE0011            10A8
-CODE0100            10EA
-CODE0101            10EA
-CODE0110            1118
-CODE1000            1118
-CODE1001            112A
-CODE1011            112A
-CODE1100            112A
-CODE1101            112A
-CODE1110            112A
-DISASSEMBLE         100C
-GETTYPE             1108
-LONGSIZE            1156
-MAINTABLE           1020
-MOVEAL              108E
-MOVEAW              10D0
-MOVEL               1084
-MOVEW               10C6
-RETURN0000          1042
-RETURN0001          1064
-RETURN0010          1082
-RETURN0011          10C4
-RETURN0101          10F2
-RETURN1000          1128
-RETURNSIZE          113C
+CMPI                10AA
+CODE0000            107A
+CODE0001            10C4
+CODE0010            10DE
+CODE0011            111A
+CODE0100            1158
+CODE0101            1158
+CODE0110            1176
+CODE1000            1176
+CODE1001            1180
+CODE1011            1198
+CODE1100            1198
+CODE1101            1198
+CODE1110            1198
+DISASSEMBLE         1012
+FINISHE             1078
+GET_OPMODE          1198
+GET_SIZE            11FA
+MAINTABLE           102A
+MODE_BYTE2          11D6
+MODE_BYTE3          11E8
+MODE_LONG2          11E2
+MODE_LONG3          11F4
+MODE_WORD2          11DC
+MODE_WORD3          11EE
+MOVEAL              1100
+MOVEAW              113E
+MOVEL               10F6
+MOVEW               1134
+ORI                 1094
+RETURN1000          117E
+RETURN1001          1196
+RETURN_OPMODE       11D4
+RETURN_SIZE         1224
+SIZE_BYTE1          1226
+SIZE_LONG1          1232
+SIZE_WORD1          122C
 START               1000
-SUBQ                10F4
-TABLEOPMODE         112A
-TABLESIZE           112A
-WORDSIZE            114A
+TABLE0000           1082
+TABLEOPMODE         11B0
+TABLESIZE           1212
