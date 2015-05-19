@@ -1,3 +1,10 @@
+8.23
+A) 649
+B) 2310
+C) 590 BAD ADDRESS
+D) 2064 BAD ADDRESS
+
+
 public class css430_paging
 {
 	private static final int ADDRESS_BITS = 32;
