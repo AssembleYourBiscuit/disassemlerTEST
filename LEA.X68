@@ -33,7 +33,7 @@ START:                  ; first instruction of program
 isLEA            JSR    LEACLEAR        *CLEARS ALL REGISTERS I WILL USE, BETTER SAVE YOUR STUFF!
                  MOVE.W (A6)+, D7       *GET CURRENT OP CODE DATA TO D7
                  ADDQ   #3, A2          *inc a2 BY 4 TO MAKE ROOM FOR "lea"
-                 MOVE.B #TAB, (A2)      *ADD TAB AFTER OP CODE
+                 MOVE.B #'9', (A2)      *ADD TAB AFTER OP CODE
                  ADDQ   #1, A2          *MAKE ROOM FOR TAB CHARACTER
                  JSR    GETLEADREG
                  JSR    GETLEASREG
@@ -195,14 +195,17 @@ LEALONG         MOVE.W  (A6)+, D2
 *----------------------------------------------------------------------------------------------------------- 
 LEAAPPAI        MOVE.B  #'(', (A2)
                 ADDQ    #1, A2
-                MOVE.B  #ASTRING, (A2)
+                MOVE.B  #'A', (A2)
                 ADDQ    #1, A2
                 JSR     LEAGETAN
                 ADDQ    #1, A2
                 MOVE.B  #')', (A2)
                 ADDQ    #1, A2
                 JMP     RTN_LEAAPP
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*LEA GET ADDRESS REGISTER - I CANT REMEMBER WHAT THIS DOES... CHECK BACK LETER...
+*-----------------------------------------------------------------------------------------------------------               
 LEAGETAN        CMP.L   #0, D5
                 BEQ     SAPP0
                 CMP.L   #1, D5
@@ -221,6 +224,9 @@ LEAGETAN        CMP.L   #0, D5
                 BEQ     SAPP7
 RTN_SAPP        RTS
 
+*-----------------------------------------------------------------------------------------------------------
+*SOURCE APPEND 0-7 - THIS IS THE WORST THING IVE EVER WRITTEN...FIX IT....
+*----------------------------------------------------------------------------------------------------------- 
 SAPP0           MOVE.B  #'0', (A2)
                 JMP     RTN_SAPP 
 SAPP1           MOVE.B  #'1', (A2)
@@ -238,8 +244,10 @@ SAPP6           MOVE.B  #'6', (A2)
 SAPP7           MOVE.B  #'7', (A2)
                 JMP     RTN_SAPP
                 
-                
-APPENDDREG      MOVE.B  #ASTRING, (A2)  *ADD 'A'
+*-----------------------------------------------------------------------------------------------------------
+*APPEND DESTINATION REGISTER - APPENDS THE STRING A TO COMMAND STRING....FIX THIS MESS LATER!
+*-----------------------------------------------------------------------------------------------------------                 
+APPENDDREG      MOVE.B  #'A', (A2)  *ADD 'A'
                 ADDQ    #1, A2
                 CMP.L   #0, D6
                 BEQ     APPEND0
@@ -259,7 +267,10 @@ RTNAPP6         CMP.L   #7, D6
                 BEQ     APPEND7
 RTNAPP7         ADDQ    #1, A2          *UPDATE A2
                 RTS
-    
+
+*-----------------------------------------------------------------------------------------------------------
+*GET LEA DESTINATION REGISTER - GETS THE DESTINATION REGISTER FROM MEMORY TO PUT IN D6 FOR ERROR CHECKING
+*-----------------------------------------------------------------------------------------------------------    
 GETLEADREG      MOVE.W  D7, D6
                 LSL.L   #4, D6
                 LSL.L   #8, D6
@@ -269,7 +280,10 @@ GETLEADREG      MOVE.W  D7, D6
                 LSR.L   #8, D6
                 LSR.L   #5, D6
                 RTS
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*GET LEA SOURCE REGISTER - GETS THE SOURCE REGISTER FROM MEMORY TO PUT IN D5 FOR ERROR CHECKING
+*-----------------------------------------------------------------------------------------------------------              
 GETLEASREG      MOVE.B  D7, D5
                 LSL.L   #8, D5
                 LSL.L   #5, D5 
@@ -277,11 +291,13 @@ GETLEASREG      MOVE.B  D7, D5
                 LSL.L   #8, D5
                 LSR.L   #8, D5
                 LSR.L   #8, D5
-
                 LSR.L   #8, D5
                 LSR.L   #5, D5  
                 RTS
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*GET LEA SOURCE MODE - GETS THE SOURCE MODE FROM MEMORY TO PUT IN D4 FOR ERROR CHECKING
+*-----------------------------------------------------------------------------------------------------------                 
 GETLEASMODE     MOVE.W  D7, D4
                 LSL.L   #8, D4
                 LSL.L   #2, D4
@@ -293,7 +309,11 @@ GETLEASMODE     MOVE.W  D7, D4
                 LSR.L   #8, D4
                 LSR.L   #5, D4
                 RTS
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*LEA ERROR CHECK - CHECKS D4, D5, D6 (SOURCE MODE, DESTINATION REGISTER, SOURCE REGISTER) FOR ERRORS
+*                  BEEF IN D2 IS ERRORS EXIST...DOESNT REALLY HELP, FIX LATER!
+*-----------------------------------------------------------------------------------------------------------                 
 LEAERRORCHK     CMP.L   #0, D4
                 BEQ     LEAERROR
                 CMP.L   #1, D4
@@ -309,7 +329,10 @@ LEAERRORCHK     CMP.L   #0, D4
                 CMP.L   #7, D4
                 BEQ     LEACHKREGERR
 RTNLEAERRCHK    RTS
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*LEA CHECK REGISTER ERRORS - CHECKS D5 FOR CORRECT ADDRESSING MODES
+*-----------------------------------------------------------------------------------------------------------           
 LEACHKREGERR    CMP.L   #2, D5
                 BEQ     LEAERROR
                 CMP.L   #3, D5
@@ -323,38 +346,35 @@ LEACHKREGERR    CMP.L   #2, D5
                 CMP.L   #7, D5
                 BEQ     LEAERROR
                 JMP     RTNLEAERRCHK
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*LEA ERROR - PUTS BEEF ERROR IN D2 
+*-----------------------------------------------------------------------------------------------------------                 
 LEAERROR        MOVE.L  #$0BEEF, D2     *BEEF ERROR, RETURN
                 JMP     LEARTN
-                
+
+*-----------------------------------------------------------------------------------------------------------
+*APPEND 0-7 - APPENDS THE APPROPRIATE NUMBER TO THE CORRESPONDING REGISTER... DONT DO THIS/FIX LATER...
+*-----------------------------------------------------------------------------------------------------------                
 APPEND0         MOVE.B  #'0', (A2)
                 JMP     RTNAPP0
-                
 APPEND1         MOVE.B  #'1', (A2)
                 JMP     RTNAPP1
-           
 APPEND2         MOVE.B  #'2', (A2)
                 JMP     RTNAPP2
-                
 APPEND3         MOVE.B  #'3', (A2)
                 JMP     RTNAPP3
-                
 APPEND4         MOVE.B  #'4', (A2)
                 JMP     RTNAPP4
-                
 APPEND5         MOVE.B  #'5', (A2)
                 JMP     RTNAPP5
-                
 APPEND6         MOVE.B  #'6', (A2)
                 JMP     RTNAPP6
-                
 APPEND7         MOVE.B  #'7', (A2)
                 JMP     RTNAPP7
                 
-* Put variables and constants here
-TAB     EQU     $09 *TAB CHARACTER
-ASTRING EQU     'A'
     END    START        ; last line of source
+
 
 
 
