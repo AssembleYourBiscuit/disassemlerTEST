@@ -9,9 +9,9 @@ START:                  ; first instruction of program
 
 * Put program code here
     movea.l     #$09000, a2
-    MOVEM.l     d0/D2/D5/A1, -(a1)
+    MOVEM.l     d0/D2/D5/A1, -(a1)          0100 1000 1101 0000     
     MOVEA.L  #$08000, A6
-    MOVE.L  #$48e2EfFF, (A6)
+    MOVE.L  #$48D0EfFF, (A6)
     JSR         ISMOVEMB
 DIE MOVE.B      #9, D0
     TRAP        #15
@@ -42,12 +42,45 @@ REGTOMEMI
                 
 APPLISTRTM      CMPI.B  #4, D5
                 BEQ     BACKWARDLIST
+                CMPI.B  #2, D5
+                BEQ     FORWARDLIST
                 CLR     D0
                 CLR     D1
                 CLR     D2
 RTN_LIST        RTS
 
-BACKWARDLIST    MOVE.B  #15, D1
+FORWARDLIST     MOVE.B  #15, D1             *BIG UGLY FOR LOOP
+FRWRDLOOP       LSL.W   #1, D3
+                BCS     APPENDDORAF
+RTN_APPDF       SUBI.B  #1, D1
+                CMP     D0, D1
+                BGT     FRWRDLOOP
+                JMP     RTN_LIST 
+                
+APPENDDORAF     CMPI.B  #7, D1
+                BGT     APPAF
+                MOVE.B  #'D', (A2)+
+                ADDI.B  #48, D2
+                ADD.B   D1, D2
+                MOVE.B  D2, (A2)+
+RTN_APPAF       CMP.W   #$8000, D3
+                BEQ     RTN_SLASHF
+                CMP.W   #0, D3
+                BEQ     RTN_SLASHF
+                JMP     APPENDSLASHF
+RTN_SLASHF      CLR     D2
+                JMP     RTN_APPDF            *END BIG UGLY FOR LOOP
+                
+APPENDSLASHF    MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
+                JMP     RTN_SLASHF 
+                
+APPAF           MOVE.B  #'A', (A2)+
+                ADDI.B  #40, D2
+                ADD.B   D1, D2
+                MOVE.B  D2, (A2)+
+                JMP     RTN_APPAF
+
+BACKWARDLIST    MOVE.B  #15, D1             *BIG UGLY FOR LOOP
 BCKWRDLOOP      LSL.W   #1, D3
                 BCS     APPENDDORA
 RTN_APPD        ADDI.B  #1, D0
@@ -62,9 +95,12 @@ APPENDDORA      CMPI.B  #7, D0
                 ADD.B   D0, D2
                 MOVE.B  D2, (A2)+
 RTN_APPA        CMP.W   #$8000, D3
-                BNE     APPENDSLASH
+                BEQ     RTN_SLASH
+                CMP.W   #0, D3
+                BEQ     RTN_SLASH
+                JMP     APPENDSLASH
 RTN_SLASH       CLR     D2
-                JMP     RTN_APPD
+                JMP     RTN_APPD            *END BIG UGLY FOR LOOP
                 
 APPENDSLASH     MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
                 JMP     RTN_SLASH 
