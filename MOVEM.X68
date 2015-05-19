@@ -11,49 +11,80 @@ START:                  ; first instruction of program
     movea.l     #$09000, a2
     MOVEM.l     d0/D2/D5/A1, -(a1)          0100 1000 1101 0000     
     MOVEA.L  #$08000, A6
-    MOVE.L  #$48D0EfFF, (A6)
+    MOVE.L  #$48D0FfF8, (A6)
     JSR         ISMOVEMB
 DIE MOVE.B      #9, D0
     TRAP        #15
     
-ISMOVEMB      JSR       MOVEMCLRREG         *CLEAR REGISTERS FOR MOVEM
+ISMOVEMB      MOVE.B    #$9, (a2)+
+              JSR       MOVEMCLRREG         *CLEAR REGISTERS FOR MOVEM
               MOVE.L    #$510, A5           *USING THIS SPACE TO STORE REGISTERS D4, D5, D6 WHEN I NEED THE REGISTER SPACE
               MOVE.L    #$520, A4           *USING THIS SPACE TO STORE REGISTERS 
               JSR       SETEAREGISTERS 
               JSR       GETLISTMASK
-              JSR       GETDIRECTION
+              JSR       GETDIRECTION       
               RTS       
               
-GETDIRECTION    CMP.B   #0, D4          *IS REG-TO-MEM
+GETDIRECTION    CMP.B   #0, D4              *IS REG-TO-MEM
                 BEQ     REGTOMEM
                 JSR     MEMTOREG
 RTN_GETDIR      RTS
                 
 REGTOMEM        JSR     APPLISTRTM
-                CMP.B   #2, D5
-                BEQ     REGTOMEMI
+                JSR     APPENDDEST
 RTN_RTM         JMP     RTN_GETDIR  
+
+APPENDDEST      CMPI.B  #2, D5
+                BEQ     APPENDAI            *APPEND ADDRESS INDIRECT
+                CMPI.B  #4, D5
+                BEQ     APPENDAIPD          *APPEND ADDRESS INDIRECT PRE DECREMENT
+                CMPI.B  #7, D5
+                BEQ     APPENDALORW          *APPEND ABSOLUTE WORD OR LONG ADDRESS
+RTN_APPDEST     RTS
+
+APPENDALORW     CMPI.B  #0, D6
+                *BEQ     APPENDMOVEMW        *APPEND ABSOLUTE WORD ADDRESS-----------------------------
+                JMP     RTN_APPDEST
+
+APPENDAIPD      MOVE.B  #'-', (A2)+
+                MOVE.B  #'(', (A2)+
+                MOVE.B  #'A', (A2)+
+                ADDI.B  #48, D2
+                ADD.B   D6, D2
+                MOVE.B  D2, (A2)+
+                MOVE.B  #')', (A2)+
+                CLR     D2
+                JMP     RTN_APPDEST
+
+APPENDAI        MOVE.B #'(', (A2)+
+                MOVE.B  #'A', (A2)+
+                ADDI.B  #48, D2
+                ADD.B   D6, D2
+                MOVE.B  D2, (A2)+
+                MOVE.B  #')', (A2)+
+                CLR     D2
+                JMP     RTN_APPDEST
 
 MEMTOREG        
                 RTS  
                 
-REGTOMEMI       
-                JMP     RTN_RTM
-                
-APPLISTRTM      CMPI.B  #4, D5
+APPLISTRTM      CMPI.B  #4, D5              *DIESTINATION IS ADDRESS INDIRECT PRE DECREMEMNT
                 BEQ     BACKWARDLIST
-                CMPI.B  #2, D5
+                CMPI.B  #2, D5              *DESTINATION IS ADDRESS INDIRECT
+                BEQ     FORWARDLIST
+                CMPI.B  #7, D5              *DESTINATION IS  ABSOLUTE WORD OR LONG
                 BEQ     FORWARDLIST
                 CLR     D0
                 CLR     D1
                 CLR     D2
+                CLR     D3
 RTN_LIST        RTS
 
 FORWARDLIST     MOVE.B  #15, D1             *BIG UGLY FOR LOOP
 FRWRDLOOP       LSL.W   #1, D3
                 BCS     APPENDDORAF
 RTN_APPDF       SUBI.B  #1, D1
-                CMP     D0, D1
+                CMP.B   D0, D1
                 BGT     FRWRDLOOP
                 JMP     RTN_LIST 
                 
@@ -63,9 +94,7 @@ APPENDDORAF     CMPI.B  #7, D1
                 ADDI.B  #48, D2
                 ADD.B   D1, D2
                 MOVE.B  D2, (A2)+
-RTN_APPAF       CMP.W   #$8000, D3
-                BEQ     RTN_SLASHF
-                CMP.W   #0, D3
+RTN_APPAF       CMP.W   #0, D3
                 BEQ     RTN_SLASHF
                 JMP     APPENDSLASHF
 RTN_SLASHF      CLR     D2
@@ -105,17 +134,17 @@ RTN_SLASH       CLR     D2
 APPENDSLASH     MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
                 JMP     RTN_SLASH 
                 
-APPA           MOVE.B  #'A', (A2)+
+APPA            MOVE.B  #'A', (A2)+
                 ADDI.B  #41, D2
                 ADD.B   D0, D2
                 MOVE.B  D2, (A2)+
                 JMP     RTN_APPA
 
 
-GETLISTMASK     MOVE.W  (A6)+, D3  
+GETLISTMASK     MOVE.W  (A6)+, D3      *THANKS!
                 RTS     
               
-SETEAREGISTERS  MOVE.W (A6)+, D4        *COPY COMMAND INTO D4, 5 AND 6 TO BE PARSED
+SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARSED
                 MOVE.W  D4, D5         *FOR DIRECTION, MODE AND REG
                 MOVE.W  D4, D6  
                 LSL.W   #5, D4         *SHIFTING FOR DIRECTION
