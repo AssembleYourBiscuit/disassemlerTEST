@@ -15,7 +15,7 @@
 *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
 *                  REGISTERS ARE PRESERVED
 *---------------------------------------------------------------------------------------------------------   
-ISMOVEL     MOVE.B      #1, D6                           *INDICATES LONG DATA
+ISMOVEL     MOVE.L      #1, D6                           *INDICATES LONG DATA
             JSR         ISMOVEB                                                                             
             RTS
 ISMOVEW     JSR         ISMOVEB
@@ -275,7 +275,7 @@ isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGIST
                  JSR         LEAERRORCHK
                  CMP.W       #$BEEF, $456
                  BEQ         LEABADDATA
-                 MOVE.B      #1, D6                           *INDICATES LONG FOR IMMEDIATE ADDRESSING
+                 MOVE.L      #1, D6                           *INDICATES LONG FOR IMMEDIATE ADDRESSING
                  JSR         APPENDEA
                  MOVE.B      #',', (A2)+                      *ADD SPACE BETWEEN ADDRESSES
                  MOVE.B      #' ', (A2)+                      *ADD COMMA BETWEEN ADDRESSES
@@ -374,6 +374,82 @@ LEACHKREGERR    CMP.L   #2, D5
 *-----------------------------------------------------------------------------------------------------------                 
 LEAERROR        MOVE.L  #$0BEEF, $456     *BEEF ERROR, RETURN
                 JMP     RTNLEAERRCHK
+                
+*---------------------------------------------------------------------------------------------------------
+*IS ORIB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN ORI COMMAND
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+*---------------------------------------------------------------------------------------------------------            
+ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+                JSR         ISORIB                                                                             
+                RTS
+ISORIW          JSR         ISORIB
+                RTS   
+ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400       *SAVE JEENS REGISTERS AT $400
+                JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+                MOVE.W      (A6)+, D0
+                JSR         PARSEORI                                               
+                JSR         ORIERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+                BEQ         ORIBADDATA
+                JSR         APPENDIMMEDIATE                         *ELSE APPEND SRC AE
+                MOVE.B      #',', (A2)+
+                MOVE.B      #' ', (A2)+
+                JSR         APPENDEA                         *APPEND DESTINATION EA
+                MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+RTN_BADORI      RTS 
+
+*---------------------------------------------------------------------------------------------------------
+*ORI ERROR CHECK - CHECKS FOR ERRORS IN ADDRESSSING MODES FOR ORI CALL
+*--------------------------------------------------------------------------------------------------------- 
+ORIERRCHK       CMPI.B      #1, D1                       *CANNOT HAVE MODES 1, 5, OR 6
+                BEQ         ORIBADDATAF
+                CMPI.B      #5, D1
+                BEQ         ORIBADDATAF
+                CMPI.B      #6, D1
+                BEQ         ORIBADDATAF
+RTN_ORIERRCHK   RTS
+                
+*---------------------------------------------------------------------------------------------------------
+*ORI BAD DATA FLAG - SETS BEEF FLAG FOR BAD DATA (UN SUPPORTED ADDRESSING MODES 6 AND 7)
+*--------------------------------------------------------------------------------------------------------- 
+ORIBADDATAF     MOVE.W      #$BEEF, $456                *BEEF ERROR (MMMM)
+                JMP         RTN_ORIERRCHK
+ 
+*---------------------------------------------------------------------------------------------------------
+*ORI BAD DATA - SETS BAD DATA FLAG AND RECOVERS A2 POINTER 
+*---------------------------------------------------------------------------------------------------------                
+ORIBADDATA      JSR         BADDATA                     
+                JSR         RECOVERPTR
+                CMPI.B      #7, D1
+                BEQ         ORIISWORL
+RTN_ORIISWORD   JSR         RECOVERPTR
+                JMP         RTN_BADORI
+ORIISWORL       CMPI.B      #0, D0
+                BEQ         ORIISWORD
+                MOVE.B      #1, D6
+                JMP         RTN_ORIISWORD
+ORIISWORD       MOVE.B      #0, D6
+                JMP         RTN_ORIISWORD
+
+*---------------------------------------------------------------------------------------------------------
+*PARSE ORI - PARSES THE ADDRESSING MODE AND REGISTER INTO D1 AND D0 RESPECTIVELY TO BE CHECKED FOR ERRORS
+*---------------------------------------------------------------------------------------------------------
+PARSEORI        MOVE.W      D0, D1
+                LSL.W       #8, D0
+                LSL.W       #5, D0
+                LSR.W       #8, D0
+                LSR.W       #5, D0
+                LSL.W       #8, D1
+                LSL.W       #2, D1
+                LSR.W       #8, D1
+                LSR.W       #5, D1
+                RTS
+
 
 *-----------------------------------------------------------------------------------------------------------
 **********************************************SHARED-CODE-SECTION******************************************* 
@@ -382,6 +458,27 @@ LEAERROR        MOVE.L  #$0BEEF, $456     *BEEF ERROR, RETURN
 *-----------------------------------------------------------------------------------------------------------
 **********************************************SHARED-CODE-SECTION******************************************* 
 *-----------------------------------------------------------------------------------------------------------
+
+*---------------------------------------------------------------------------------------------------------
+*RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES)
+*---------------------------------------------------------------------------------------------------------
+RECOVERPTR          CMPI.B      #1, D6
+                    BEQ         INCPTRLONG  
+                    ADDA        #2, A6
+RTN_LONGPTR         RTS
+INCPTRLONG          ADDA        #4, A6
+                    JMP         RTN_LONGPTR
+
+*---------------------------------------------------------------------------------------------------------
+*APPENDS IMMEDIATE  - APPEND IMMEDIATE DATA FROM A6 TO A2 DEPENDING ON WORD OR LONG ADDRESSING MODE
+*                     INDICATED BY D6, (1 FOR LONG, 0 FOR WORD)
+*---------------------------------------------------------------------------------------------------------                
+APPENDIMMEDIATE MOVE.B      #'#', (A2)+
+                MOVE.B      #'$', (A2)+
+                CMP.B       #1, D6
+                BEQ         ISLONG
+                JSR         APPENDWORD
+                RTS
 
 *---------------------------------------------------------------------------------------------------------
 *APPEND EA          - APPENDS ADDRESSES DEPENDING ON ADDRESSING MODES USED
@@ -527,7 +624,7 @@ APPENDSRCAPDREG     MOVE.B      #'-', (A2)+
                     RTS
 
 *---------------------------------------------------------------------------------------------------------
-*CLEA ALL D REG - CLEARS ALL DATA REGISTERS
+*CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6....I NEED IT, DONT ASK
 *--------------------------------------------------------------------------------------------------------- 
 CLRALLDREG          CLR         D0
                     CLR         D1
@@ -535,7 +632,6 @@ CLRALLDREG          CLR         D0
                     CLR         D3
                     CLR         D4
                     CLR         D5
-                    CLR         D6
                     CLR         D7
                     RTS
 
@@ -612,6 +708,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 *~Font name~Courier New~
 *~Font size~10~
