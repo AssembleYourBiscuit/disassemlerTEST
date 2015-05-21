@@ -498,7 +498,7 @@ NEGBADDATA      JSR         BADDATA
                 JMP         RTN_NEGERR
 NEGERRCHK       CMPI.B      #5, D1
                 BEQ         NEGERR 
-                CMPI.B      #5, D1
+                CMPI.B      #6, D1
                 BEQ         NEGERR
 RTN_NEG         RTS
 NEGERR          MOVE.W      #$BEEF, $456
@@ -515,6 +515,102 @@ PARSENEG        MOVE.W      D0, D1
                 LSL.W       #8, D1
                 LSL.W       #2, D1
                 LSR.L       #8, D1
+                LSR.W       #5, D1
+                RTS
+
+*---------------------------------------------------------------------------------------------------------
+*IS ORB/W/L        TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN OR COMMAND
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+*---------------------------------------------------------------------------------------------------------
+ISORL           JSR         ISORB
+                RTS
+ISORW           JSR         ISORB
+                RTS
+ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+                JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+                MOVE.W      (A6)+, D4
+                JSR         PARSEOROP 
+                CMPI.B      #2, D4                           *IF OPMODE GREATER THAN 2 DN IS SOURCE
+                BGT         PARSEDNSOURCE    
+                JSR         PARSEDNDEST                                          
+RTN_PARSEOR     JSR         ORERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+                BEQ         ORBADDATA
+                JSR         APPENDEA                         *APPEND DESTINATION EA
+                MOVE.B      D2, D0
+                MOVE.B      D3, D1
+                MOVE.B      #',', (A2)+
+                MOVE.B      #' ', (A2)+
+                JSR         APPENDEA
+                MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+RTN_OR          RTS
+
+*---------------------------------------------------------------------------------------------------------
+*OR BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES AND APPENDS BAD DATA TO A2 IF THEY ARE USED
+*---------------------------------------------------------------------------------------------------------
+ORBADDATA       JSR         BADDATA
+                JMP         RTN_OR
+ORERRCHK        CMPI.B      #5, D1
+                BEQ         ORERR 
+                CMPI.B      #6, D1
+                BEQ         ORERR
+                CMPI.B      #5, D3
+                BEQ         ORERR 
+                CMPI.B      #6, D3
+                BEQ         ORERR
+RTN_ORCHK       RTS
+ORERR           MOVE.W      #$BEEF, $456
+                JMP         RTN_ORCHK
+
+*---------------------------------------------------------------------------------------------------------
+*PARSE OR OP MODE - PARSES THE OPMODE FROM THE COMMAND TO DETERMINE IF DATA REGISTER IS SOURCE OR 
+*                   DESTINATION OPERAND
+*---------------------------------------------------------------------------------------------------------
+PARSEOROP       MOVE.W      D4, D0
+                MOVE.W      D4, D1
+                MOVE.W      D4, D2
+                MOVE.W      D4, D3
+                LSL.W       #7, D4
+                LSR.W       #8, D4
+                LSR.W       #5, D4
+                RTS
+
+*---------------------------------------------------------------------------------------------------------
+*PARSE DN SOURCE - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE SOURCE OPERAND
+*---------------------------------------------------------------------------------------------------------                
+PARSEDNSOURCE   MOVE.W      #0, D1
+                LSL.W       #4, D0
+                LSR.W       #8, D0
+                LSR.W       #5, D0  
+                LSL.W       #8, D2
+                LSL.W       #5, D2
+                LSR.W       #8, D2
+                LSR.W       #5, D2
+                LSL.W       #8, D3
+                LSL.W       #2, D3
+                LSR.W       #8, D3
+                LSR.W       #5, D3
+                JMP         RTN_PARSEOR 
+
+*---------------------------------------------------------------------------------------------------------
+*PARSE DN DESTINATION - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE DESTINATION OPERAND
+*---------------------------------------------------------------------------------------------------------
+PARSEDNDEST     MOVE.W      #0, D3
+                LSL.W       #4, D2
+                LSR.W       #8, D2
+                LSR.W       #5, D2  
+                LSL.W       #8, D0
+                LSL.W       #5, D0
+                LSR.W       #8, D0
+                LSR.W       #5, D0
+                LSL.W       #8, D1
+                LSL.W       #2, D1
+                LSR.W       #8, D1
                 LSR.W       #5, D1
                 RTS
 
@@ -776,6 +872,8 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
+
 
 
 
