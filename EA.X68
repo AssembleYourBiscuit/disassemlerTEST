@@ -17,67 +17,36 @@
 *---------------------------------------------------------------------------------------------------------   
 ISMOVEL     MOVE.L      #1, D6                           *INDICATES LONG DATA
             JSR         ISMOVEB                                                                             
-            RTS
-ISMOVEW     JSR         ISMOVEB
             RTS   
 ISMOVEB     MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
             JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
-            MOVE.W      (A6)+, D7
+            MOVE.W      (A6)+, D0
             JSR         GETMOVEREG                                               
-            JSR         MOVEERRCHK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+            JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+            JSR         SWAP
+            JSR         ERRORCHECK
             CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
             BEQ         MOVEBADDATA
             JSR         APPENDEA                         *ELSE APPEND SRC AE
             MOVE.B      #',', (A2)+
             MOVE.B      #' ', (A2)+
-            MOVE.B      D2, D0
-            MOVE.B      D3, D1
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BAD     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
             RTS 
-     
+
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
 MOVEBADDATA JSR         BADDATA
             JMP         RTN_BAD
 
 *---------------------------------------------------------------------------------------------------------
-*MOVE ERROR CHECK - CHECKS ADDRESSING MODES AND ADDRESSING REGISTERS FOR ERRORS
-*---------------------------------------------------------------------------------------------------------            
-MOVEERRCHK      JSR         MOVESERR
-                JSR         MOVEDERR
-                RTS
-MOVEDERR        CMPI.B      #1, D3
-                BEQ         DERROR
-                CMPI.B      #5, D3
-                BEQ         DERROR
-                CMPI.B      #6, D3
-                BEQ         DERROR
-RTN_DERR        RTS
-DERROR          MOVE.W      #$BEEF, $456
-                JMP         RTN_DERR
-MOVESERR        CMPI.B      #5, D1
-                BEQ         SERROR
-                CMPI.B      #6, D1
-                BEQ         SERROR
-                CMPI.B      #7, D1
-                BEQ         SREGERR
-RTN_SERR        RTS
-SERROR          MOVE.W      #$BEEF, $456
-                JMP         RTN_SERR
-SREGERR         CMPI.B      #2, D0
-                BEQ         SRERR
-                CMPI.B      #3, D0
-                BEQ         SRERR
-                JMP         RTN_SERR
-SRERR           JMP         SERROR
-
-*---------------------------------------------------------------------------------------------------------
 *GET MOVE REGISTERS - PARSES MOVE ADDRESSING REGISTERS AND MODES INTO D0, D1, D2 AND D3 TO BE CHECKED FOR ERROR
 *---------------------------------------------------------------------------------------------------------            
-GETMOVEREG      MOVE.W  D7, D0
-                MOVE.W  D7, D1
-                MOVE.W  D7, D2
-                MOVE.W  D7, D3
+GETMOVEREG      MOVE.W  D0, D1
+                MOVE.W  D0, D2
+                MOVE.W  D0, D3
                 LSL.W   #8, D0
                 LSL.W   #5, D0
                 LSR.W   #8, D0
@@ -92,22 +61,7 @@ GETMOVEREG      MOVE.W  D7, D0
                 LSL.W   #7, D3
                 LSR.W   #8, D3
                 LSR.W   #5, D3
-                RTS
-                
-*---------------------------------------------------------------------------------------------------------
-*IS MOVEAW/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MOVEA COMMAND. APPENDS 
-*                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING. JUST CALLS MOVE, SAME DEAL
-*
-*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
-*
-*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
-*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
-*                  REGISTERS ARE PRESERVED, EXCEPT D6..., YEA I SAID IT....WHAT ARE YOU GONNA DO ABOUT IT PUNK!
-*--------------------------------------------------------------------------------------------------------- 
-ISMOVEAW            JSR         ISMOVEB
-                    RTS
-ISMOVEAL            JSR         ISMOVEL
-                    RTS               
+                RTS               
                 
 *---------------------------------------------------------------------------------------------------------
 *ISMOVEMW/L        (IS MOVEM.L AND MOVEM.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A 
@@ -122,17 +76,24 @@ ISMOVEAL            JSR         ISMOVEL
 *                  STRING WILL BE INCORRECT, TO BE FIXED! THE STATE OF ALL OTHER REGISTERS IS UNDETERMINED 
 *                  AFTER EXECUTION.
 *---------------------------------------------------------------------------------------------------------
-ISMOVEMW      JSR           ISMOVEML                         *WORD OR LONG DOES NOT CHANGE EA
-              RTS
 ISMOVEML      MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
               JSR           CLRALLDREG                       *CLEAR REGISTERS FOR MOVEM
-              JSR           SETEAREGISTERS 
+              JSR           SETEAREGISTERS
+              JSR           ERRORCHECK
+              CMP.W         #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+              BEQ           MMBADDATA 
               JSR           GETLISTMASK
               CMPI.B        #1, D4
               BEQ           MMAPPEA1
               JSR           MMAPPEA0
 RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS     
-              RTS  
+              RTS 
+
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+MMBADDATA   JSR         BADDATA
+            JMP         RTN_1DIR 
 
 *-----------------------------------------------------------------------------------------------------------
 *MOVEM APPEND ADDRESS DIRECTION 0 (REG TO MEM) - APPENDS ADDRESSES ACCORDING TO DIRECTION REG TO MEM
@@ -273,7 +234,7 @@ SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARS
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
-*isLEA            (IS MOVEA)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN LEA COMMAND
+*isLEA            (IS LEA)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN LEA COMMAND
 *
 *PRE CONDITIONS -  A6 POINTS TO START OF LEA COMMAND
 *
@@ -284,18 +245,16 @@ SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARS
 *---------------------------------------------------------------------------------------------------------
 isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                  JSR         CLRALLDREG                           
-                 MOVE.W      (A6)+, D7                        *GET CURRENT OP CODE DATA TO D7
-                 JSR         GETLEADREG
-                 JSR         GETLEASREG
-                 JSR         GETLEASMODE
-                 JSR         LEAERRORCHK
+                 MOVE.W      (A6)+, D0                        *GET CURRENT OP CODE DATA TO D7
+                 JSR         GETMOVEREG
+                 JSR         ERRORCHECK
                  CMP.W       #$BEEF, $456
                  BEQ         LEABADDATA
                  MOVE.L      #1, D6                           *INDICATES LONG FOR IMMEDIATE ADDRESSING
                  JSR         APPENDEA
                  MOVE.B      #',', (A2)+                      *ADD SPACE BETWEEN ADDRESSES
                  MOVE.B      #' ', (A2)+                      *ADD COMMA BETWEEN ADDRESSES
-                 MOVE.B      D3, D0
+                 JSR         SWAP
                  MOVE.W      #1, D1
                  JSR         APPENDEA
 LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
@@ -307,90 +266,6 @@ LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
 *-----------------------------------------------------------------------------------------------------------
 LEABADDATA       JSR         BADDATA
                  JMP         LEARTN
-                     
-*-----------------------------------------------------------------------------------------------------------
-*GET LEA DESTINATION REGISTER - GETS THE DESTINATION REGISTER FROM MEMORY TO PUT IN D6 FOR ERROR CHECKING
-*-----------------------------------------------------------------------------------------------------------    
-GETLEADREG      MOVE.W  D7, D3
-                LSL.L   #4, D3
-                LSL.L   #8, D3
-                LSL.L   #8, D3
-                LSR.L   #8, D3
-                LSR.L   #8, D3
-                LSR.L   #8, D3
-                LSR.L   #5, D3
-                RTS
-
-*-----------------------------------------------------------------------------------------------------------
-*GET LEA SOURCE REGISTER - GETS THE SOURCE REGISTER FROM MEMORY TO PUT IN D5 FOR ERROR CHECKING
-*-----------------------------------------------------------------------------------------------------------              
-GETLEASREG      MOVE.B  D7, D0
-                LSL.L   #8, D0
-                LSL.L   #5, D0 
-                LSL.L   #8, D0
-                LSL.L   #8, D0
-                LSR.L   #8, D0
-                LSR.L   #8, D0
-                LSR.L   #8, D0
-                LSR.L   #5, D0  
-                RTS
-
-*-----------------------------------------------------------------------------------------------------------
-*GET LEA SOURCE MODE - GETS THE SOURCE MODE FROM MEMORY TO PUT IN D4 FOR ERROR CHECKING
-*-----------------------------------------------------------------------------------------------------------                 
-GETLEASMODE     MOVE.W  D7, D1
-                LSL.L   #8, D1
-                LSL.L   #2, D1
-                LSL.L   #8, D1
-                LSL.L   #8, D1
-                LSR.L   #8, D1
-                LSR.L   #8, D1
-                LSR.L   #8, D1
-                LSR.L   #5, D1
-                RTS
-
-*-----------------------------------------------------------------------------------------------------------
-*LEA ERROR CHECK - CHECKS D4, D5, D6 (SOURCE MODE, DESTINATION REGISTER, SOURCE REGISTER) FOR ERRORS
-*                  BEEF IN D2 IS ERRORS EXIST...DOESNT REALLY HELP, FIX LATER!
-*-----------------------------------------------------------------------------------------------------------                 
-LEAERRORCHK     CMP.L   #0, D4
-                BEQ     LEAERROR
-                CMP.L   #1, D4
-                BEQ     LEAERROR
-                CMP.L   #3, D4
-                BEQ     LEAERROR
-                CMP.L   #4, D4
-                BEQ     LEAERROR
-                CMP.L   #5, D4
-                BEQ     LEAERROR
-                CMP.L   #6, D4
-                BEQ     LEAERROR
-                CMP.L   #7, D4
-                BEQ     LEACHKREGERR
-RTNLEAERRCHK    RTS
-
-*-----------------------------------------------------------------------------------------------------------
-*LEA CHECK REGISTER ERRORS - CHECKS D5 FOR CORRECT ADDRESSING MODES
-*-----------------------------------------------------------------------------------------------------------           
-LEACHKREGERR    CMP.L   #2, D5
-                BEQ     LEAERROR
-                CMP.L   #3, D5
-                BEQ     LEAERROR
-                CMP.L   #4, D5
-                BEQ     LEAERROR
-                CMP.L   #5, D5
-                BEQ     LEAERROR
-                CMP.L   #6, D5
-                BEQ     LEAERROR
-                CMP.L   #7, D5
-                BEQ     LEAERROR
-                JMP     RTNLEAERRCHK
-
-*-----------------------------------------------------------------------------------------------------------
-*LEA ERROR - PUTS BEEF ERROR IN D2 
-*-----------------------------------------------------------------------------------------------------------                 
-LEAERROR        MOVE.L  #$0BEEF, $456     *BEEF ERROR, RETURN
-                JMP     RTNLEAERRCHK
                 
 *---------------------------------------------------------------------------------------------------------
 *IS ORIB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN ORI COMMAND
@@ -403,14 +278,12 @@ LEAERROR        MOVE.L  #$0BEEF, $456     *BEEF ERROR, RETURN
 *---------------------------------------------------------------------------------------------------------            
 ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DATA
                 JSR         ISORIB                                                                             
-                RTS
-ISORIW          JSR         ISORIB
                 RTS   
 ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
-                JSR         PARSEORI                                               
-                JSR         ORIERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                JSR         GETMOVEREG                                              
+                JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         ORIBADDATA
                 JSR         APPENDIMMEDIATE                  *ELSE APPEND SRC AE
@@ -422,51 +295,10 @@ RTN_BADORI      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGI
                 RTS 
 
 *---------------------------------------------------------------------------------------------------------
-*ORI ERROR CHECK - CHECKS FOR ERRORS IN ADDRESSSING MODES FOR ORI CALL
-*--------------------------------------------------------------------------------------------------------- 
-ORIERRCHK       CMPI.B      #1, D1                       *CANNOT HAVE MODES 1, 5, OR 6
-                BEQ         ORIBADDATAF
-                CMPI.B      #5, D1
-                BEQ         ORIBADDATAF
-                CMPI.B      #6, D1
-                BEQ         ORIBADDATAF
-RTN_ORIERRCHK   RTS
-                
-*---------------------------------------------------------------------------------------------------------
-*ORI BAD DATA FLAG - SETS BEEF FLAG FOR BAD DATA (UN SUPPORTED ADDRESSING MODES 6 AND 7)
-*--------------------------------------------------------------------------------------------------------- 
-ORIBADDATAF     MOVE.W      #$BEEF, $456                *BEEF ERROR (MMMM)
-                JMP         RTN_ORIERRCHK
- 
-*---------------------------------------------------------------------------------------------------------
-*ORI BAD DATA - SETS BAD DATA FLAG AND RECOVERS A2 POINTER 
-*---------------------------------------------------------------------------------------------------------                
-ORIBADDATA      JSR         BADDATA                     
-                JSR         RECOVERPTR
-                CMPI.B      #7, D1
-                BEQ         ORIISWORL
-RTN_ORIISWORD   JSR         RECOVERPTR
-                JMP         RTN_BADORI
-ORIISWORL       CMPI.B      #0, D0
-                BEQ         ORIISWORD
-                MOVE.B      #1, D6
-                JMP         RTN_ORIISWORD
-ORIISWORD       MOVE.B      #0, D6
-                JMP         RTN_ORIISWORD
-
-*---------------------------------------------------------------------------------------------------------
-*PARSE ORI - PARSES THE ADDRESSING MODE AND REGISTER INTO D1 AND D0 RESPECTIVELY TO BE CHECKED FOR ERRORS
-*---------------------------------------------------------------------------------------------------------
-PARSEORI        MOVE.W      D0, D1
-                LSL.W       #8, D0
-                LSL.W       #5, D0
-                LSR.W       #8, D0
-                LSR.W       #5, D0
-                LSL.W       #8, D1
-                LSL.W       #2, D1
-                LSR.W       #8, D1
-                LSR.W       #5, D1
-                RTS
+*ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+ORIBADDATA  JSR         BADDATA
+            JMP         RTN_BADORI      
                 
 *---------------------------------------------------------------------------------------------------------
 *IS NEGB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN NEG COMMAND
@@ -480,13 +312,11 @@ PARSEORI        MOVE.W      D0, D1
 ISNEGL          MOVE.L      #1, D6                           *INDICATES LONG DATA
                 JSR         ISNEGB
                 RTS
-ISNEGW          JSR         ISNEGB
-                RTS
 ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
-                JSR         PARSENEG                                               
-                JSR         NEGERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                JSR         GETMOVEREG                                               
+                JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         NEGBADDATA
                 JSR         APPENDEA                         *APPEND DESTINATION EA
@@ -495,32 +325,10 @@ RTN_NEGERR      MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
-*NEG BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES, APPENDS BAD DATA STRING TO A2 IF THEY EXIST 
-*               (MODE 5 AND 6 NOT ALLOWED)
-*--------------------------------------------------------------------------------------------------------- 
-NEGBADDATA      JSR         BADDATA
-                JMP         RTN_NEGERR
-NEGERRCHK       CMPI.B      #5, D1
-                BEQ         NEGERR 
-                CMPI.B      #6, D1
-                BEQ         NEGERR
-RTN_NEG         RTS
-NEGERR          MOVE.W      #$BEEF, $456
-                JMP         RTN_NEG                      
-
-*---------------------------------------------------------------------------------------------------------
-*PARSE NEG - PARSES THE ADDRESSING REGISTER AND MODE INTO D0 AND D1 RESPECTIVELY TO BE CHECKED FOR ERRORS
-*---------------------------------------------------------------------------------------------------------                
-PARSENEG        MOVE.W      D0, D1
-                LSL.W       #8, D0
-                LSL.W       #5, D0
-                LSR.W       #8, D0
-                LSR.W       #5, D0
-                LSL.W       #8, D1
-                LSL.W       #2, D1
-                LSR.L       #8, D1
-                LSR.W       #5, D1
-                RTS
+*ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+NEGBADDATA  JSR         BADDATA
+            JMP         RTN_NEGERR
 
 *---------------------------------------------------------------------------------------------------------
 *IS E/ORB/W/L        TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN OR/EOR COMMAND
@@ -531,16 +339,8 @@ PARSENEG        MOVE.W      D0, D1
 *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
 *                  REGISTERS ARE PRESERVED. EXCEPT D6...
 *---------------------------------------------------------------------------------------------------------
-ISEORW          JSR         ISEORB
-                RTS
-ISEORL          JSR         ISEORB
-                RTS
 ISEORB          MOVE.L      #1, D6                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
                 JSR         ISORB
-                RTS
-ISORL           JSR         ISORB
-                RTS
-ISORW           JSR         ISORB
                 RTS
 ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
@@ -549,12 +349,14 @@ ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 CMPI.B      #2, D4                           *IF OPMODE GREATER THAN 2 DN IS SOURCE
                 BGT         PARSEDNSOURCE    
                 JSR         PARSEDNDEST                                          
-RTN_PARSEOR     JSR         ORERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+RTN_PARSEOR     JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                JSR         SWAP
+                JSR         ERRORCHECK  
+                JSR         SWAP
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         ORBADDATA
                 JSR         APPENDEA                         *APPEND DESTINATION EA
-                MOVE.B      D2, D0
-                MOVE.B      D3, D1
+                JSR         SWAP
                 MOVE.B      #',', (A2)+
                 MOVE.B      #' ', (A2)+
                 JSR         APPENDEA
@@ -563,21 +365,10 @@ RTN_OR          MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
-*OR BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES AND APPENDS BAD DATA TO A2 IF THEY ARE USED
-*---------------------------------------------------------------------------------------------------------
-ORBADDATA       JSR         BADDATA
-                JMP         RTN_OR
-ORERRCHK        CMPI.B      #5, D1
-                BEQ         ORERR 
-                CMPI.B      #6, D1
-                BEQ         ORERR
-                CMPI.B      #5, D3
-                BEQ         ORERR 
-                CMPI.B      #6, D3
-                BEQ         ORERR
-RTN_ORCHK       RTS
-ORERR           MOVE.W      #$BEEF, $456
-                JMP         RTN_ORCHK
+*ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+ORBADDATA   JSR         BADDATA
+            JMP         RTN_OR
 
 *---------------------------------------------------------------------------------------------------------
 *PARSE OR OP MODE - PARSES THE OPMODE FROM THE COMMAND TO DETERMINE IF DATA REGISTER IS SOURCE OR 
@@ -639,7 +430,7 @@ RTN_STRGCASE    RTS
 *-----------------------------------------------------------------------------------------------------------
 
 *---------------------------------------------------------------------------------------------------------
-*RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES)
+*RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES) DOES THIS MAKE SENSE??
 *---------------------------------------------------------------------------------------------------------
 RECOVERPTR          CMPI.B      #1, D6
                     BEQ         INCPTRLONG  
@@ -647,6 +438,26 @@ RECOVERPTR          CMPI.B      #1, D6
 RTN_LONGPTR         RTS
 INCPTRLONG          ADDA        #4, A6
                     JMP         RTN_LONGPTR
+                    
+*---------------------------------------------------------------------------------------------------------
+*ERROR CHECK - CHECKS ADDRESSING MODES AND ADDRESSING REGISTERS FOR GENERAL ERRORS THAT APPLY TO ALL OP CODES
+*---------------------------------------------------------------------------------------------------------            
+ERRORCHECK      JSR         CHECKMODE
+RTN_REGCHK      RTS
+CHECKMODE       CMPI.B      #5, D1
+                BEQ         ERROR
+                CMPI.B      #6, D1
+                BEQ         ERROR
+                CMPI.B      #7, D1
+                BEQ         CHECKREG
+                RTS
+CHECKREG        CMPI.B      #2, D0
+                BEQ         ERROR
+                CMPI.B      #3, D0
+                BEQ         ERROR
+                JMP         RTN_REGCHK
+ERROR           MOVE.W      #$BEEF, $456
+                JMP         RTN_REGCHK
 
 *---------------------------------------------------------------------------------------------------------
 *APPENDS IMMEDIATE  - APPEND IMMEDIATE DATA FROM A6 TO A2 DEPENDING ON WORD OR LONG ADDRESSING MODE
@@ -657,6 +468,13 @@ APPENDIMMEDIATE MOVE.B      #'#', (A2)+
                 CMP.B       #1, D6
                 BEQ         ISLONG
                 JSR         APPENDWORD
+                RTS
+                
+*---------------------------------------------------------------------------------------------------------
+*SWAP  - SWAPS D0 AND D1 WITH D2 AND D3 SO ERROR CHECKING CAN BE DONE ONE BOTH SOURCE AND DEST OPERANDS
+*---------------------------------------------------------------------------------------------------------
+SWAP            EXG         D0, D2
+                EXG         D1, D3
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -887,6 +705,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 
 
