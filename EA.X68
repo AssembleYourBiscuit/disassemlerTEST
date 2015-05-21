@@ -449,6 +449,59 @@ PARSEORI        MOVE.W      D0, D1
                 LSR.W       #8, D1
                 LSR.W       #5, D1
                 RTS
+                
+*---------------------------------------------------------------------------------------------------------
+*IS NEGB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN NEG COMMAND
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+*---------------------------------------------------------------------------------------------------------             
+ISNEGL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+                JSR         ISNEGB
+                RTS
+ISNEGW          JSR         ISNEGB
+                RTS
+ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+                JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+                MOVE.W      (A6)+, D0
+                JSR         PARSENEG                                               
+                JSR         NEGERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+                BEQ         NEGBADDATA
+                JSR         APPENDEA                         *APPEND DESTINATION EA
+                MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+RTN_NEGERR      RTS
+
+*---------------------------------------------------------------------------------------------------------
+*NEG BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES, APPENDS BAD DATA STRING TO A2 IF THEY EXIST 
+*               (MODE 5 AND 6 NOT ALLOWED)
+*--------------------------------------------------------------------------------------------------------- 
+NEGBADDATA      JSR         BADDATA
+                JMP         RTN_NEGERR
+NEGERRCHK       CMPI.B      #5, D1
+                BEQ         NEGERR 
+                CMPI.B      #5, D1
+                BEQ         NEGERR
+RTN_NEG         RTS
+NEGERR          MOVE.W      #$BEEF, $456
+                JMP         RTN_NEG                      
+
+*---------------------------------------------------------------------------------------------------------
+*PARSE NEG - PARSES THE ADDRESSING REGISTER AND MODE INTO D0 AND D1 RESPECTIVELY TO BE CHECKED FOR ERRORS
+*---------------------------------------------------------------------------------------------------------                
+PARSENEG        MOVE.W      D0, D1
+                LSL.W       #8, D0
+                LSL.W       #5, D0
+                LSR.W       #8, D0
+                LSR.W       #5, D0
+                LSL.W       #8, D1
+                LSL.W       #2, D1
+                LSR.L       #8, D1
+                LSR.W       #5, D1
+                RTS
 
 
 *-----------------------------------------------------------------------------------------------------------
@@ -708,6 +761,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 
 *~Font name~Courier New~
