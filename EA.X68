@@ -33,8 +33,9 @@ ISMOVEB     MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             MOVE.B      D2, D0
             MOVE.B      D3, D1
             JSR         APPENDEA                         *APPEND DESTINATION EA
-            MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
-RTN_BAD     RTS 
+RTN_BAD     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+            MOVE.L      #0, D6
+            RTS 
      
 MOVEBADDATA JSR         BADDATA
             JMP         RTN_BAD
@@ -297,8 +298,9 @@ isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGIST
                  MOVE.B      D3, D0
                  MOVE.W      #1, D1
                  JSR         APPENDEA
-                 MOVEM.L     $400, D0-D7/A0/A1/A3-A5
-LEARTN           RTS
+LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+                 MOVE.L      #0, D6
+                 RTS
 
 *-----------------------------------------------------------------------------------------------------------
 *LEABAD DATA - SETS BEEF FLAG IF BAD DATA
@@ -404,19 +406,20 @@ ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DAT
                 RTS
 ISORIW          JSR         ISORIB
                 RTS   
-ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400       *SAVE JEENS REGISTERS AT $400
+ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
                 JSR         PARSEORI                                               
                 JSR         ORIERRCHK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         ORIBADDATA
-                JSR         APPENDIMMEDIATE                         *ELSE APPEND SRC AE
+                JSR         APPENDIMMEDIATE                  *ELSE APPEND SRC AE
                 MOVE.B      #',', (A2)+
                 MOVE.B      #' ', (A2)+
                 JSR         APPENDEA                         *APPEND DESTINATION EA
-                MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
-RTN_BADORI      RTS 
+RTN_BADORI      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+                MOVE.L      #0, D6
+                RTS 
 
 *---------------------------------------------------------------------------------------------------------
 *ORI ERROR CHECK - CHECKS FOR ERRORS IN ADDRESSSING MODES FOR ORI CALL
@@ -487,8 +490,9 @@ ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         NEGBADDATA
                 JSR         APPENDEA                         *APPEND DESTINATION EA
-                MOVEM.L     $400, D0-D7/A0/A1/A3-A5
-RTN_NEGERR      RTS
+RTN_NEGERR      MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+                MOVE.L      #0, D6
+                RTS
 
 *---------------------------------------------------------------------------------------------------------
 *NEG BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES, APPENDS BAD DATA STRING TO A2 IF THEY EXIST 
@@ -519,14 +523,21 @@ PARSENEG        MOVE.W      D0, D1
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
-*IS ORB/W/L        TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN OR COMMAND
+*IS E/ORB/W/L        TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN OR/EOR COMMAND
 *
 *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
 *
 *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
 *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
-*                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+*                  REGISTERS ARE PRESERVED. EXCEPT D6...
 *---------------------------------------------------------------------------------------------------------
+ISEORW          JSR         ISEORB
+                RTS
+ISEORL          JSR         ISEORB
+                RTS
+ISEORB          MOVE.L      #1, D6                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
+                JSR         ISORB
+                RTS
 ISORL           JSR         ISORB
                 RTS
 ISORW           JSR         ISORB
@@ -547,8 +558,9 @@ RTN_PARSEOR     JSR         ORERRCHK                        *CHECK FOR ERRORS, $
                 MOVE.B      #',', (A2)+
                 MOVE.B      #' ', (A2)+
                 JSR         APPENDEA
-                MOVEM.L     $400, D0-D7/A0/A1/A3-A5
-RTN_OR          RTS
+RTN_OR          MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+                MOVE.L      #0, D6
+                RTS
 
 *---------------------------------------------------------------------------------------------------------
 *OR BAD DATA - CHECKS FOR ILLEGAL ADDRESSING MODES AND APPENDS BAD DATA TO A2 IF THEY ARE USED
@@ -595,12 +607,16 @@ PARSEDNSOURCE   MOVE.W      #0, D1
                 LSL.W       #2, D3
                 LSR.W       #8, D3
                 LSR.W       #5, D3
+                CMPI.B      #1, D6
+                BEQ         RTN_STRGCASE
                 JMP         RTN_PARSEOR 
 
 *---------------------------------------------------------------------------------------------------------
 *PARSE DN DESTINATION - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE DESTINATION OPERAND
 *---------------------------------------------------------------------------------------------------------
-PARSEDNDEST     MOVE.W      #0, D3
+PARSEDNDEST     CMPI.B      #1, D6
+                BEQ         PARSEDNSOURCE
+                MOVE.W      #0, D3
                 LSL.W       #4, D2
                 LSR.W       #8, D2
                 LSR.W       #5, D2  
@@ -612,8 +628,7 @@ PARSEDNDEST     MOVE.W      #0, D3
                 LSL.W       #2, D1
                 LSR.W       #8, D1
                 LSR.W       #5, D1
-                RTS
-
+RTN_STRGCASE    RTS
 
 *-----------------------------------------------------------------------------------------------------------
 **********************************************SHARED-CODE-SECTION******************************************* 
@@ -872,6 +887,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 
 
