@@ -25,9 +25,11 @@ ISMOVEB     MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
             JSR         SWAP
             JSR         ERRORCHECK
+            JSR         SWAP
             CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
             BEQ         MOVEBADDATA
-            JSR         APPENDEA                         *ELSE APPEND SRC AE
+            JSR         APPENDEA 
+            JSR         SWAP                        *ELSE APPEND SRC AE
             MOVE.B      #',', (A2)+
             MOVE.B      #' ', (A2)+
             JSR         APPENDEA                         *APPEND DESTINATION EA
@@ -705,6 +707,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 
 
