@@ -94,6 +94,21 @@ GETMOVEREG      MOVE.W  D7, D0
                 RTS
                 
 *---------------------------------------------------------------------------------------------------------
+*IS MOVEAW/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MOVEA COMMAND. APPENDS 
+*                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING. JUST CALLS MOVE, SAME DEAL
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED, EXCEPT D6..., YEA I SAID IT....WHAT ARE YOU GONNA DO ABOUT IT PUNK!
+*--------------------------------------------------------------------------------------------------------- 
+ISMOVEAW            JSR         ISMOVEB
+                    RTS
+ISMOVEAL            JSR         ISMOVEL
+                    RTS               
+                
+*---------------------------------------------------------------------------------------------------------
 *ISMOVEMW/L        (IS MOVEM.L AND MOVEM.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A 
 *                  KNOWN MOVEM COMMAND
 *
@@ -761,6 +776,7 @@ BADDATA         MOVE.B      #'B', (A2)+
                 MOVE.B      #'A', (A2)+
                 MOVE.W      #$FFFF, $456
                 RTS
+
 
 
 
