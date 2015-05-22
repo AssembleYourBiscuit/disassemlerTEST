@@ -7,12 +7,16 @@
 
 CR          EQU     $0D
 LF          EQU     $0A
-starting    EQU     $00000000
+starting    EQU     $00000400
 ending      EQU     $00FFFFFE
+outData     EQU     $10000
+
+
 
     ORG    $1000
 START:                  ; first instruction of program
 * Put program code here
+            MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
 
     
 welcome     LEA     WelcomeMsg,A1       ;Load welcome message
@@ -117,7 +121,7 @@ errMsgE     LEA     error,A1            ;Load the error message
 *   --Using D6 to store the converted address
 *   --Using D3 to store the good(0) and bad(1) inputs
 *---------------------------------------------------------------------
-validate    MOVEQ   #$0,D2              ;
+validate    MOVEQ   #$0,D2              ;Set D2 to 0 to compare if the input is null 
             CMP.B   D2,D0               ;Is the length of the user input = 0?
             BEQ     badInput            ;If yes return badInput
             CMPI    #$8,D0              ;Check if the length of the user input is 
@@ -138,9 +142,9 @@ valLoop     MOVE.B  (A1),D5             ;Validation Loop, validate character by 
             CMP.B   #$29,D5
             BGT     conNum
             
-conLCase    SUBI.B  #87,D5              ;Convert the ASCII value of lower-case to actual value
+conLCase    SUB.B   #$57,D5              ;Convert the ASCII value of lower-case to actual value
             BRA     converted           ;After converted branch to converted to save
-conUCase    SUBI.B  #55,D5              ;Convert the ASCII value of Upper-case to actual value
+conUCase    SUB.B   #$37,D5              ;Convert the ASCII value of Upper-case to actual value
 converted   ASL.L   #4,D6               ;Arithmetic Shift Left, shif the 4 bits to the left (4zeros added at the end)
             ADD.B   D5,D6               ;Now replace the 4 bits (0000) with the actual value
             ADDQ    #1,A1               ;Increment the address pointer, point to the next digit
@@ -156,9 +160,9 @@ conNum      SUB.B   #$30,D5             ;Convert the ASCII value of number to ac
             CMP.B   #0,D1               ;Check if the length is 0 (done with all the digits?)
             BEQ     goodInput           ;If yes, give signal as good input
             BRA     valLoop             ;Else, keep validating the next digit
-badInput    MOVEQ   #$1,D3              ;Give signal by
+badInput    MOVEQ   #$1,D3              ;Give bad signal by
             RTS                         ;Put #1 into D3 to represent the bad input
-goodInput   MOVEQ  #$0,D3               ;Give signal by
+goodInput   MOVEQ   #$0,D3              ;Give good signal by
             RTS                         ;Put #0 into D3 to represent the good input
 *----------------------END VALIDATION/DECODING------------------------------------
 
@@ -205,6 +209,9 @@ startAddr   DC.W    $90
 endAddr     DC.W    $98
 error       DC.B    'The address you entered is whether invalid or out of range.',CR,LF,CR,LF,0
     END    START        ; last line of source
+
+
+
 
 
 
