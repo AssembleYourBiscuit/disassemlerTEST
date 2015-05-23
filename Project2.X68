@@ -189,26 +189,8 @@ end         LEA     ThxMsg,A1           ;Load the Thank-you message
             MOVE.B  #9, d0          
             TRAP    #15
 
-            SIMHALT             ; halt simulator
+           
 
-* Put variables and constants here
-*-----------Output texts------------------------------------
-WelcomeMsg  DC.b    'Welcome to EASy68K Instruction Disassembler!',CR,LF,0
-WrtBy       DC.B    'Created by: Vuochly Ky, Kunlakan Cherdchusilp, Nicolas Michael',CR,LF,CR,LF,0
-note1       DC.B    'Preconditions: ',CR,LF,0
-note2       DC.B    '   -- The address inputs must be in hexadecimal number (without $)',CR,LF,0
-note3       DC.B    '   -- Addresses must be in the range of 0 ~ 00FFFFFE',CR,LF,0
-note4       DC.B    '   -- Both starting and ending address must be even addresses',CR,LF,0
-startLoc    DC.B    'Please enter the starting location in hexadecimal format: ',0
-endLoc      DC.B    'Please enter the ending location in hexadecimal format: ',0
-AskToCont   DC.B    'Would you like to start over? (y/n) :',0
-enter       DC.B    'Press ENTER key to see more.',0
-ThxMsg      DC.B    'Thank you for using our EASy68K Instruction Disassembler!',0
-string      DC.W    $80
-startAddr   DC.W    $90
-endAddr     DC.W    $98
-error       DC.B    'The address you entered is whether invalid or out of range.',CR,LF,CR,LF,0
-    END    START        ; last line of source
 
 
 
