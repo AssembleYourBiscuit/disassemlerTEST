@@ -9,14 +9,13 @@ CR          EQU     $0D
 LF          EQU     $0A
 starting    EQU     $00000400
 ending      EQU     $00FFFFFE
-outData     EQU     $10000
+outData     EQU     $10000              ;THE BEGINNING OF THE DISASSEMBLED CODE
 
 
 
-    ORG    $1000
-START:                  ; first instruction of program
-* Put program code here
-            MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
+            ORG    $1000
+START:      
+            MOVEA.L #outData, A2        ;THIS LOCATION IS WHERE THE DISASSEMBLED INSTRUCTION IS STORED
 
     
 welcome     LEA     WelcomeMsg,A1       ;Load welcome message
@@ -114,19 +113,20 @@ errMsgE     LEA     error,A1            ;Load the error message
             JSR     getEnd 
 *---------------------------------------------------------------------
 * VALIDATE EACH DIGITS OF THE USER INPUT AND DECODE INTO ACTUAL VALUE
-* -- Check if the user input is not NULL or greater than 8 digits
-* -- Check each character if it is valid. If valid, decode it.
+* -- CHECK IF THE USER INPUT IS NULL OR GREATER THAN 8 DIGITS
+* -- CHECK EACH CHARACTER IF IT IS VALID. IF VALID, DECODE IT
 * NOTE:
-*   --Using D5 to temporary store each digit to validate
-*   --Using D6 to store the converted address
-*   --Using D3 to store the good(0) and bad(1) inputs
+*   --USING D5 TO TEMPORARY STORE EACH DIGIT TO VALIDATE
+*   --USING D6 TO STORE THE CONVERTED ADDRESS (TEMPORARY)
+*   --USING D3 TO STORE THE GOOD(0) AND BAD(1) INPUTS
 *---------------------------------------------------------------------
 validate    MOVEQ   #$0,D2              ;Set D2 to 0 to compare if the input is null 
-            CMP.B   D2,D0               ;Is the length of the user input = 0?
+            CMP.B   D2,D1               ;Is the length of the user input = 0?
             BEQ     badInput            ;If yes return badInput
-            CMPI    #$8,D0              ;Check if the length of the user input is 
+            CMPI    #$8,D1              ;Check if the length of the user input is 
             BGT     badInput            ;greater than 8 character. If yes, badInput
-valLoop     MOVE.B  (A1),D5             ;Validation Loop, validate character by character
+valLoop                                 ;Validation Loop, validate character by character
+            MOVE.B  (A1),D5             ;Copy an input digit into D5. 
             CMP.B   D2,D5               ;Check if the next character is null
             BEQ     badInput            ;If null, return bad input
             CMP.B   #$66,D5             ;66 is ascii value of character 'f', highest in the valid range 
@@ -142,9 +142,9 @@ valLoop     MOVE.B  (A1),D5             ;Validation Loop, validate character by 
             CMP.B   #$29,D5
             BGT     conNum
             
-conLCase    SUB.B   #$57,D5              ;Convert the ASCII value of lower-case to actual value
+conLCase    SUB.B   #$57,D5             ;Convert the ASCII value of lower-case to actual value
             BRA     converted           ;After converted branch to converted to save
-conUCase    SUB.B   #$37,D5              ;Convert the ASCII value of Upper-case to actual value
+conUCase    SUB.B   #$37,D5             ;Convert the ASCII value of Upper-case to actual value
 converted   ASL.L   #4,D6               ;Arithmetic Shift Left, shif the 4 bits to the left (4zeros added at the end)
             ADD.B   D5,D6               ;Now replace the 4 bits (0000) with the actual value
             ADDQ    #1,A1               ;Increment the address pointer, point to the next digit
@@ -167,10 +167,11 @@ goodInput   MOVEQ   #$0,D3              ;Give good signal by
 *----------------------END VALIDATION/DECODING------------------------------------
 
 
+
 promptCont  LEA     AskToCont,A1
             MOVE.B  #14,D0
             TRAP    #15
-            MOVEA.w string,A1           ;put 800 in register to use to point to the memory
+            MOVEA.w YN,A1               ;put 800 in register to use to point to the memory
             MOVE.B  #2, d0
             TRAP    #15
             CMP.B   #$79, (A1)          ;Check if the user enter 'y'
@@ -180,8 +181,14 @@ promptCont  LEA     AskToCont,A1
             CMP.B   #$6e, (A1)          ;Check if the user input is 'n'
             BEQ     end                 ;If yes, brach to end
             CMP.B   #$4e, (A1)          ;Check if the user input is 'N'
-            BEQ     end                 ;If yes, branch to end        
-    
+            BEQ     end                 ;If yes, branch to end  
+            BRA     NEITHER      
+
+NEITHER     LEA     notNY,A1
+            MOVE.B  #14,D0
+            TRAP    #15
+            BRA     promptCont
+                
 
 end         LEA     ThxMsg,A1           ;Load the Thank-you message
             MOVE.B  #14,D0              ;Print it out
@@ -198,17 +205,21 @@ WrtBy       DC.B    'Created by: Vuochly Ky, Kunlakan Cherdchusilp, Nicolas Mich
 note1       DC.B    'Preconditions: ',CR,LF,0
 note2       DC.B    '   -- The address inputs must be in hexadecimal number (without $)',CR,LF,0
 note3       DC.B    '   -- Addresses must be in the range of 0 ~ 00FFFFFE',CR,LF,0
-note4       DC.B    '   -- Both starting and ending address must be even addresses',CR,LF,0
+note4       DC.B    '   -- Both starting and ending address must be even addresses',CR,LF,CR,LF,0
 startLoc    DC.B    'Please enter the starting location in hexadecimal format: ',0
 endLoc      DC.B    'Please enter the ending location in hexadecimal format: ',0
 AskToCont   DC.B    'Would you like to start over? (y/n) :',0
 enter       DC.B    'Press ENTER key to see more.',0
 ThxMsg      DC.B    'Thank you for using our EASy68K Instruction Disassembler!',0
-string      DC.W    $80
+YN          DC.W    $80     ;WHERE THE YES/NO CHARACTER IS STORED
 startAddr   DC.W    $90
 endAddr     DC.W    $98
 error       DC.B    'The address you entered is whether invalid or out of range.',CR,LF,CR,LF,0
+NOTNY       DC.B    'You did not enter n or y, Please enter again!',CR,LF,0
     END    START        ; last line of source
+
+
+
 
 
 
