@@ -1138,6 +1138,85 @@ PARSEDNDEST     CMPI.B      #1, D7
                 LSR.W       #5, D1
 RTN_STRGCASE    RTS
 
+*---------------------------------------------------------------------------------------------------------
+*IS SHIFTY STUFF    TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN LSR,LSL, ASL, ASL, ROR, ROL
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF LEA COMMAND
+*
+*POST CONDITIONS - A2 POINTS TO NEXT AVAILABLE LOCATION TO ADD NEXT ASCII INSTRUCTION. DO NOT INCREMENT
+*                  A2, ALREADY DONE! A6 POINTS TO START OF NEXT COMMAND OR AND OF FILE IF ALL COMMANDS HAVE
+*                  BEEN DIASSEMBLED. DO NOT INC A6, ALREADY DONE. ASCII STRINGS HAVE BEEN ADDED TO (A2) IF
+*                  NO ERRORS OCCURED. THE STATE OF ALL OTHER REGISTERS IS EXACTLY HOW THEY WERE BEFORE CALLING THIS
+*---------------------------------------------------------------------------------------------------------
+ISSHIFTYSTUFF    MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+                 JSR         CLRALLDREG                           
+                 MOVE.W      (A6)+, D0                        *GET CURRENT OP CODE DATA TO D7
+                 JSR         SHIFTSIZE
+                 JSR         GETMOVEREG
+                 JSR         SWAP
+                 CMPI.B      #3, D4
+                 BEQ         MEMORYSHIFT                           *SHIFT FOR I/R
+                 CMPI.B      #3, D3
+                 BLE         SETUP 
+                 MOVE.B      #0, D1
+                 MOVE.B      #0, D3
+                 JSR         APPENDEA
+RTN_SETUP        MOVE.B      #',', (A2)+                      *ADD SPACE BETWEEN ADDRESSES
+                 MOVE.B      #' ', (A2)+                      *ADD COMMA BETWEEN ADDRESSES
+                 JSR         SWAP
+                 JSR         APPENDEA
+RTN_MEMSHIFT     MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+                 MOVE.L      #0, D6
+                 MOVE.L      #0, D7
+                 RTS
+
+*-----------------------------------------------------------------------------------------------------------
+*SHIFT BAD DATA DATA - SETS BEEF FLAG IF BAD DATA
+*-----------------------------------------------------------------------------------------------------------
+SHIFTBADDATA     JSR         BADDATA
+                 JMP         RTN_MEMSHIFT
+
+*-----------------------------------------------------------------------------------------------------------
+*SHIFT SIZE - SHIFT DATA TO RETRIEVE SIZE DATA
+*-----------------------------------------------------------------------------------------------------------                 
+SHIFTSIZE        MOVE.W     D0, D4
+                 LSL.W      #8, D4
+                 LSR.W      #8, D4
+                 LSR.W      #6, D4
+                 RTS
+
+*-----------------------------------------------------------------------------------------------------------
+*MEMORY SHIFT - MEMORY SHIFT DETERMINED, APPEND APPROPRIATELY
+*-----------------------------------------------------------------------------------------------------------                 
+MEMORYSHIFT     JSR         SHIFTMEM
+                JMP         RTN_MEMSHIFT
+ 
+*-----------------------------------------------------------------------------------------------------------
+*SHIFT MEMORY - MEMORY SHIFT DETERMINED, CHECK FOR ERRORS AND APPEND STRING TO A2
+*-----------------------------------------------------------------------------------------------------------               
+SHIFTMEM        JSR         SWAP
+                JSR         ERRORCHECK
+                CMP.W       #$BEEF, $456         
+                BEQ         BADSHIFTYDATA
+                JSR         APPENDEA
+                RTS
+
+*-----------------------------------------------------------------------------------------------------------
+*SET UP - SETS UP REGISTER DATA TO BE PRINTED
+*-----------------------------------------------------------------------------------------------------------                
+SETUP           MOVE.B      #'#', (A2)+
+                MOVE.B      #0, D1
+                MOVE.B      #0, D3
+                CMPI.B      #0, D0
+                BEQ         MAKEZEROEIGHT
+RTN_ZE          JSR         APPENDDISPLACE
+                JMP         RTN_SETUP
+MAKEZEROEIGHT   ADDI.W      #8, D0 
+                JMP         RTN_ZE
+BADSHIFTYDATA   JSR         BADDATA
+                JMP         RTN_MEMSHIFT
+
+
 *-----------------------------------------------------------------------------------------------------------
 **********************************************SHARED-CODE-SECTION******************************************* 
 *-----------------------------------------------------------------------------------------------------------
@@ -1465,6 +1544,7 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
             
+
 
 
 
