@@ -21,10 +21,14 @@ outData     EQU     $10000
 
 
     ORG    $1000
+    
+    bclr.l    #$12346789, d7
+    
 START:                  ; first instruction of program
 * Put program code here
+            
             MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
-
+            BRA     WELCOME
     
 welcome     LEA     WelcomeMsg,A1       ;Load welcome message
             MOVE.B  #14,D0              ;Display the welcome message
@@ -45,6 +49,7 @@ welcome     LEA     WelcomeMsg,A1       ;Load welcome message
             LEA     note4,A1            ;
             MOVE.B  #14,D0              ;
             TRAP    #15                 ;
+            
 
 main        JSR     getStart
             JSR     getEnd              ;After done dealing with starting address, call getEnd
@@ -300,7 +305,7 @@ CODE0001        MOVE.B      #'M', (A2)+
                 MOVE.B      #'E', (A2)+
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'B', (A2)+
-                JSR         ISMOVEB
+                JSR         ISMOVE
                 BRA         FINISHE
            
 *----------------------------------------------------------------------------------------------------
@@ -343,7 +348,7 @@ CODE0011        MOVE.B      #'M', (A2)+
 
 MOVEW           MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
-                JSR         ISMOVEb
+                JSR         ISMOVE
                 RTS
           
 MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
@@ -354,7 +359,7 @@ MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION
                 MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
-                JSR         ISMOVEb
+                JSR         ISMOVE
                 RTS
 
 *---------------------------------------------------------------------
@@ -519,14 +524,197 @@ SIZE_WORD1      MOVE.B      #'W', (A2)+
                 
 SIZE_LONG1      MOVE.B      #'L', (A2)+
                 BRA         RETURN_SIZE
+                
+*---------------------------------------------------------------------------------------------------------
+*IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN SUBQ COMMAND. APPENDS 
+*                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED
+*---------------------------------------------------------------------------------------------------------   
+ISMULS      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+            JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+            MOVE.W      (A6)+, D0
+            JSR         GETMOVEREG                                               
+            JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+            MOVE.B      #0, D3
+            JSR         SWAP
+            JSR         ERRORCHECK
+            CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+            BEQ         BADMULDATA
+            JSR         SWAP
+            JSR         APPENDEA 
+            JSR         SWAP                             *ELSE APPEND SRC AE
+            MOVE.B      #',', (A2)+
+            MOVE.B      #' ', (A2)+
+            JSR         APPENDEA                         *APPEND DESTINATION EA
+RTN_BADMUL  MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+            MOVE.L      #0, D6
+            MOVE.L      #0, D7
+            RTS    
 
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+BADMULDATA  JSR         BADDATA
+            JMP         RTN_BADMUL
+                
+*---------------------------------------------------------------------------------------------------------
+*IS SUBQ           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN SUBQ COMMAND. APPENDS 
+*                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED
+*---------------------------------------------------------------------------------------------------------   
+ISSUBQ      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+            JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+            MOVE.W      (A6)+, D0
+            JSR         GETMOVEREG                                               
+            JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+            CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+            BEQ         BADQDATA
+            JSR         SWAP
+            MOVE.B      #'#', (A2)+
+            JSR         APPENDDISPLACE 
+            JSR         SWAP                             *ELSE APPEND SRC AE
+            MOVE.B      #',', (A2)+
+            MOVE.B      #' ', (A2)+
+            JSR         APPENDEA                         *APPEND DESTINATION EA
+RTN_BADQ    MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+            MOVE.L      #0, D6
+            RTS    
+
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+BADQDATA    JSR         BADDATA
+            JMP         RTN_BADQ 
+
+*---------------------------------------------------------------------------------------------------------
+*IS ADDA           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN ADDA COMMAND. APPENDS 
+*                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED
+*---------------------------------------------------------------------------------------------------------   
+ISADDAL     MOVE.L      #1, D6                           *INDICATES LONG DATA
+            JSR         ISADDA                                                                             
+            RTS   
+ISADDA      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+            JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+            MOVE.W      (A6)+, D0
+            JSR         GETMOVEREG
+            MOVE.B      #1, D3                           *SET DESTINATION TO ADDRESS REGISTER                                               
+            JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+            JSR         SWAP
+            JSR         ERRORCHECK
+            JSR         SWAP
+            CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+            BEQ         ADDABADDATA
+            JSR         APPENDEA 
+            JSR         SWAP                             *ELSE APPEND SRC AE
+            MOVE.B      #',', (A2)+
+            MOVE.B      #' ', (A2)+
+            JSR         APPENDEA                         *APPEND DESTINATION EA
+RTN_BADA    MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+            MOVE.L      #0, D6
+            RTS    
+
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+ADDABADDATA JSR         BADDATA
+            JMP         RTN_BADA     
+                           
+*---------------------------------------------------------------------------------------------------------
+*IS BCLR           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN BCLR COMMAND. CAN BE 
+*                  CALLED REGARDLESS OF SIZE CODE. EA WILL BE THE SAME FOR BOTH BYTE AND LONG MODES
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED
+*---------------------------------------------------------------------------------------------------------   
+ISBCLR      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+            JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+            MOVE.W      (A6)+, D0
+            JSR         GETMOVEREG                                               
+            JSR         SWAP
+            CMPI.B      #6, D1
+            BNE         IMSOURCE
+            MOVE.B      #0, D1
+RTN_IMSRC   JSR         ERRORCHECK
+            JSR         SWAP
+            JSR         ERRORCHECK
+            JSR         SWAP
+            CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+            BEQ         BCLRBADDATA
+            JSR         APPENDEA 
+            JSR         SWAP                             *ELSE APPEND SRC AE
+            MOVE.B      #',', (A2)+
+            MOVE.B      #' ', (A2)+
+            JSR         APPENDEA                         *APPEND DESTINATION EA
+RTN_BCLRBAD MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+            MOVE.L      #0, D6
+            RTS 
             
-*-----------------------------------------------------------
-* Title      :EA
-* Written by :Nicolas Michael
-* Date       :5/19/2015
-* Description:Completed EA codes for testing
-*-----------------------------------------------------------
+IMSOURCE    MOVE.B      #7, D1
+            MOVE.B      #4, D0
+            JMP         RTN_IMSRC
+
+*---------------------------------------------------------------------------------------------------------
+*MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+*---------------------------------------------------------------------------------------------------------      
+BCLRBADDATA JSR         BADDATA
+            JMP         RTN_BCLRBAD
+          
+
+*---------------------------------------------------------------------------------------------------------
+*IS BRA            TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN BRA OR BRA FAMILY COMMAND. 
+*                  APPENDS ADDRESSING OF NEXT INSTRUCTION TO BE EXECUTED TO A2
+*
+*PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+*
+*POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+*                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+*                  REGISTERS ARE PRESERVED
+*---------------------------------------------------------------------------------------------------------
+ISBRA           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+                JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+                MOVE.L      A6, D1                           *PC ADDRESS
+                ADDQ        #2, D1                           *ADD 2 TO PC ADDRESS
+                MOVE.W      (A6)+, D0
+                JSR         GETDISPLACEMENT                                               
+                CMPI.B      #0, D0
+                BEQ         BITDISPLACE                      *IF SIXTEEN BIT DISPLACEMENT GET NEXT WORD
+RTN_16BIT       ADD.L       D0, D1
+                JSR         APPENDDISPLACE                   *APPEND DESTINATION EA
+                MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+                MOVE.L      #0, D6
+                RTS
+
+*---------------------------------------------------------------------------------------------------------
+*GET DISPLACEMENT - SHIFTS CURRENT WORD TO EXTRACT 8 BIT DISPLACEMENT VALUE, CHECK FOR 00 AFTERWARDS
+*---------------------------------------------------------------------------------------------------------
+GETDISPLACEMENT LSL.W   #8, D0
+                LSR.W   #8, D0
+                RTS
+ 
+*---------------------------------------------------------------------------------------------------------
+*BIT DISPLACEMENT - 8 BIT DISPLACEMENT MUST BE 0, GRAB NEXT WORD TO EXTRACT 16 BIT DISPLACEMENT, HEHE.
+*---------------------------------------------------------------------------------------------------------               
+BITDISPLACE     MOVE.W      (A6)+, D0
+                JMP         RTN_16BIT
 
 *---------------------------------------------------------------------------------------------------------
 *IS MOVEB/W/L      TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MOVE COMMAND. APPENDS 
@@ -539,9 +727,9 @@ SIZE_LONG1      MOVE.B      #'L', (A2)+
 *                  REGISTERS ARE PRESERVED
 *---------------------------------------------------------------------------------------------------------   
 ISMOVEL     MOVE.L      #1, D6                           *INDICATES LONG DATA
-            JSR         ISMOVEB                                                                             
+            JSR         ISMOVE                                                                             
             RTS   
-ISMOVEB     MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISMOVE      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
             JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
             MOVE.W      (A6)+, D0
             JSR         GETMOVEREG                                               
@@ -601,7 +789,7 @@ GETMOVEREG      MOVE.W  D0, D1
 *                  STRING WILL BE INCORRECT, TO BE FIXED! THE STATE OF ALL OTHER REGISTERS IS UNDETERMINED 
 *                  AFTER EXECUTION.
 *---------------------------------------------------------------------------------------------------------
-ISMOVEML      MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
               JSR           CLRALLDREG                       *CLEAR REGISTERS FOR MOVEM
               JSR           SETEAREGISTERS
               JSR           ERRORCHECK
@@ -768,7 +956,7 @@ SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARS
 *                  BEEN DIASSEMBLED. DO NOT INC A6, ALREADY DONE. ASCII STRINGS HAVE BEEN ADDED TO (A2) IF
 *                  NO ERRORS OCCURED. THE STATE OF ALL OTHER REGISTERS IS EXACTLY HOW THEY WERE BEFORE CALLING THIS
 *---------------------------------------------------------------------------------------------------------
-isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                  JSR         CLRALLDREG                           
                  MOVE.W      (A6)+, D0                        *GET CURRENT OP CODE DATA TO D7
                  JSR         GETMOVEREG
@@ -802,9 +990,9 @@ LEABADDATA       JSR         BADDATA
 *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
 *---------------------------------------------------------------------------------------------------------            
 ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DATA
-                JSR         ISORIB                                                                             
+                JSR         ISORI                                                                             
                 RTS   
-ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISORI           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
                 JSR         GETMOVEREG                                              
@@ -835,13 +1023,13 @@ ORIBADDATA  JSR         BADDATA
 *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
 *---------------------------------------------------------------------------------------------------------             
 ISNEGL          MOVE.L      #1, D6                           *INDICATES LONG DATA
-                JSR         ISNEGB
+                JSR         ISNEG
                 RTS
-ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISNEG           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
                 JSR         GETMOVEREG                                               
-                JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+                JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         NEGBADDATA
                 JSR         APPENDEA                         *APPEND DESTINATION EA
@@ -864,10 +1052,15 @@ NEGBADDATA  JSR         BADDATA
 *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
 *                  REGISTERS ARE PRESERVED. EXCEPT D6...
 *---------------------------------------------------------------------------------------------------------
-ISEORB          MOVE.L      #1, D6                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
-                JSR         ISORB
+ISEORL          MOVE.L      #1, D6
+                JSR         ISEOR   
                 RTS
-ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+ISORL           MOVE.L      #1, D6
+                JSR         ISOR
+ISEOR           MOVE.L      #1, D7                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
+                JSR         ISOR
+                RTS
+ISOR            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D4
                 JSR         PARSEOROP 
@@ -923,14 +1116,14 @@ PARSEDNSOURCE   MOVE.W      #0, D1
                 LSL.W       #2, D3
                 LSR.W       #8, D3
                 LSR.W       #5, D3
-                CMPI.B      #1, D6
+                CMPI.B      #1, D7
                 BEQ         RTN_STRGCASE
                 JMP         RTN_PARSEOR 
 
 *---------------------------------------------------------------------------------------------------------
 *PARSE DN DESTINATION - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE DESTINATION OPERAND
 *---------------------------------------------------------------------------------------------------------
-PARSEDNDEST     CMPI.B      #1, D6
+PARSEDNDEST     CMPI.B      #1, D7
                 BEQ         PARSEDNSOURCE
                 MOVE.W      #0, D3
                 LSL.W       #4, D2
@@ -954,15 +1147,6 @@ RTN_STRGCASE    RTS
 **********************************************SHARED-CODE-SECTION******************************************* 
 *-----------------------------------------------------------------------------------------------------------
 
-*---------------------------------------------------------------------------------------------------------
-*RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES) DOES THIS MAKE SENSE??
-*---------------------------------------------------------------------------------------------------------
-RECOVERPTR          CMPI.B      #1, D6
-                    BEQ         INCPTRLONG  
-                    ADDA        #2, A6
-RTN_LONGPTR         RTS
-INCPTRLONG          ADDA        #4, A6
-                    JMP         RTN_LONGPTR
                     
 *---------------------------------------------------------------------------------------------------------
 *ERROR CHECK - CHECKS ADDRESSING MODES AND ADDRESSING REGISTERS FOR GENERAL ERRORS THAT APPLY TO ALL OP CODES
@@ -1146,7 +1330,7 @@ APPENDSRCAPDREG     MOVE.B      #'-', (A2)+
                     RTS
 
 *---------------------------------------------------------------------------------------------------------
-*CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6....I NEED IT, DONT ASK
+*CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6 AND D7....I NEED IT, DONT ASK
 *--------------------------------------------------------------------------------------------------------- 
 CLRALLDREG          CLR         D0
                     CLR         D1
@@ -1154,7 +1338,6 @@ CLRALLDREG          CLR         D0
                     CLR         D3
                     CLR         D4
                     CLR         D5
-                    CLR         D7
                     RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1194,6 +1377,36 @@ APPENDWORD      MOVEM.L     D0-D7, $400
                 MOVE.B      D3, D0
                 JSR         CONVERT
                 JSR         CLRALLDREG        
+                MOVEM.L     $400, D0-D7
+                RTS
+
+*---------------------------------------------------------------------------------------------------------
+*APPEND WORD - APPENDS THE WORD ABSOLUTE ADDRESS TO A2
+*---------------------------------------------------------------------------------------------------------                 
+APPENDDISPLACE  MOVE.B      #'$', (A2)+
+                MOVEM.L     D0-D7, $400
+                MOVE.W      D0, D1
+                MOVE.W      D0, D2
+                MOVE.W      D0, D3
+                LSR.W       #8, D0
+                LSR.W       #4, D0
+                LSL.W       #4, D1
+                LSR.W       #8, D1
+                LSR.W       #4, D1
+                LSL.W       #8, D2
+                LSR.W       #8, D2
+                LSR.W       #4, D2
+                LSL.W       #8, D3
+                LSL.W       #4, D3
+                LSR.W       #8, D3
+                LSR.W       #4, D3
+                JSR         CONVERT
+                MOVE.B      D1, D0
+                JSR         CONVERT
+                MOVE.B      D2, D0
+                JSR         CONVERT
+                MOVE.B      D3, D0
+                JSR         CONVERT        
                 MOVEM.L     $400, D0-D7
                 RTS
 
@@ -1253,6 +1466,7 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
             
+
 
 
 
