@@ -1,17 +1,3 @@
-*-----------------------------------------------------------
-* Title      :
-* Written by :
-* Date       :
-* Description:
-*-----------------------------------------------------------
-
-*-----------------------------------------------------------
-* Title      :
-* Written by :
-* Date       :
-* Description:
-*-----------------------------------------------------------
-
 CR          EQU     $0D
 LF          EQU     $0A
 starting    EQU     $00000400
@@ -525,7 +511,7 @@ SIZE_LONG1      MOVE.B      #'L', (A2)+
                 BRA         RETURN_SIZE
                 
 *---------------------------------------------------------------------------------------------------------
-*IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN SUBQ COMMAND. APPENDS 
+*IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MULS COMMAND. APPENDS 
 *                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
 *
 *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
@@ -587,6 +573,7 @@ ISSUBQ      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BADQ    MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
+            MOVE.L      #0, D7
             RTS    
 
 *---------------------------------------------------------------------------------------------------------
@@ -626,6 +613,7 @@ ISADDA      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BADA    MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
+            MOVE.L      #0, D7
             RTS    
 
 *---------------------------------------------------------------------------------------------------------
@@ -665,6 +653,7 @@ RTN_IMSRC   JSR         ERRORCHECK
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BCLRBAD MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
+            MOVE.L      #0, D7
             RTS 
             
 IMSOURCE    MOVE.B      #7, D1
@@ -700,6 +689,7 @@ RTN_16BIT       ADD.L       D0, D1
                 JSR         APPENDDISPLACE                   *APPEND DESTINATION EA
                 MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
                 MOVE.L      #0, D6
+                MOVE.L      #0, D7
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -745,6 +735,7 @@ ISMOVE      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BAD     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
+            MOVE.L      #0, D7
             RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -798,7 +789,9 @@ ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
               CMPI.B        #1, D4
               BEQ           MMAPPEA1
               JSR           MMAPPEA0
-RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS     
+RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS  
+              MOVE.L      #0, D6
+              MOVE.L      #0, D7   
               RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -971,6 +964,7 @@ ISLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGIST
                  JSR         APPENDEA
 LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                  MOVE.L      #0, D6
+                 MOVE.L      #0, D7
                  RTS
 
 *-----------------------------------------------------------------------------------------------------------
@@ -1004,6 +998,7 @@ ISORI           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BADORI      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
                 MOVE.L      #0, D6
+                MOVE.L      #0, D7
                 RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -1034,6 +1029,7 @@ ISNEG           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_NEGERR      MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 MOVE.L      #0, D6
+                MOVE.L      #0, D7
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1079,6 +1075,7 @@ RTN_PARSEOR     JSR         ERRORCHECK                        *CHECK FOR ERRORS,
                 JSR         APPENDEA
 RTN_OR          MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 MOVE.L      #0, D6
+                MOVE.L      #0, D7
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1544,6 +1541,7 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
             
+
 
 
 
