@@ -22,7 +22,6 @@ outData     EQU     $10000
 
     ORG    $1000
     
-    bclr.l    #$12346789, d7
     
 START:                  ; first instruction of program
 * Put program code here
@@ -1156,7 +1155,7 @@ RTN_REGCHK      RTS
 CHECKMODE       CMPI.B      #5, D1
                 BEQ         ERROR2
                 CMPI.B      #6, D1
-                BEQ         ERROR
+                BEQ         ERROR2
                 CMPI.B      #7, D1
                 BEQ         CHECKREG
                 RTS
@@ -1466,6 +1465,7 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
             
+
 
 
 
