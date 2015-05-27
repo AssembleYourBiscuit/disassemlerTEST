@@ -1,3 +1,23 @@
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+*-----------------------------------------------------------
+* Title      :
+* Written by :
+* Date       :
+* Description:
+*-----------------------------------------------------------
+
+*-----------------------------------------------------------
+* Title      :
+* Written by :
+* Date       :
+* Description:
+*-----------------------------------------------------------
+
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 CR          EQU     $0D
 LF          EQU     $0A
 starting    EQU     $00000400
@@ -7,6 +27,15 @@ outData     EQU     $10000
 
 
     ORG    $1000
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+START:                  ; first instruction of program
+* Put program code here
+            MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
+
+=======
+>>>>>>> Stashed changes
     
     
 START:                  ; first instruction of program
@@ -14,6 +43,10 @@ START:                  ; first instruction of program
             
             MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
             BRA     WELCOME
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
     
 welcome     LEA     WelcomeMsg,A1       ;Load welcome message
             MOVE.B  #14,D0              ;Display the welcome message
@@ -34,7 +67,14 @@ welcome     LEA     WelcomeMsg,A1       ;Load welcome message
             LEA     note4,A1            ;
             MOVE.B  #14,D0              ;
             TRAP    #15                 ;
+<<<<<<< Updated upstream
             
+=======
+<<<<<<< HEAD
+=======
+            
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 
 main        JSR     getStart
             JSR     getEnd              ;After done dealing with starting address, call getEnd
@@ -290,7 +330,15 @@ CODE0001        MOVE.B      #'M', (A2)+
                 MOVE.B      #'E', (A2)+
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'B', (A2)+
+<<<<<<< Updated upstream
                 JSR         ISMOVE
+=======
+<<<<<<< HEAD
+                JSR         ISMOVEB
+=======
+                JSR         ISMOVE
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 BRA         FINISHE
            
 *----------------------------------------------------------------------------------------------------
@@ -333,7 +381,15 @@ CODE0011        MOVE.B      #'M', (A2)+
 
 MOVEW           MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
+<<<<<<< Updated upstream
                 JSR         ISMOVE
+=======
+<<<<<<< HEAD
+                JSR         ISMOVEb
+=======
+                JSR         ISMOVE
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 RTS
           
 MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
@@ -344,7 +400,15 @@ MOVEAW          MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION
                 MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
                 MOVE.B      #'.', (A2)+
                 MOVE.B      #'W', (A2)+
+<<<<<<< Updated upstream
                 JSR         ISMOVE
+=======
+<<<<<<< HEAD
+                JSR         ISMOVEb
+=======
+                JSR         ISMOVE
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 RTS
 
 *---------------------------------------------------------------------
@@ -509,6 +573,19 @@ SIZE_WORD1      MOVE.B      #'W', (A2)+
                 
 SIZE_LONG1      MOVE.B      #'L', (A2)+
                 BRA         RETURN_SIZE
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+
+            
+*-----------------------------------------------------------
+* Title      :EA
+* Written by :Nicolas Michael
+* Date       :5/19/2015
+* Description:Completed EA codes for testing
+*-----------------------------------------------------------
+=======
+>>>>>>> Stashed changes
                 
 *---------------------------------------------------------------------------------------------------------
 *IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MULS COMMAND. APPENDS 
@@ -704,6 +781,10 @@ GETDISPLACEMENT LSL.W   #8, D0
 *---------------------------------------------------------------------------------------------------------               
 BITDISPLACE     MOVE.W      (A6)+, D0
                 JMP         RTN_16BIT
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 
 *---------------------------------------------------------------------------------------------------------
 *IS MOVEB/W/L      TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MOVE COMMAND. APPENDS 
@@ -716,9 +797,21 @@ BITDISPLACE     MOVE.W      (A6)+, D0
 *                  REGISTERS ARE PRESERVED
 *---------------------------------------------------------------------------------------------------------   
 ISMOVEL     MOVE.L      #1, D6                           *INDICATES LONG DATA
+<<<<<<< Updated upstream
             JSR         ISMOVE                                                                             
             RTS   
 ISMOVE      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+<<<<<<< HEAD
+            JSR         ISMOVEB                                                                             
+            RTS   
+ISMOVEB     MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+            JSR         ISMOVE                                                                             
+            RTS   
+ISMOVE      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+>>>>>>> origin/master
+>>>>>>> Stashed changes
             JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
             MOVE.W      (A6)+, D0
             JSR         GETMOVEREG                                               
@@ -735,7 +828,14 @@ ISMOVE      MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS A
             JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BAD     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
             MOVE.L      #0, D6
+<<<<<<< Updated upstream
             MOVE.L      #0, D7
+=======
+<<<<<<< HEAD
+=======
+            MOVE.L      #0, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
             RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -779,7 +879,15 @@ GETMOVEREG      MOVE.W  D0, D1
 *                  STRING WILL BE INCORRECT, TO BE FIXED! THE STATE OF ALL OTHER REGISTERS IS UNDETERMINED 
 *                  AFTER EXECUTION.
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
 ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+<<<<<<< HEAD
+ISMOVEML      MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+>>>>>>> origin/master
+>>>>>>> Stashed changes
               JSR           CLRALLDREG                       *CLEAR REGISTERS FOR MOVEM
               JSR           SETEAREGISTERS
               JSR           ERRORCHECK
@@ -789,9 +897,19 @@ ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
               CMPI.B        #1, D4
               BEQ           MMAPPEA1
               JSR           MMAPPEA0
+<<<<<<< Updated upstream
 RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS  
               MOVE.L      #0, D6
               MOVE.L      #0, D7   
+=======
+<<<<<<< HEAD
+RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS     
+=======
+RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS  
+              MOVE.L      #0, D6
+              MOVE.L      #0, D7   
+>>>>>>> origin/master
+>>>>>>> Stashed changes
               RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -948,7 +1066,15 @@ SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARS
 *                  BEEN DIASSEMBLED. DO NOT INC A6, ALREADY DONE. ASCII STRINGS HAVE BEEN ADDED TO (A2) IF
 *                  NO ERRORS OCCURED. THE STATE OF ALL OTHER REGISTERS IS EXACTLY HOW THEY WERE BEFORE CALLING THIS
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
 ISLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+<<<<<<< HEAD
+isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+ISLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                  JSR         CLRALLDREG                           
                  MOVE.W      (A6)+, D0                        *GET CURRENT OP CODE DATA TO D7
                  JSR         GETMOVEREG
@@ -964,7 +1090,14 @@ ISLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGIST
                  JSR         APPENDEA
 LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                  MOVE.L      #0, D6
+<<<<<<< Updated upstream
                  MOVE.L      #0, D7
+=======
+<<<<<<< HEAD
+=======
+                 MOVE.L      #0, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                  RTS
 
 *-----------------------------------------------------------------------------------------------------------
@@ -983,9 +1116,21 @@ LEABADDATA       JSR         BADDATA
 *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
 *---------------------------------------------------------------------------------------------------------            
 ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+<<<<<<< Updated upstream
                 JSR         ISORI                                                                             
                 RTS   
 ISORI           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+<<<<<<< HEAD
+                JSR         ISORIB                                                                             
+                RTS   
+ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+                JSR         ISORI                                                                             
+                RTS   
+ISORI           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D0
                 JSR         GETMOVEREG                                              
@@ -998,7 +1143,14 @@ ISORI           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_BADORI      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
                 MOVE.L      #0, D6
+<<<<<<< Updated upstream
                 MOVE.L      #0, D7
+=======
+<<<<<<< HEAD
+=======
+                MOVE.L      #0, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 RTS 
 
 *---------------------------------------------------------------------------------------------------------
@@ -1017,6 +1169,18 @@ ORIBADDATA  JSR         BADDATA
 *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
 *---------------------------------------------------------------------------------------------------------             
 ISNEGL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+                JSR         ISNEGB
+                RTS
+ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+                JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+                MOVE.W      (A6)+, D0
+                JSR         GETMOVEREG                                               
+                JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+=======
+>>>>>>> Stashed changes
                 JSR         ISNEG
                 RTS
 ISNEG           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
@@ -1024,12 +1188,23 @@ ISNEG           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTE
                 MOVE.W      (A6)+, D0
                 JSR         GETMOVEREG                                               
                 JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
                 BEQ         NEGBADDATA
                 JSR         APPENDEA                         *APPEND DESTINATION EA
 RTN_NEGERR      MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 MOVE.L      #0, D6
+<<<<<<< Updated upstream
                 MOVE.L      #0, D7
+=======
+<<<<<<< HEAD
+=======
+                MOVE.L      #0, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1047,6 +1222,15 @@ NEGBADDATA  JSR         BADDATA
 *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
 *                  REGISTERS ARE PRESERVED. EXCEPT D6...
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+ISEORB          MOVE.L      #1, D6                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
+                JSR         ISORB
+                RTS
+ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+=======
+>>>>>>> Stashed changes
 ISEORL          MOVE.L      #1, D6
                 JSR         ISEOR   
                 RTS
@@ -1056,6 +1240,10 @@ ISEOR           MOVE.L      #1, D7                           *INDICATES EXCULIVE
                 JSR         ISOR
                 RTS
 ISOR            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
                 MOVE.W      (A6)+, D4
                 JSR         PARSEOROP 
@@ -1075,7 +1263,14 @@ RTN_PARSEOR     JSR         ERRORCHECK                        *CHECK FOR ERRORS,
                 JSR         APPENDEA
 RTN_OR          MOVEM.L     $400, D0-D7/A0/A1/A3-A5
                 MOVE.L      #0, D6
+<<<<<<< Updated upstream
                 MOVE.L      #0, D7
+=======
+<<<<<<< HEAD
+=======
+                MOVE.L      #0, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1112,14 +1307,30 @@ PARSEDNSOURCE   MOVE.W      #0, D1
                 LSL.W       #2, D3
                 LSR.W       #8, D3
                 LSR.W       #5, D3
+<<<<<<< Updated upstream
                 CMPI.B      #1, D7
+=======
+<<<<<<< HEAD
+                CMPI.B      #1, D6
+=======
+                CMPI.B      #1, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 BEQ         RTN_STRGCASE
                 JMP         RTN_PARSEOR 
 
 *---------------------------------------------------------------------------------------------------------
 *PARSE DN DESTINATION - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE DESTINATION OPERAND
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
 PARSEDNDEST     CMPI.B      #1, D7
+=======
+<<<<<<< HEAD
+PARSEDNDEST     CMPI.B      #1, D6
+=======
+PARSEDNDEST     CMPI.B      #1, D7
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 BEQ         PARSEDNSOURCE
                 MOVE.W      #0, D3
                 LSL.W       #4, D2
@@ -1135,6 +1346,11 @@ PARSEDNDEST     CMPI.B      #1, D7
                 LSR.W       #5, D1
 RTN_STRGCASE    RTS
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 *---------------------------------------------------------------------------------------------------------
 *IS SHIFTY STUFF    TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN LSR,LSL, ASL, ASL, ROR, ROL
 *
@@ -1214,6 +1430,10 @@ BADSHIFTYDATA   JSR         BADDATA
                 JMP         RTN_MEMSHIFT
 
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 *-----------------------------------------------------------------------------------------------------------
 **********************************************SHARED-CODE-SECTION******************************************* 
 *-----------------------------------------------------------------------------------------------------------
@@ -1222,6 +1442,21 @@ BADSHIFTYDATA   JSR         BADDATA
 **********************************************SHARED-CODE-SECTION******************************************* 
 *-----------------------------------------------------------------------------------------------------------
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+*---------------------------------------------------------------------------------------------------------
+*RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES) DOES THIS MAKE SENSE??
+*---------------------------------------------------------------------------------------------------------
+RECOVERPTR          CMPI.B      #1, D6
+                    BEQ         INCPTRLONG  
+                    ADDA        #2, A6
+RTN_LONGPTR         RTS
+INCPTRLONG          ADDA        #4, A6
+                    JMP         RTN_LONGPTR
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                     
 *---------------------------------------------------------------------------------------------------------
 *ERROR CHECK - CHECKS ADDRESSING MODES AND ADDRESSING REGISTERS FOR GENERAL ERRORS THAT APPLY TO ALL OP CODES
@@ -1231,7 +1466,15 @@ RTN_REGCHK      RTS
 CHECKMODE       CMPI.B      #5, D1
                 BEQ         ERROR2
                 CMPI.B      #6, D1
+<<<<<<< Updated upstream
                 BEQ         ERROR2
+=======
+<<<<<<< HEAD
+                BEQ         ERROR
+=======
+                BEQ         ERROR2
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                 CMPI.B      #7, D1
                 BEQ         CHECKREG
                 RTS
@@ -1405,7 +1648,15 @@ APPENDSRCAPDREG     MOVE.B      #'-', (A2)+
                     RTS
 
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
 *CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6 AND D7....I NEED IT, DONT ASK
+=======
+<<<<<<< HEAD
+*CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6....I NEED IT, DONT ASK
+=======
+*CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6 AND D7....I NEED IT, DONT ASK
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 *--------------------------------------------------------------------------------------------------------- 
 CLRALLDREG          CLR         D0
                     CLR         D1
@@ -1413,6 +1664,13 @@ CLRALLDREG          CLR         D0
                     CLR         D3
                     CLR         D4
                     CLR         D5
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+                    CLR         D7
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
                     RTS
 
 *---------------------------------------------------------------------------------------------------------
@@ -1456,6 +1714,11 @@ APPENDWORD      MOVEM.L     D0-D7, $400
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 *APPEND WORD - APPENDS THE WORD ABSOLUTE ADDRESS TO A2
 *---------------------------------------------------------------------------------------------------------                 
 APPENDDISPLACE  MOVE.B      #'$', (A2)+
@@ -1486,6 +1749,10 @@ APPENDDISPLACE  MOVE.B      #'$', (A2)+
                 RTS
 
 *---------------------------------------------------------------------------------------------------------
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 *ADD 55 - ADD 55 HEX TO VALUE IN D0 TO CONVERT TO LETTER
 *---------------------------------------------------------------------------------------------------------                 
 ADD55           ADDI.B      #55, D0
@@ -1548,10 +1815,19 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
 
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
 
 
 
 
+<<<<<<< Updated upstream
+=======
+>>>>>>> origin/master
+>>>>>>> Stashed changes
 *~Font name~Courier New~
 *~Font size~10~
 *~Tab type~1~
