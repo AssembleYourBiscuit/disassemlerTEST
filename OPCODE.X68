@@ -13,15 +13,15 @@ START:          MOVE.L      #$7000, A6      ;THESE ARE FOR TESTING! (NEED TO BE 
 *----------------------------------------------------------------------------------------------------
 * DISASSEMBLE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE TO MNEMONIC INSTRUCTION
 * PRECONDITION: - D2 AND D3 MUST NOT BE IN USED
-				- A2 STORES AN APPROPRIATE MEMORY REGION ADDRESS
+*				- A2 STORES AN APPROPRIATE MEMORY REGION ADDRESS
 *               - A6 STORES AN APPROPRIATE STARTING ADDRESS
 * POSTCONDITION: - IF THE INSTRUCTION IS DEFINED IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE
 *                  STORED IN OUTPUT MEMORY REGION POINTED BY A2
 *                - IF THE INSTRUCTION IS NOT IN THE REQUIREMENT, FOR NOW IT WILL BE IGNORED
 *----------------------------------------------------------------------------------------------------
 
-DISASSEMBLE     MOVE.M      (A6), D2        ;RETRIEVE ORIGINAL INSTRUCTION TO D2 (NO CHANGE ALLOWED)
-                MOVE.M      D2, D3          ;COPY ORIGINAL INSTRUCTION TO D3 (CHANGE ALLOW)
+DISASSEMBLE     MOVE.W      (A6), D2        ;RETRIEVE ORIGINAL INSTRUCTION TO D2 (NO CHANGE ALLOWED)
+                MOVE.W      D2, D3          ;COPY ORIGINAL INSTRUCTION TO D3 (CHANGE ALLOW)
 
                 MOVE.L      A6, (A2)+       ;STORE THE ADDRESS OF THE INSTRUCTION
                 MOVE.B      #TAB, (A2)+      ;STORE A TAB AFTER THE ADDRESS
@@ -154,7 +154,7 @@ CODE0100        MOVE.L      D2, D3
                 LSR.L       #7, D3
 
                 CMPI.B      #%1, D3         ;CHECK IF THE 8TH BIT IS EQUAL TO 1
-                BEQ         LEA             ;IF IT IS EQUAL, THE INSTRUCTION IS "LEA"
+                BEQ         IFLEA             ;IF IT IS EQUAL, THE INSTRUCTION IS "LEA"
 
                 LSL.L       #4, D3          ;IF NOT, SHIFT BITS TO GET BIT 11, 10, AND 9 FOR FUTHER
                 LSR.L       #8, D3          ;DISASSEMBLING
@@ -292,9 +292,9 @@ CODE1100        MOVE.W      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION
 *----------------------------------------------------------------------------------------------------
 * CODE1101: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1101 INTO ADDA INSTRUCTION
 *----------------------------------------------------------------------------------------------------
-CODE1101		MOVE.B		#$'A', (A2)+
-				MOVE.B		#$'D', (A2)+
-				MOVE.B		#$'D', (A2)+
+CODE1101		MOVE.B		#'A', (A2)+
+				MOVE.B		#'D', (A2)+
+				MOVE.B		#'D', (A2)+
 
                 LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7, AND 6
                 LSR.L       #8, D3
@@ -439,7 +439,7 @@ FOUR100         MOVE.B      #'M', (A2)+     ;OTHERWISE, IT IS ACTUALLY "BCLF #<D
                 MOVE.B      #'.', (A2)+
                 JSR         IFMOVEMW
 FOUR100_CONT    MOVE.B      #TAB, (A2)+
-                JSR         ISMOVEM
+                *JSR         ISMOVEM
                 BRA         RETURN_FOUR
 
 IFMOVEMW        MOVE.W      D2, D3
@@ -465,7 +465,7 @@ FOUR101         JSR         INVALID_OPCODE
                 BRA         RETURN_FOUR
 
 
-FOUR110         BRA         FOUR1000
+FOUR110         BRA         FOUR100
 
 
 FOUR111         MOVE.W      D2, D3
@@ -680,9 +680,9 @@ ELEVEN111		JSR         INVALID_OPCODE
                 BRA			RETURN_ELEVEN
 
 *----------------------------------------------------------------------------------------------------
-* TABLETHIRTEEEN: THIS IS FUNCTION FOR DETERMINING THE OPMODE OF THE INSTRUCTION
+* TABLETHIRTEEN: THIS IS FUNCTION FOR DETERMINING THE OPMODE OF THE INSTRUCTION
 *----------------------------------------------------------------------------------------------------X
-TABLETHIRTEEEN  JMP         THIRTEEN000
+TABLETHIRTEEN  JMP         THIRTEEN000
                 JMP         THIRTEEN001
                 JMP         THIRTEEN010
                 JMP         THIRTEEN011
@@ -693,45 +693,45 @@ TABLETHIRTEEEN  JMP         THIRTEEN000
 RETURN_THIRTEEN RTS
 
 
-THIRTEEN000     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'B', (A2)+
+THIRTEEN000     MOVE.B		#'.', (A2)+
+                MOVE.B		#'B', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN001     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'W', (A2)+
+THIRTEEN001     MOVE.B		#'.', (A2)+
+                MOVE.B		#'W', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN010     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'L', (A2)+
+THIRTEEN010     MOVE.B		#'.', (A2)+
+                MOVE.B		#'L', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN011     MOVE.B      #$'A', (A2)+
-                MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'W', (A2)+
+THIRTEEN011     MOVE.B      #'A', (A2)+
+                MOVE.B		#'.', (A2)+
+                MOVE.B		#'W', (A2)+
                 ;JSR         ISADDA
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN100     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'B', (A2)+
+THIRTEEN100     MOVE.B		#'.', (A2)+
+                MOVE.B		#'B', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN101     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'W', (A2)+
+THIRTEEN101     MOVE.B		#'.', (A2)+
+                MOVE.B		#'W', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN110     MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'L', (A2)+
+THIRTEEN110     MOVE.B		#'.', (A2)+
+                MOVE.B		#'L', (A2)+
                 ;JSR         ISADD
                 BRA         RETURN_THIRTEEN
 
-THIRTEEN111     MOVE.B      #$'A', (A2)+
-                MOVE.B		#$'.', (A2)+
-                MOVE.B		#$'L', (A2)+
+THIRTEEN111     MOVE.B      #'A', (A2)+
+                MOVE.B		#'.', (A2)+
+                MOVE.B		#'L', (A2)+
                 ;JSR         ISADDA
                 BRA         RETURN_THIRTEEN
 
@@ -841,6 +841,7 @@ TAB             EQU         $09
 *----------------------------------------------------------------------------------------------------
 
                 END    START        ; last line of source
+
 
 
 
