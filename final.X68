@@ -1991,7 +1991,7 @@ WelcomeMsg  DC.b    'Welcome to EASy68K Instruction Disassembler!',CR,LF,0
 WrtBy       DC.B    'Created by: Vuochly Ky, Kunlakan Cherdchusilp, Nicolas Michael',CR,LF,CR,LF,0
 note1       DC.B    'Preconditions: ',CR,LF,0
 note2       DC.B    '   -- The address inputs must be in hexadecimal number (without $)',CR,LF,0
-note3       DC.B    '   -- Addresses must be in the range of 0 ~ 00FFFFFE',CR,LF,0
+note3       DC.B    '   -- Addresses must be in the range of 400 ~ 00FFFFFE',CR,LF,0
 note4       DC.B    '   -- Both starting and ending address must be even addresses',CR,LF,0
 startLoc    DC.B    'Please enter the starting location in hexadecimal format: ',0
 endLoc      DC.B    'Please enter the ending location in hexadecimal format: ',0
@@ -2007,6 +2007,7 @@ error       DC.B    'The address you entered is whether invalid or out of range.
 
 
             
+
 
 
 
