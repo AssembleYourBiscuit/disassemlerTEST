@@ -13,7 +13,7 @@ START:          MOVE.L      #$7000, A6      ;THESE ARE FOR TESTING! (NEED TO BE 
 *----------------------------------------------------------------------------------------------------
 * DISASSEMBLE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE TO MNEMONIC INSTRUCTION
 * PRECONDITION: - D2 AND D3 MUST NOT BE IN USED
-				- A2 STORES AN APPROPRIATE MEMORY REGION ADDRESS
+*				- A2 STORES AN APPROPRIATE MEMORY REGION ADDRESS
 *               - A6 STORES AN APPROPRIATE STARTING ADDRESS
 * POSTCONDITION: - IF THE INSTRUCTION IS DEFINED IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE
 *                  STORED IN OUTPUT MEMORY REGION POINTED BY A2
@@ -841,6 +841,7 @@ TAB             EQU         $09
 *----------------------------------------------------------------------------------------------------
 
                 END    START        ; last line of source
+
 
 
 
