@@ -1,0 +1,2276 @@
+00001000 Starting Address
+Assembler used: EASy68K Editor/Assembler v5.15.02
+Created On: 5/26/2015 7:27:34 PM
+
+00000000                             1  *-----------------------------------------------------------
+00000000                             2  * Title      :
+00000000                             3  * Written by :
+00000000                             4  * Date       :
+00000000                             5  * Description:
+00000000                             6  *-----------------------------------------------------------
+00000000                             7  
+00000000                             8  *-----------------------------------------------------------
+00000000                             9  * Title      :
+00000000                            10  * Written by :
+00000000                            11  * Date       :
+00000000                            12  * Description:
+00000000                            13  *-----------------------------------------------------------
+00000000                            14  
+00000000  =0000000D                 15  CR          EQU     $0D
+00000000  =0000000A                 16  LF          EQU     $0A
+00000000  =00000400                 17  starting    EQU     $00000400
+00000000  =00FFFFFE                 18  ending      EQU     $00FFFFFE
+00000000  =00010000                 19  outData     EQU     $10000
+00000000  =00000009                 20  TAB         EQU     $09
+00000000                            21  
+00000000                            22  
+00000000                            23  
+00001000                            24      ORG    $1000
+00001000                            25  START:                  ; first instruction of program
+00001000                            26  * Put program code here
+00001000  247C 00010000             27              MOVEA.L #outData, A2        ;This location is where disassembled instruction is stored
+00001006                            28  
+00001006                            29      
+00001006  43F9 000022A4             30  welcome     LEA     WelcomeMsg,A1       ;Load welcome message
+0000100C  103C 000E                 31              MOVE.B  #14,D0              ;Display the welcome message
+00001010  4E4F                      32              TRAP    #15                 ;to the user
+00001012  43F9 000022D3             33              LEA     WrtBy,A1            ;Load the Writen by message
+00001018  103C 000E                 34              MOVE.B  #14,D0              ;Display the authority
+0000101C  4E4F                      35              TRAP    #15                 ;
+0000101E  327C 0000                 36              MOVEA   #$0,A1              ;Clear register A1
+00001022  43F9 00002316             37              LEA     note1,A1            ;Load precondition messages 
+00001028  103C 000E                 38              MOVE.B  #14,D0              ;
+0000102C  4E4F                      39              TRAP    #15                 ;and
+0000102E  43F9 00002328             40              LEA     note2,A1            ;Display
+00001034  103C 000E                 41              MOVE.B  #14,D0              ;the
+00001038  4E4F                      42              TRAP    #15                 ;preconditions
+0000103A  43F9 0000236D             43              LEA     note3,A1            ;message
+00001040  103C 000E                 44              MOVE.B  #14,D0              ;
+00001044  4E4F                      45              TRAP    #15                 ;
+00001046  43F9 000023A4             46              LEA     note4,A1            ;
+0000104C  103C 000E                 47              MOVE.B  #14,D0              ;
+00001050  4E4F                      48              TRAP    #15                 ;
+00001052                            49  
+00001052  4EB9 0000106A             50  main        JSR     getStart
+00001058  4EB9 000010DA             51              JSR     getEnd              ;After done dealing with starting address, call getEnd
+0000105E  4EB9 00001212             52              JSR     LOOPDYDOOP
+00001064  4EF9 000011C8             53              JMP     promptCont
+0000106A                            54  *-----------------------------------------------------------------
+0000106A                            55  * GET THE STARTING ADDRESS
+0000106A                            56  *-----------------------------------------------------------------         
+0000106A  43F9 000023E4             57  getStart    LEA     startLoc,A1         ;Load the prompting message startLoc
+00001070  103C 000E                 58              MOVE.B  #14,D0              ;Display the prompt message for the starting location
+00001074  4E4F                      59              TRAP    #15                 ;for the user to enter the starting location
+00001076  327C 0000                 60              MOVEA   #$0,A1              ;Clear A1 
+0000107A  4246                      61              CLR     D6                  ;Clear D6 before using it
+0000107C  3279 000024D8             62              MOVEA.W startAddr,A1        ;Make a pointer point to A1 access data to decode
+00001082  7002                      63              MOVE.L  #2,d0               ;Get the user input (user input will store in (A1))
+00001084  4E4F                      64              TRAP    #15                 ;(The length of the user input will store in D1)
+00001086  4EB9 00001144             65              JSR     validate            ;Validate and decode the user input and save the address in D6
+0000108C  B63C 0000                 66              CMP.B   #0,D3               ;Check if the input is invalid (while validating) 0=good,1=bad
+00001090  6700 0012                 67              BEQ     checkRangeS         ;If yes (good), check the if the address is within the range
+00001094  43F9 000024DC             68  errMsgS     LEA     error,A1            ;Load the error message
+0000109A  103C 000E                 69              MOVE.B  #14,D0              ;Display the error message
+0000109E  4E4F                      70              TRAP    #15                 ;for the user to enter the starting location
+000010A0  4EB8 106A                 71              JSR     getStart           
+000010A4                            72  
+000010A4  4EB9 000010C6             73  checkRangeS JSR     checkOdd            ;Check if the STARTING address is odd (bad)
+000010AA  B63C 0001                 74              CMP.B   #1,D3               ;Check if the input is not odd (0=even, 1=odd)
+000010AE  67E4                      75              BEQ     errMsgS             ;If =1, then print the input error message
+000010B0  243C 00000400             76              MOVE.L  #starting,D2        ;Check if the address is less than the 
+000010B6  BC82                      77              CMP.L   D2,D6               ;  specified starting address
+000010B8  6DDA                      78              BLT     errMsgS             ;If yes, then print error message and prompt again
+000010BA  243C 00FFFFFE             79              MOVE.L  #ending,D2          ;Check if the address is greater than the 
+000010C0  BC82                      80              CMP.L   D2,D6               ;  specified ending address
+000010C2  6ED0                      81              BGT     errMsgS             ;If yes, print input error msg and prompt for input again
+000010C4  2C46                      82              MOVEA.L D6,A6               ;THE STARTING ADDRESS IS VALID, SAVE IT IN A6
+000010C6                            83  
+000010C6  4285                      84  checkOdd    CLR.L   D5                  ;Clear D2 
+000010C8  3A06                      85              MOVE.W  D6,D5               ;Copy the address over to D5
+000010CA  7402                      86              MOVE.L  #$00000002,D2       ;Put #2 into D2
+000010CC  8AC2                      87              DIVU    D2,D5               ;Divide the address by 2
+000010CE  4845                      88              SWAP    D5                  ;Swap the remainder and quotient (to access the remainder)
+000010D0  BA3C 0001                 89              CMP.B   #$01,D5             ;Check if the remainder is 1 
+000010D4  6700 00EA                 90              BEQ     badInput            ;If remainder=1, it means the address is odd
+000010D8  4E75                      91              RTS 
+000010DA                            92  *--------------------------------------------------------------
+000010DA                            93  * GET THE ENDING ADDRESS
+000010DA                            94  *--------------------------------------------------------------
+000010DA  43F9 0000241F             95  getEnd      LEA     endLoc,A1           ;Load the prompting message endLoc
+000010E0  103C 000E                 96              MOVE.B  #14,D0              ;Display the prompt message for the ending location
+000010E4  4E4F                      97              TRAP    #15                 ;for the user to enter the ending location
+000010E6  327C 0000                 98              MOVEA   #$0,A1              ;clear A1
+000010EA  4246                      99              CLR     D6                  ;Clear D6 before using it
+000010EC  3279 000024DA            100              MOVEA.W endAddr,A1          ;Make a pointer point to A1 for access data to decode
+000010F2  7002                     101              MOVE.L  #2,d0               ;Get the user input 
+000010F4  4E4F                     102              TRAP    #15                 ;(user input will store in (A1))
+000010F6  4EB9 00001144            103              JSR     validate            ;Validate and decode the user input and save decoded addr in D6
+000010FC  B63C 0000                104              CMP.B   #0,D3               ;Check if the input is invalid (while validating) 0=good,1=bad
+00001100  6700 0002                105              BEQ     checkRangeE         ;If yes (good), check the if the address is within the range
+00001104  4EB8 10C6                106  checkRangeE JSR     checkOdd            ;Check if the ENDING address is odd (bad)
+00001108  B63C 0001                107              CMP.B   #1,D3               ;Check if the input is not odd (0=even, 1=odd)
+0000110C  6700 0026                108              BEQ     errMsgE             ;If =1, then print the input error message
+00001110  243C 00000400            109              MOVE.L  #starting,D2        ;Check if the address is less than the 
+00001116  BC82                     110              CMP.L   D2,D6               ;  specified starting address
+00001118  6D00 001A                111              BLT     errMsgE             ;If yes, then print error message and prompt again
+0000111C  243C 00FFFFFE            112              MOVE.L  #ending,D2          ;Check if the address is greater than the 
+00001122  BC82                     113              CMP.L   D2,D6               ;  specified ending address
+00001124  6E00 000E                114              BGT     errMsgE             ;If yes, print input error msg and prompt for input again
+00001128  240E                     115              MOVE.L  A6,D2               ;Move the given (user) starting addr to D2 to compare with ending
+0000112A  BC82                     116              CMP.L   D2,D6               ;Check if the address is less than the given starting address
+0000112C  6D00 0006                117              BLT     errMsgE             ;If yes, print the input error msg and prompt for input again
+00001130  2A46                     118              MOVEA.L D6,A5               ;THE ENDING ADDRESS IS VALID, SAVE IT IN A5
+00001132  4E75                     119              RTS            
+00001134  43F9 000024DC            120  errMsgE     LEA     error,A1            ;Load the error message
+0000113A  103C 000E                121              MOVE.B  #14,D0              ;Display the error message
+0000113E  4E4F                     122              TRAP    #15                 ;for the user to enter the starting location
+00001140  4EB8 10DA                123              JSR     getEnd 
+00001144                           124  *---------------------------------------------------------------------
+00001144                           125  * VALIDATE EACH DIGITS OF THE USER INPUT AND DECODE INTO ACTUAL VALUE
+00001144                           126  * -- Check if the user input is not NULL or greater than 8 digits
+00001144                           127  * -- Check each character if it is valid. If valid, decode it.
+00001144                           128  * NOTE:
+00001144                           129  *   --Using D5 to temporary store each digit to validate
+00001144                           130  *   --Using D6 to store the converted address
+00001144                           131  *   --Using D3 to store the good(0) and bad(1) inputs
+00001144                           132  *---------------------------------------------------------------------
+00001144  7400                     133  validate    MOVEQ   #$0,D2              ;Set D2 to 0 to compare if the input is null 
+00001146  B002                     134              CMP.B   D2,D0               ;Is the length of the user input = 0?
+00001148  6700 0076                135              BEQ     badInput            ;If yes return badInput
+0000114C  0C40 0008                136              CMPI    #$8,D0              ;Check if the length of the user input is 
+00001150  6E00 006E                137              BGT     badInput            ;greater than 8 character. If yes, badInput
+00001154  1A11                     138  valLoop     MOVE.B  (A1),D5             ;Validation Loop, validate character by character
+00001156  BA02                     139              CMP.B   D2,D5               ;Check if the next character is null
+00001158  6700 0066                140              BEQ     badInput            ;If null, return bad input
+0000115C  BA3C 0066                141              CMP.B   #$66,D5             ;66 is ascii value of character 'f', highest in the valid range 
+00001160  6E00 005E                142              BGT     badInput            ;If this digit is greater than 66
+00001164  BA3C 0060                143              CMP.B   #$60,D5             ;
+00001168  6E00 0022                144              BGT     conLCase            ;
+0000116C  BA3C 0046                145              CMP.B   #$46,D5             ;greater than 46?
+00001170  6E00 004E                146              BGT     badInput            ;yes, then it's bad b/c it's between 'F' and 'a'
+00001174  BA3C 0040                147              CMP.B   #$40,D5             ;greater than 40?
+00001178  6E00 001A                148              BGT     conUCase
+0000117C  BA3C 0039                149              CMP.B   #$39,D5             ;is this number is geater than 9?
+00001180  6E00 003E                150              BGT     badInput
+00001184  BA3C 0029                151              CMP.B   #$29,D5
+00001188  6E00 0020                152              BGT     conNum
+0000118C                           153              
+0000118C  0405 0057                154  conLCase    SUB.B   #$57,D5              ;Convert the ASCII value of lower-case to actual value
+00001190  6000 0006                155              BRA     converted           ;After converted branch to converted to save
+00001194  0405 0037                156  conUCase    SUB.B   #$37,D5              ;Convert the ASCII value of Upper-case to actual value
+00001198  E986                     157  converted   ASL.L   #4,D6               ;Arithmetic Shift Left, shif the 4 bits to the left (4zeros added at the end)
+0000119A  DC05                     158              ADD.B   D5,D6               ;Now replace the 4 bits (0000) with the actual value
+0000119C  5249                     159              ADDQ    #1,A1               ;Increment the address pointer, point to the next digit
+0000119E  5301                     160              SUB.B   #1,D1               ;Decrement the length of the user input string
+000011A0  B23C 0000                161              CMP.B   #0,D1               ;Check if the length is 0 (done with all the digits?)
+000011A4  6700 001E                162              BEQ     goodInput           ;If yes, give signal as good input
+000011A8  60AA                     163              BRA     valLoop             ;Else, keep validating the next digit
+000011AA  0405 0030                164  conNum      SUB.B   #$30,D5             ;Convert the ASCII value of number to actual number
+000011AE  E986                     165              ASL.L   #4,D6               ;Arithmetic Shift Left, shif the 4 bits to the left (4zeros added at the end)
+000011B0  DC05                     166              ADD.B   D5,D6               ;Now replace the 4 bits (0000) with the actual number
+000011B2  5249                     167              ADDQ    #1,A1               ;Increment the address pointer, point to the locatin of the next digit
+000011B4  5301                     168              SUB.B   #1,D1               ;Decrement the length of the user input string
+000011B6  B23C 0000                169              CMP.B   #0,D1               ;Check if the length is 0 (done with all the digits?)
+000011BA  6700 0008                170              BEQ     goodInput           ;If yes, give signal as good input
+000011BE  6094                     171              BRA     valLoop             ;Else, keep validating the next digit
+000011C0  7601                     172  badInput    MOVEQ   #$1,D3              ;Give bad signal by
+000011C2  4E75                     173              RTS                         ;Put #1 into D3 to represent the bad input
+000011C4  7600                     174  goodInput   MOVEQ   #$0,D3              ;Give good signal by
+000011C6  4E75                     175              RTS                         ;Put #0 into D3 to represent the good input
+000011C8                           176  *----------------------END VALIDATION/DECODING------------------------------------
+000011C8                           177  
+000011C8                           178  
+000011C8  43F9 00002458            179  promptCont  LEA     AskToCont,A1
+000011CE  103C 000E                180              MOVE.B  #14,D0
+000011D2  4E4F                     181              TRAP    #15
+000011D4  3279 000024D6            182              MOVEA.w string,A1           ;put 800 in register to use to point to the memory
+000011DA  103C 0002                183              MOVE.B  #2, d0
+000011DE  4E4F                     184              TRAP    #15
+000011E0  0C11 0079                185              CMP.B   #$79, (A1)          ;Check if the user enter 'y'
+000011E4  6700 FE6C                186              BEQ     main                ;If yes, branch to getaddress
+000011E8  0C11 0059                187              CMP.B   #$59, (A1)          ;Check if the user enter 'Y'
+000011EC  6700 FE64                188              BEQ     main                ;If yes, branch to getaddress
+000011F0  0C11 006E                189              CMP.B   #$6e, (A1)          ;Check if the user input is 'n'
+000011F4  6700 000A                190              BEQ     end                 ;If yes, brach to end
+000011F8  0C11 004E                191              CMP.B   #$4e, (A1)          ;Check if the user input is 'N'
+000011FC  6700 0002                192              BEQ     end                 ;If yes, branch to end        
+00001200                           193      
+00001200                           194  
+00001200  43F9 0000249B            195  end         LEA     ThxMsg,A1           ;Load the Thank-you message
+00001206  103C 000E                196              MOVE.B  #14,D0              ;Print it out
+0000120A  4E4F                     197              TRAP    #15    
+0000120C  103C 0009                198              MOVE.B  #9, d0          
+00001210  4E4F                     199              TRAP    #15
+00001212                           200  
+00001212                           201             
+00001212                           202  
+00001212                           203  
+00001212                           204  
+00001212                           205  *******************************************************************************************************************************************************
+00001212  224A                     206  LOOPDYDOOP          MOVEA.L A2, A1
+00001214  4EB9 00001232            207                      JSR     DISASSEMBLE 
+0000121A  14FC 000D                208                      MOVE.B  #$0D, (A2)+
+0000121E  14FC 000A                209                      MOVE.B  #$0A, (A2)+
+00001222  14FC 0000                210                      MOVE.B  #$0, (A2)+
+00001226  103C 000E                211                      MOVE.B  #14, D0
+0000122A  4E4F                     212                      TRAP    #15
+0000122C  BDCD                     213                      CMP.L   A5, A6
+0000122E  66E2                     214                      BNE     LOOPDYDOOP
+00001230  4E75                     215                      RTS
+00001232                           216  
+00001232                           217  
+00001232                           218  
+00001232                           219  
+00001232                           220  
+00001232                           221                      
+00001232                           222  
+00001232                           223  
+00001232                           224  
+00001232                           225  *----------------------------------------------------------------------------------------------------
+00001232                           226  * DISASSEMBLE: DISASSEMBLE HEXADECIMAL INSTRUCTION CODE TO MNEMONIC INSTRUCTION
+00001232                           227  * PRECONDITION: - D2 AND D3 MUST NOT BE IN USED
+00001232                           228  *               - A2 STORES AN APPROPRIATE MEMORY REGION ADDRESS
+00001232                           229  *               - A6 STORES AN APPROPRIATE STARTING ADDRESS
+00001232                           230  * POSTCONDITION: - IF THE INSTRUCTION IS DEFINED IN THE REQUIREMENT, THE STRING OF THE RESULT WILL BE
+00001232                           231  *                  STORED IN OUTPUT MEMORY REGION POINTED BY A2
+00001232                           232  *                - IF THE INSTRUCTION IS NOT IN THE REQUIREMENT, FOR NOW IT WILL BE IGNORED
+00001232                           233  *----------------------------------------------------------------------------------------------------
+00001232                           234  
+00001232  3416                     235  DISASSEMBLE     MOVE.W      (A6), D2        ;RETRIEVE ORIGINAL INSTRUCTION TO D2 (NO CHANGE ALLOWED)
+00001234  3602                     236                  MOVE.W      D2, D3          ;COPY ORIGINAL INSTRUCTION TO D3 (CHANGE ALLOW)
+00001236                           237  
+00001236  24CE                     238                  MOVE.L      A6, (A2)+       ;STORE THE ADDRESS OF THE INSTRUCTION
+00001238  14FC 0009                239                  MOVE.B      #TAB, (A2)+      ;STORE A TAB AFTER THE ADDRESS
+0000123C                           240  
+0000123C  E04B                     241                  LSR         #8, D3          ;GET THE FIRST 4 BITS
+0000123E  E84B                     242                  LSR         #4, D3
+00001240                           243  
+00001240  C6FC 0006                244                  MULU        #6, D3
+00001244  47F9 00001250            245                  LEA         MAINTABLE, A3   ;LOAD INDEX INTO THE TABLE
+0000124A  4EB3 3000                246                  JSR         0(A3, D3)       ;JUMP INDIRECT WITH INDEX
+0000124E                           247  
+0000124E  4E75                     248                  RTS                         ;FINISH DIASSEMBLING
+00001250                           249                                  
+00001250                           250  *----------------------------------------------------------------------------------------------------
+00001250                           251  * MAINTABLE: THIS IS A PRIMARY JUMP TABLE FOR DETERMINING TYPES OF OPCODES INSTRUCTION BY LOOKING  AT
+00001250                           252  *            THE FIRST 4 BITS IN THE HEXADECIMAL INSTRUCTION 
+00001250                           253  *----------------------------------------------------------------------------------------------------
+00001250  4EF9 000012B2            254  MAINTABLE       JMP         CODE0000
+00001256  4EF9 000012FE            255                  JMP         CODE0001
+0000125C  4EF9 0000131C            256                  JMP         CODE0010
+00001262  4EF9 00001356            257                  JMP         CODE0011
+00001268  4EF9 0000137A            258                  JMP         CODE0100
+0000126E  4EF9 000013C4            259                  JMP         CODE0101
+00001274  4EF9 000013E6            260                  JMP         CODE0110
+0000127A  4EF9 00001400            261                  JMP         CODE0111
+00001280  4EF9 00001406            262                  JMP         CODE1000
+00001286  4EF9 0000144C            263                  JMP         CODE1001
+0000128C  4EF9 0000146A            264                  JMP         CODE1010
+00001292  4EF9 00001472            265                  JMP         CODE1011
+00001298  4EF9 0000148C            266                  JMP         CODE1100
+0000129E  4EF9 000014B0            267                  JMP         CODE1101
+000012A4  4EF9 000014D8            268                  JMP         CODE1110
+000012AA  4EF9 000014D8            269                  JMP         CODE1111
+000012B0  4E75                     270  FINISH          RTS
+000012B2                           271  
+000012B2                           272  *----------------------------------------------------------------------------------------------------
+000012B2                           273  * CODE0000: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0000 INTO BCLR, ORI, OR CMPI
+000012B2                           274  *           INSTRUCTION
+000012B2                           275  *----------------------------------------------------------------------------------------------------
+000012B2  2602                     276  CODE0000        MOVE.L      D2, D3
+000012B4  EF8B                     277                  LSL.L       #7, D3          ;SHIFT BITS TO GET THE 8TH BIT
+000012B6  E08B                     278                  LSR.L       #8, D3
+000012B8  EE8B                     279                  LSR.L       #7, D3
+000012BA                           280  
+000012BA  0C03 0001                281                  CMPI.B      #%1, D3         ;CHECK IF THE 8TH BIT IS EQUAL TO 1
+000012BE  6700 0018                282                  BEQ         IFBCLR_DN       ;IF IT IS EQUAL, THE INSTRUCTION IS "BCLR DN, <EA>"
+000012C2                           283  
+000012C2  E98B                     284                  LSL.L       #4, D3          ;IF NOT, SHIFT BITS TO GET BIT 11, 10, AND 9 FOR FUTHER
+000012C4  E08B                     285                  LSR.L       #8, D3          ;DISASSEMBLING
+000012C6  EA8B                     286                  LSR.L       #5, D3
+000012C8  C6FC 0006                287                  MULU        #6, D3
+000012CC  47F9 000014DE            288                  LEA         TABLEZERO, A3   ;LOAD INDEX INTO THE TABLE
+000012D2  4EB3 3000                289                  JSR         0(A3, D3)       ;JUMP INDIRECT WITH INDEX
+000012D6  60D8                     290  RETURN0000      BRA         FINISH
+000012D8                           291  
+000012D8                           292  
+000012D8  2602                     293  IFBCLR_DN       MOVE.L      D2, D3
+000012DA  EF8B                     294                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+000012DC  E08B                     295                  LSR.L       #8, D3
+000012DE  EA8B                     296                  LSR.L       #5, D3
+000012E0  0C03 0006                297                  CMPI.B      #%110, D3       ;CHECK IF THE INSTRUCTION IS ACTUALLY "BCLR DN, <EA>"
+000012E4  6600 070E                298                  BNE         INVALID_OPCODE  ;IF IT IS NOT, THEN THE OPCODE IS NOT DEFINED
+000012E8  14FC 0042                299                  MOVE.B      #'B', (A2)+     ;OTHERWISE, IT IS ACTUALLY "BCLR DN, <EA>"
+000012EC  14FC 0043                300                  MOVE.B      #'C', (A2)+
+000012F0  14FC 004C                301                  MOVE.B      #'L', (A2)+
+000012F4  14FC 0052                302                  MOVE.B      #'R', (A2)+
+000012F8  14FC 0009                303                  MOVE.B      #TAB, (A2)+
+000012FC                           304                  ;JSR         ISBCLR_DN
+000012FC  60D8                     305                  BRA         RETURN0000
+000012FE                           306  
+000012FE                           307  *----------------------------------------------------------------------------------------------------
+000012FE                           308  * CODE0001: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0001 INTO MOVE.B INSTRUCTION
+000012FE                           309  *----------------------------------------------------------------------------------------------------
+000012FE  14FC 004D                310  CODE0001        MOVE.B      #'M', (A2)+     ;THE INSTRUCTION IS MOVE.B
+00001302  14FC 004F                311                  MOVE.B      #'O', (A2)+
+00001306  14FC 0056                312                  MOVE.B      #'V', (A2)+
+0000130A  14FC 0045                313                  MOVE.B      #'E', (A2)+
+0000130E  14FC 002E                314                  MOVE.B      #'.', (A2)+
+00001312  14FC 0042                315                  MOVE.B      #'B', (A2)+
+00001316  14FC 0009                316                  MOVE.B      #TAB, (A2)+
+0000131A                           317                  ;JSR         ISMOVEB        ;CALL ISMOVEB TO DISASSEMBLE EFFECTIVE ADDRESS
+0000131A  6094                     318                  BRA         FINISH
+0000131C                           319             
+0000131C                           320  *----------------------------------------------------------------------------------------------------
+0000131C                           321  * CODE0010: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0010 INTO MOVE.L OR MOVEA.L
+0000131C                           322  *           INSTRUCTION
+0000131C                           323  *----------------------------------------------------------------------------------------------------
+0000131C  14FC 004D                324  CODE0010        MOVE.B      #'M', (A2)+
+00001320  14FC 004F                325                  MOVE.B      #'O', (A2)+
+00001324  14FC 0056                326                  MOVE.B      #'V', (A2)+
+00001328  14FC 0045                327                  MOVE.B      #'E', (A2)+
+0000132C  4EB9 00001342            328                  JSR         IFMOVEA
+00001332  14FC 002E                329  IFMOVEL         MOVE.B      #'.', (A2)+
+00001336  14FC 004C                330                  MOVE.B      #'L', (A2)+
+0000133A  14FC 0009                331                  MOVE.B      #TAB, (A2)+
+0000133E                           332                  ;JSR         ISMOVEL
+0000133E  6000 FF70                333                  BRA         FINISH
+00001342                           334            
+00001342  2602                     335  IFMOVEA         MOVE.L      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+00001344  EF8B                     336                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+00001346  E08B                     337                  LSR.L       #8, D3
+00001348  EA8B                     338                  LSR.L       #5, D3
+0000134A  0C43 0001                339                  CMPI.W      #%001, D3       ;CHECK IF THIS INSTRUCTION IS MOVEA
+0000134E  66E2                     340                  BNE         IFMOVEL         ;IF THE INSTRUCTION IS NOT MOVEA, IT MUST BE MOVE
+00001350  14FC 0041                341                  MOVE.B      #'A',(A2)+      ;OTHERWISE, IT IS MOVEA.
+00001354  4E75                     342                  RTS
+00001356                           343  
+00001356                           344  *----------------------------------------------------------------------------------------------------
+00001356                           345  * CODE0011: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0011 INTO MOVE.W OR MOVEA.W
+00001356                           346  *           INSTRUCTION
+00001356                           347  *----------------------------------------------------------------------------------------------------
+00001356  14FC 004D                348  CODE0011        MOVE.B      #'M', (A2)+
+0000135A  14FC 004F                349                  MOVE.B      #'O', (A2)+
+0000135E  14FC 0056                350                  MOVE.B      #'V', (A2)+
+00001362  14FC 0045                351                  MOVE.B      #'E', (A2)+
+00001366  4EB8 1342                352                  JSR         IFMOVEA
+0000136A  14FC 002E                353  IFMOVEW         MOVE.B      #'.', (A2)+
+0000136E  14FC 0057                354                  MOVE.B      #'W', (A2)+
+00001372  14FC 0009                355                  MOVE.B      #TAB, (A2)+
+00001376                           356                  ;JSR         ISMOVEB
+00001376  6000 FF38                357                  BRA         FINISH
+0000137A                           358  
+0000137A                           359  *----------------------------------------------------------------------------------------------------
+0000137A                           360  * CODE0100: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0100 INTO MOVEM, DIVS, LEA, NEG,
+0000137A                           361  *           JSR, OR RTS INSTRUCTION
+0000137A                           362  *----------------------------------------------------------------------------------------------------
+0000137A  2602                     363  CODE0100        MOVE.L      D2, D3
+0000137C  EF8B                     364                  LSL.L       #7, D3          ;SHIFT BITS TO GET THE 8TH BIT
+0000137E  E08B                     365                  LSR.L       #8, D3
+00001380  EE8B                     366                  LSR.L       #7, D3
+00001382                           367  
+00001382  0C03 0001                368                  CMPI.B      #%1, D3         ;CHECK IF THE 8TH BIT IS EQUAL TO 1
+00001386  6700 0AB0                369                  BEQ         ISLEA             ;IF IT IS EQUAL, THE INSTRUCTION IS "LEA"
+0000138A                           370  
+0000138A  E98B                     371                  LSL.L       #4, D3          ;IF NOT, SHIFT BITS TO GET BIT 11, 10, AND 9 FOR FUTHER
+0000138C  E08B                     372                  LSR.L       #8, D3          ;DISASSEMBLING
+0000138E  EA8B                     373                  LSR.L       #5, D3
+00001390  C6FC 0006                374                  MULU        #6, D3
+00001394  47F9 0000159E            375                  LEA         TABLEFOUR, A3   ;LOAD INDEX INTO THE TABLE
+0000139A  4EB3 3000                376                  JSR         0(A3, D3)       ;JUMP INDIRECT WITH INDEX
+0000139E  6000 FF10                377  RETURN0100      BRA         FINISH
+000013A2                           378  
+000013A2                           379  
+000013A2  2602                     380  IFLEA           MOVE.L      D2, D3
+000013A4  EF8B                     381                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+000013A6  E08B                     382                  LSR.L       #8, D3
+000013A8  EA8B                     383                  LSR.L       #5, D3
+000013AA  0C03 0007                384                  CMPI.B      #%111, D3       ;CHECK IF THE INSTRUCTION IS ACTUALLY "LEA"
+000013AE  6600 0644                385                  BNE         INVALID_OPCODE  ;IF IT IS NOT, THEN THE OPCODE IS NOT DEFINED
+000013B2  14FC 004C                386                  MOVE.B      #'L', (A2)+     ;OTHERWISE, IT IS ACTUALLY "LEA"
+000013B6  14FC 0045                387                  MOVE.B      #'E', (A2)+
+000013BA  14FC 0041                388                  MOVE.B      #'A', (A2)+
+000013BE  14FC 0009                389                  MOVE.B      #TAB, (A2)+
+000013C2                           390                  ;JSR         ISLEA
+000013C2  60DA                     391                  BRA         RETURN0100
+000013C4                           392  
+000013C4                           393  *----------------------------------------------------------------------------------------------------
+000013C4                           394  * CODE0101: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0101 INTO SUBQ INSTRUCTION
+000013C4                           395  *----------------------------------------------------------------------------------------------------
+000013C4  14FC 0053                396  CODE0101        MOVE.B      #'S', (A2)+
+000013C8  14FC 0055                397                  MOVE.B      #'U', (A2)+
+000013CC  14FC 0042                398                  MOVE.B      #'B', (A2)+
+000013D0  14FC 0051                399                  MOVE.B      #'Q', (A2)+
+000013D4  14FC 002E                400                  MOVE.B      #'.', (A2)+
+000013D8  4EB9 000019AE            401                  JSR         GET_SIZE
+000013DE  14FC 0009                402                  MOVE.B      #TAB, (A2)+
+000013E2                           403                  ;JSR         EASUBQ
+000013E2  6000 FECC                404                  BRA         FINISH
+000013E6                           405  
+000013E6                           406  *----------------------------------------------------------------------------------------------------
+000013E6                           407  * CODE0110: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 0110 INTO OR BCC, BCS, BGE, BLT,
+000013E6                           408  *       BVC, OR BRA INSTRUCTION
+000013E6                           409  *----------------------------------------------------------------------------------------------------
+000013E6  2602                     410  CODE0110        MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+000013E8  E98B                     411                  LSL.L       #4, D3          ;SHIFT BITS TO GET BIT 11 TO 8
+000013EA  E08B                     412                  LSR.L       #8, D3
+000013EC  E88B                     413                  LSR.L       #4, D3
+000013EE                           414  
+000013EE  C6FC 0006                415                  MULU        #6, D3
+000013F2  47F9 000016A8            416                  LEA         TABLESIX, A3
+000013F8  4EB3 3000                417                  JSR         0(A3, D3)
+000013FC  6000 FEB2                418                  BRA         FINISH
+00001400                           419  
+00001400                           420  *----------------------------------------------------------------------------------------------------
+00001400                           421  * CODE0111: HEXADECIMAL INSTRUCTION STARTING WITH 0111 IS NOT DEFINED
+00001400                           422  *----------------------------------------------------------------------------------------------------
+00001400  6600 05F2                423  CODE0111        BNE         INVALID_OPCODE  ;THE OPCODE IS NOT DEFINED
+00001404  4E75                     424                  RTS
+00001406                           425  
+00001406                           426  *----------------------------------------------------------------------------------------------------
+00001406                           427  * CODE1000: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1000 INTO OR INSTRUCTION
+00001406                           428  *----------------------------------------------------------------------------------------------------
+00001406  3602                     429  CODE1000        MOVE.W      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+00001408  EF8B                     430                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7, AND 6
+0000140A  E08B                     431                  LSR.L       #8, D3
+0000140C  EA8B                     432                  LSR.L       #5, D3
+0000140E  0C43 0007                433                  CMPI.W      #%111, D3       ;CHECK IF THIS INSTRUCTION IS DIVS
+00001412  6700 000A                434                  BEQ         IFDIVS
+00001416  6000 001C                435                  BRA         IFOR
+0000141A  6000 FE94                436  RETURN1000      BRA         FINISH
+0000141E                           437  
+0000141E                           438  
+0000141E  14FC 0044                439  IFDIVS          MOVE.B      #'D', (A2)+
+00001422  14FC 0049                440                  MOVE.B      #'I', (A2)+
+00001426  14FC 0056                441                  MOVE.B      #'V', (A2)+
+0000142A  14FC 0053                442                  MOVE.B      #'S', (A2)+
+0000142E  14FC 0009                443                  MOVE.B      #TAB, (A2)+
+00001432                           444                  ;JSR        ISDIVS
+00001432  60E6                     445                  BRA         RETURN1000
+00001434                           446  
+00001434  14FC 004F                447  IFOR            MOVE.B      #'O', (A2)+
+00001438  14FC 0052                448                  MOVE.B      #'R', (A2)+
+0000143C  14FC 002E                449                  MOVE.B      #'.', (A2)+
+00001440  4EB9 0000193C            450                  JSR         GET_OPMODE
+00001446  14FC 0009                451                  MOVE.B      #TAB, (A2)+
+0000144A                           452                  ;JSR        ISOR
+0000144A  60CE                     453                  BRA         RETURN1000
+0000144C                           454  
+0000144C                           455  
+0000144C                           456  *----------------------------------------------------------------------------------------------------
+0000144C                           457  * CODE1001: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1001 INTO SUB INSTRUCTION
+0000144C                           458  *----------------------------------------------------------------------------------------------------
+0000144C  14FC 0053                459  CODE1001        MOVE.B      #'S', (A2)+
+00001450  14FC 0055                460                  MOVE.B      #'U', (A2)+
+00001454  14FC 0042                461                  MOVE.B      #'B', (A2)+
+00001458  14FC 002E                462                  MOVE.B      #'.', (A2)+
+0000145C  4EB9 0000193C            463                  JSR         GET_OPMODE
+00001462  14FC 0009                464                  MOVE.B      #TAB, (A2)+
+00001466                           465                  ;JSR        ISSUB      
+00001466  6000 FE48                466                  BRA         FINISH
+0000146A                           467  
+0000146A                           468  *----------------------------------------------------------------------------------------------------
+0000146A                           469  * CODE1010: HEXADECIMAL INSTRUCTION STARTING WITH 1010 IS NOT DEFINED
+0000146A                           470  *----------------------------------------------------------------------------------------------------
+0000146A  6600 0588                471  CODE1010        BNE         INVALID_OPCODE  ;THE OPCODE IS NOT DEFINED
+0000146E  6000 FE40                472                  BRA         FINISH
+00001472                           473  
+00001472                           474  *----------------------------------------------------------------------------------------------------
+00001472                           475  * CODE1011: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1011 INTO EOR OR CMP INSTRUCTION
+00001472                           476  *----------------------------------------------------------------------------------------------------
+00001472  2602                     477  CODE1011        MOVE.L      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+00001474  EF8B                     478                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7, AND 6
+00001476  E08B                     479                  LSR.L       #8, D3
+00001478  EA8B                     480                  LSR.L       #5, D3
+0000147A                           481  
+0000147A  C6FC 0006                482                  MULU        #6, D3
+0000147E  47F9 000017CE            483                  LEA         TABLEELEVEN, A3
+00001484  4EB3 3000                484                  JSR         0(A3, D3)
+00001488  6000 FE26                485                  BRA         FINISH
+0000148C                           486  
+0000148C                           487  *----------------------------------------------------------------------------------------------------
+0000148C                           488  * CODE1100: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1100 INTO MULS INSTRUCTION
+0000148C                           489  *----------------------------------------------------------------------------------------------------
+0000148C  3602                     490  CODE1100        MOVE.W      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+0000148E  EF8B                     491                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7, AND 6
+00001490  E08B                     492                  LSR.L       #8, D3
+00001492  EA8B                     493                  LSR.L       #5, D3
+00001494  0C43 0007                494                  CMPI.W      #%111, D3       ;CHECK IF THIS INSTRUCTION IS MULS
+00001498  6600 055A                495                  BNE         INVALID_OPCODE
+0000149C  14FC 004D                496                  MOVE.B      #'M', (A2)+
+000014A0  14FC 0055                497                  MOVE.B      #'U', (A2)+
+000014A4  14FC 004C                498                  MOVE.B      #'L', (A2)+
+000014A8  14FC 0053                499                  MOVE.B      #'S', (A2)+
+000014AC                           500                  ;JSR         ISMULS
+000014AC  6000 FE02                501                  BRA         FINISH
+000014B0                           502  
+000014B0                           503  
+000014B0                           504  *----------------------------------------------------------------------------------------------------
+000014B0                           505  * CODE1101: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1101 INTO ADDA INSTRUCTION
+000014B0                           506  *----------------------------------------------------------------------------------------------------
+000014B0  14FC 0041                507  CODE1101        MOVE.B      #'A', (A2)+
+000014B4  14FC 0044                508                  MOVE.B      #'D', (A2)+
+000014B8  14FC 0044                509                  MOVE.B      #'D', (A2)+
+000014BC                           510  
+000014BC  EF8B                     511                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7, AND 6
+000014BE  E08B                     512                  LSR.L       #8, D3
+000014C0  EA8B                     513                  LSR.L       #5, D3
+000014C2                           514  
+000014C2  C6FC 0006                515                  MULU        #6, D3
+000014C6  47F9 000018B2            516                  LEA         TABLETHIRTEEN, A3
+000014CC  4EB3 3000                517                  JSR         0(A3, D3)
+000014D0                           518  
+000014D0  14FC 0009                519                  MOVE.B      #TAB, (A2)+
+000014D4                           520  
+000014D4  6000 FDDA                521                  BRA         FINISH
+000014D8                           522  
+000014D8                           523  *----------------------------------------------------------------------------------------------------
+000014D8                           524  * CODE1110: DISASSEMBLE THE HEXADECIMAL INSTRUCTION STARTING WITH 1110 INTO LSR, LSL, ASR, ASL, ROL,
+000014D8                           525  *           OR ROR INSTRUCTION
+000014D8                           526  *----------------------------------------------------------------------------------------------------
+000014D8                           527  CODE1110
+000014D8                           528  ; LSR
+000014D8                           529  ; LSL
+000014D8                           530  ; ASR
+000014D8                           531  ; ASL
+000014D8                           532  ; ROL
+000014D8                           533  ; ROR
+000014D8                           534  
+000014D8                           535  TABLEFOURTEEN
+000014D8                           536  *----------------------------------------------------------------------------------------------------
+000014D8                           537  * CODE1111: HEXADECIMAL INSTRUCTION STARTING WITH 1111 IS NOT DEFINED
+000014D8                           538  *----------------------------------------------------------------------------------------------------
+000014D8  6600 051A                539  CODE1111        BNE         INVALID_OPCODE  ;THE OPCODE IS NOT DEFINED
+000014DC  4E75                     540                  RTS
+000014DE                           541  
+000014DE                           542  
+000014DE                           543  
+000014DE                           544  *----------------------------------------------------------------------------------------------------
+000014DE                           545  * TABLEZERO: THIS IS FUNCTION FOR DETERMINING OPMODE OF THE HEXADECIMAL INSTRUCTION THAT STARED WITH
+000014DE                           546  *            0000
+000014DE                           547  *----------------------------------------------------------------------------------------------------
+000014DE  4EF9 00001510            548  TABLEZERO       JMP         ZERO000
+000014E4  4EF9 0000152C            549                  JMP         ZERO001
+000014EA  4EF9 00001534            550                  JMP         ZERO010
+000014F0  4EF9 0000153C            551                  JMP         ZERO011
+000014F6  4EF9 00001544            552                  JMP         ZERO100
+000014FC  4EF9 0000156A            553                  JMP         ZERO101
+00001502  4EF9 00001572            554                  JMP         ZERO110
+00001508  4EF9 00001594            555                  JMP         ZERO111
+0000150E  4E75                     556  RETURN_ZERO     RTS
+00001510                           557  
+00001510                           558              
+00001510  14FC 004F                559  ZERO000         MOVE.B      #'O', (A2)+
+00001514  14FC 0052                560                  MOVE.B      #'R', (A2)+
+00001518  14FC 0049                561                  MOVE.B      #'I', (A2)+
+0000151C  14FC 002E                562                  MOVE.B      #'.', (A2)+
+00001520  4EB9 000019AE            563                  JSR         GET_SIZE
+00001526  14FC 0009                564                  MOVE.B      #TAB, (A2)+
+0000152A                           565                  ;JSR         ISORI
+0000152A  60E2                     566                  BRA         RETURN_ZERO
+0000152C                           567  
+0000152C                           568  
+0000152C  4EB9 000019F4            569  ZERO001         JSR         INVALID_OPCODE
+00001532  60DA                     570                  BRA         RETURN_ZERO
+00001534                           571  
+00001534  4EB9 000019F4            572  ZERO010         JSR         INVALID_OPCODE
+0000153A  60D2                     573                  BRA         RETURN_ZERO
+0000153C                           574  
+0000153C                           575  
+0000153C  4EB9 000019F4            576  ZERO011         JSR         INVALID_OPCODE
+00001542  60CA                     577                  BRA         RETURN_ZERO
+00001544                           578  
+00001544                           579  
+00001544  3602                     580  ZERO100         MOVE.W      D2, D3
+00001546  EF8B                     581                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+00001548  EC8B                     582                  LSR.L       #6, D3
+0000154A  EE8B                     583                  LSR.L       #7, D3
+0000154C  0C03 0002                584                  CMPI.B      #%010, D3       ;CHECK IF THE INSTRUCTION IS ACTUALLY "BCLF #<DATA>, <EA>"
+00001550  6600 04A2                585                  BNE         INVALID_OPCODE  ;IF IT IS NOT, THEN THE OPCODE IS NOT DEFINED
+00001554  14FC 0042                586                  MOVE.B      #'B', (A2)+     ;OTHERWISE, IT IS ACTUALLY "BCLF #<DATA>, <EA>"
+00001558  14FC 0043                587                  MOVE.B      #'C', (A2)+
+0000155C  14FC 004C                588                  MOVE.B      #'L', (A2)+
+00001560  14FC 0052                589                  MOVE.B      #'R', (A2)+
+00001564  14FC 0009                590                  MOVE.B      #TAB, (A2)+
+00001568                           591                  ;JSR         ISBCLR
+00001568  60A4                     592                  BRA         RETURN_ZERO
+0000156A                           593  
+0000156A                           594  
+0000156A  4EB9 000019F4            595  ZERO101         JSR         INVALID_OPCODE
+00001570  609C                     596                  BRA         RETURN_ZERO
+00001572                           597  
+00001572                           598  
+00001572  14FC 0043                599  ZERO110         MOVE.B      #'C', (A2)+
+00001576  14FC 004D                600                  MOVE.B      #'M', (A2)+
+0000157A  14FC 0050                601                  MOVE.B      #'P', (A2)+
+0000157E  14FC 0049                602                  MOVE.B      #'I', (A2)+
+00001582  14FC 002E                603                  MOVE.B      #'.', (A2)+
+00001586  4EB9 000019AE            604                  JSR         GET_SIZE
+0000158C  14FC 0009                605                  MOVE.B      #TAB, (A2)+
+00001590                           606                  ;JSR         ISCMPI
+00001590  6000 FF7C                607                  BRA         RETURN_ZERO
+00001594                           608  
+00001594  4EB9 000019F4            609  ZERO111         JSR         INVALID_OPCODE
+0000159A  6000 FF72                610                  BRA         RETURN_ZERO
+0000159E                           611  
+0000159E                           612  *----------------------------------------------------------------------------------------------------
+0000159E                           613  * TABLEFOUR:
+0000159E                           614  *----------------------------------------------------------------------------------------------------
+0000159E  4EF9 000015D0            615  TABLEFOUR       JMP         FOUR000
+000015A4  4EF9 000015D8            616                  JMP         FOUR001
+000015AA  4EF9 000015E0            617                  JMP         FOUR010
+000015B0  4EF9 000015F2            618                  JMP         FOUR011
+000015B6  4EF9 000015FA            619                  JMP         FOUR100
+000015BC  4EF9 00001650            620                  JMP         FOUR101
+000015C2  4EF9 0000165A            621                  JMP         FOUR110
+000015C8  4EF9 0000165C            622                  JMP         FOUR111
+000015CE  4E75                     623  RETURN_FOUR     RTS
+000015D0                           624  
+000015D0                           625  
+000015D0  4EB9 000019F4            626  FOUR000         JSR         INVALID_OPCODE
+000015D6  60F6                     627                  BRA         RETURN_FOUR
+000015D8                           628  
+000015D8                           629  
+000015D8  4EB9 000019F4            630  FOUR001         JSR         INVALID_OPCODE
+000015DE  60EE                     631                  BRA         RETURN_FOUR
+000015E0                           632  
+000015E0                           633  
+000015E0  14FC 004E                634  FOUR010         MOVE.B      #'N', (A2)+     ;OTHERWISE, IT IS ACTUALLY "BCLF #<DATA>, <EA>"
+000015E4  14FC 0045                635                  MOVE.B      #'E', (A2)+
+000015E8  14FC 0047                636                  MOVE.B      #'G', (A2)+
+000015EC  14FC 0009                637                  MOVE.B      #TAB, (A2)+
+000015F0                           638                  ;JSR         ISNEG
+000015F0  60DC                     639                  BRA         RETURN_FOUR
+000015F2                           640  
+000015F2                           641  
+000015F2  4EB9 000019F4            642  FOUR011         JSR         INVALID_OPCODE
+000015F8  60D4                     643                  BRA         RETURN_FOUR
+000015FA                           644  
+000015FA                           645  
+000015FA  14FC 004D                646  FOUR100         MOVE.B      #'M', (A2)+     ;OTHERWISE, IT IS ACTUALLY "BCLF #<DATA>, <EA>"
+000015FE  14FC 004F                647                  MOVE.B      #'O', (A2)+
+00001602  14FC 0056                648                  MOVE.B      #'V', (A2)+
+00001606  14FC 0045                649                  MOVE.B      #'E', (A2)+
+0000160A  14FC 004D                650                  MOVE.B      #'M', (A2)+
+0000160E  14FC 002E                651                  MOVE.B      #'.', (A2)+
+00001612  4EB9 00001624            652                  JSR         IFMOVEMW
+00001618  14FC 0009                653  FOUR100_CONT    MOVE.B      #TAB, (A2)+
+0000161C  4EB9 00001CC2            654                  JSR         ISMOVEM
+00001622  60AA                     655                  BRA         RETURN_FOUR
+00001624                           656  
+00001624  3602                     657  IFMOVEMW        MOVE.W      D2, D3
+00001626  EF8B                     658                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+00001628  EC8B                     659                  LSR.L       #6, D3
+0000162A  EE8B                     660                  LSR.L       #7, D3
+0000162C  0C03 0002                661                  CMPI.B      #%010, D3       ;CHECK IF THE INSTRUCTION IS ACTUALLY "MOVEM.W"
+00001630  6600 0008                662                  BNE         IFMOVEML        ;IF IT IS NOT, CHECK IF IT IS MOVEM.L
+00001634  14FC 0057                663                  MOVE.B      #'W', (A2)+
+00001638  4E75                     664                  RTS
+0000163A                           665  
+0000163A  3602                     666  IFMOVEML        MOVE.W      D2, D3
+0000163C  EF8B                     667                  LSL.L       #7, D3          ;SHIFT BITS TO GET BIT 8, 7 AND 6
+0000163E  EC8B                     668                  LSR.L       #6, D3
+00001640  EE8B                     669                  LSR.L       #7, D3
+00001642  0C03 0003                670                  CMPI.B      #%011, D3       ;CHECK IF THE INSTRUCTION IS ACTUALLY "MOVEM.L"
+00001646  6600 03AC                671                  BNE         INVALID_OPCODE  ;IF IT IS NOT, THEN THE OPCODE IS NOT DEFINED
+0000164A  14FC 004C                672                  MOVE.B      #'L', (A2)+
+0000164E  60C8                     673                  BRA         FOUR100_CONT
+00001650                           674  
+00001650                           675  
+00001650  4EB9 000019F4            676  FOUR101         JSR         INVALID_OPCODE
+00001656  6000 FF76                677                  BRA         RETURN_FOUR
+0000165A                           678  
+0000165A                           679  
+0000165A  609E                     680  FOUR110         BRA         FOUR100
+0000165C                           681  
+0000165C                           682  
+0000165C  3602                     683  FOUR111         MOVE.W      D2, D3
+0000165E  E18B                     684                  LSL.L       #8, D3          ;SHIFT BITS TO GET BIT 7 TO 0
+00001660  E08B                     685                  LSR.L       #8, D3
+00001662  0C03 0075                686                  CMPI.B      #%01110101, D3  ;CHECK IF THE INSTRUCTION IS ACTUALLY "RTS"
+00001666  6600 001C                687                  BNE         IFJSR
+0000166A  6000 0004                688                  BRA         IFRTS
+0000166E  60A8                     689                  BRA         FOUR100_CONT
+00001670                           690  
+00001670  14FC 0052                691  IFRTS           MOVE.B      #'R', (A2)+
+00001674  14FC 0054                692                  MOVE.B      #'T', (A2)+
+00001678  14FC 0053                693                  MOVE.B      #'S', (A2)+
+0000167C  14FC 0009                694                  MOVE.B      #TAB, (A2)+
+00001680  6000 FF4C                695                  BRA         RETURN_FOUR
+00001684                           696  
+00001684                           697  
+00001684  3602                     698  IFJSR           MOVE.W      D2, D3
+00001686  E18B                     699                  LSL.L       #8, D3          ;SHIFT BITS TO GET BIT 7 AND 6
+00001688  E08B                     700                  LSR.L       #8, D3
+0000168A  EC8B                     701                  LSR.L       #6, D3
+0000168C  0C03 000A                702                  CMPI.B      #10, D3         ;CHECK IF THE INSTRUCTION IS ACTUALLY "JSR"
+00001690  6600 0362                703                  BNE         INVALID_OPCODE
+00001694  14FC 004A                704                  MOVE.B      #'J', (A2)+
+00001698  14FC 0053                705                  MOVE.B      #'S', (A2)+
+0000169C  14FC 0052                706                  MOVE.B      #'R', (A2)+
+000016A0  14FC 0009                707                  MOVE.B      #TAB, (A2)+
+000016A4                           708                  ;JSR        ISJSR
+000016A4  6000 FF28                709                  BRA         RETURN_FOUR
+000016A8                           710  
+000016A8                           711  *----------------------------------------------------------------------------------------------------
+000016A8                           712  * TABLESIX:
+000016A8                           713  *----------------------------------------------------------------------------------------------------
+000016A8  4EF9 0000170A            714  TABLESIX        JMP         SIX0000
+000016AE  4EF9 0000171C            715                  JMP         SIX0001
+000016B4  4EF9 00001724            716                  JMP         SIX0010
+000016BA  4EF9 0000172C            717                  JMP         SIX0011
+000016C0  4EF9 00001734            718                  JMP         SIX0100
+000016C6  4EF9 00001746            719                  JMP         SIX0101
+000016CC  4EF9 00001758            720                  JMP         SIX0110
+000016D2  4EF9 00001760            721                  JMP         SIX0111
+000016D8  4EF9 00001768            722                  JMP         SIX1000
+000016DE  4EF9 0000177A            723                  JMP         SIX1001
+000016E4  4EF9 00001782            724                  JMP         SIX1010
+000016EA  4EF9 0000178C            725                  JMP         SIX1011
+000016F0  4EF9 00001796            726                  JMP         SIX1100
+000016F6  4EF9 000017AA            727                  JMP         SIX1101
+000016FC  4EF9 000017BA            728                  JMP         SIX1110
+00001702  4EF9 000017C4            729                  JMP         SIX1111
+00001708  4E75                     730  RETURN_SIX      RTS
+0000170A                           731  
+0000170A                           732  
+0000170A  14FC 0042                733  SIX0000         MOVE.B      #'B', (A2)+
+0000170E  14FC 0052                734                  MOVE.B      #'R', (A2)+
+00001712  14FC 0041                735                  MOVE.B      #'A', (A2)+
+00001716  14FC 0009                736                  MOVE.B      #TAB, (A2)+
+0000171A                           737                  ;JSR        ISBRA
+0000171A  60EC                     738                  BRA         RETURN_SIX
+0000171C                           739  
+0000171C                           740  
+0000171C  4EB9 000019F4            741  SIX0001         JSR         INVALID_OPCODE
+00001722  60E4                     742                  BRA         RETURN_SIX
+00001724                           743  
+00001724                           744  
+00001724  4EB9 000019F4            745  SIX0010         JSR         INVALID_OPCODE
+0000172A  60DC                     746                  BRA         RETURN_SIX
+0000172C                           747  
+0000172C                           748  
+0000172C  4EB9 000019F4            749  SIX0011         JSR         INVALID_OPCODE
+00001732  60D4                     750                  BRA         RETURN_SIX
+00001734                           751  
+00001734                           752  
+00001734  14FC 0042                753  SIX0100         MOVE.B      #'B', (A2)+
+00001738  14FC 0043                754                  MOVE.B      #'C', (A2)+
+0000173C  14FC 0043                755                  MOVE.B      #'C', (A2)+
+00001740  14FC 0009                756                  MOVE.B      #TAB, (A2)+
+00001744                           757                  ;JSR        ISBRA
+00001744  60C2                     758                  BRA         RETURN_SIX
+00001746                           759  
+00001746                           760  
+00001746  14FC 0042                761  SIX0101         MOVE.B      #'B', (A2)+
+0000174A  14FC 0043                762                  MOVE.B      #'C', (A2)+
+0000174E  14FC 0053                763                  MOVE.B      #'S', (A2)+
+00001752  14FC 0009                764                  MOVE.B      #TAB, (A2)+
+00001756                           765                  ;JSR        ISBRA
+00001756  60B0                     766                  BRA         RETURN_SIX
+00001758                           767  
+00001758                           768  
+00001758  4EB9 000019F4            769  SIX0110         JSR         INVALID_OPCODE
+0000175E  60A8                     770                  BRA         RETURN_SIX
+00001760                           771  
+00001760                           772  
+00001760  4EB9 000019F4            773  SIX0111         JSR         INVALID_OPCODE
+00001766  60A0                     774                  BRA         RETURN_SIX
+00001768                           775  
+00001768                           776  
+00001768  14FC 0042                777  SIX1000         MOVE.B      #'B', (A2)+
+0000176C  14FC 0056                778                  MOVE.B      #'V', (A2)+
+00001770  14FC 0043                779                  MOVE.B      #'C', (A2)+
+00001774  14FC 0009                780                  MOVE.B      #TAB, (A2)+
+00001778                           781                  ;JSR        ISBRA
+00001778  608E                     782                  BRA         RETURN_SIX
+0000177A                           783                  
+0000177A                           784  
+0000177A  4EB9 000019F4            785  SIX1001         JSR         INVALID_OPCODE
+00001780  6086                     786                  BRA         RETURN_SIX
+00001782                           787  
+00001782                           788  
+00001782  4EB9 000019F4            789  SIX1010         JSR         INVALID_OPCODE
+00001788  6000 FF7E                790                  BRA         RETURN_SIX
+0000178C                           791  
+0000178C                           792  
+0000178C  4EB9 000019F4            793  SIX1011         JSR         INVALID_OPCODE
+00001792  6000 FF74                794                  BRA         RETURN_SIX
+00001796                           795  
+00001796                           796  
+00001796  14FC 0042                797  SIX1100         MOVE.B      #'B', (A2)+
+0000179A  14FC 0047                798                  MOVE.B      #'G', (A2)+
+0000179E  14FC 0045                799                  MOVE.B      #'E', (A2)+
+000017A2  14FC 0009                800                  MOVE.B      #TAB, (A2)+
+000017A6                           801                  ;JSR        ISBRA
+000017A6  6000 FF60                802                  BRA         RETURN_SIX
+000017AA                           803  
+000017AA                           804  
+000017AA  14FC 0042                805  SIX1101         MOVE.B      #'B', (A2)+
+000017AE  14FC 004C                806                  MOVE.B      #'L', (A2)+
+000017B2  14FC 0054                807                  MOVE.B      #'T', (A2)+
+000017B6  14FC 0009                808                  MOVE.B      #TAB, (A2)+
+000017BA                           809                  ;JSR        ISBRA
+000017BA                           810  
+000017BA                           811  
+000017BA  4EB9 000019F4            812  SIX1110         JSR         INVALID_OPCODE
+000017C0  6000 FF46                813                  BRA         RETURN_SIX
+000017C4                           814  
+000017C4                           815  
+000017C4  4EB9 000019F4            816  SIX1111         JSR         INVALID_OPCODE
+000017CA  6000 FF3C                817                  BRA         RETURN_SIX
+000017CE                           818  
+000017CE                           819  
+000017CE                           820  *----------------------------------------------------------------------------------------------------
+000017CE                           821  * TABLEELEVEN: THIS IS FUNCTION FOR DETERMINING THE OPMODE OF THE INSTRUCTION
+000017CE                           822  *----------------------------------------------------------------------------------------------------
+000017CE  4EF9 00001800            823  TABLEELEVEN     JMP         ELEVEN000
+000017D4  4EF9 0000181A            824                  JMP         ELEVEN001
+000017DA  4EF9 00001834            825                  JMP         ELEVEN010
+000017E0  4EF9 0000184E            826                  JMP         ELEVEN011
+000017E6  4EF9 00001856            827                  JMP         ELEVEN100
+000017EC  4EF9 00001870            828                  JMP         ELEVEN101
+000017F2  4EF9 0000188C            829                  JMP         ELEVEN110
+000017F8  4EF9 000018A8            830                  JMP         ELEVEN111
+000017FE  4E75                     831  RETURN_ELEVEN   RTS
+00001800                           832                  
+00001800  14FC 0043                833  ELEVEN000       MOVE.B      #'C', (A2)+
+00001804  14FC 004D                834                  MOVE.B      #'M', (A2)+
+00001808  14FC 0050                835                  MOVE.B      #'P', (A2)+
+0000180C  14FC 002E                836                  MOVE.B      #'.', (A2)+
+00001810  14FC 0042                837                  MOVE.B      #'B', (A2)+
+00001814  14FC 0009                838                  MOVE.B      #TAB, (A2)+
+00001818                           839                  ;JSR            ISCMP
+00001818  60E4                     840                  BRA         RETURN_ELEVEN
+0000181A                           841                  
+0000181A  14FC 0043                842  ELEVEN001       MOVE.B      #'C', (A2)+
+0000181E  14FC 004D                843                  MOVE.B      #'M', (A2)+
+00001822  14FC 0050                844                  MOVE.B      #'P', (A2)+
+00001826  14FC 002E                845                  MOVE.B      #'.', (A2)+
+0000182A  14FC 0057                846                  MOVE.B      #'W', (A2)+
+0000182E  14FC 0009                847                  MOVE.B      #TAB, (A2)+
+00001832                           848                  ;JSR            ISCMP
+00001832  60CA                     849                  BRA         RETURN_ELEVEN
+00001834                           850                  
+00001834  14FC 0043                851  ELEVEN010       MOVE.B      #'C', (A2)+
+00001838  14FC 004D                852                  MOVE.B      #'M', (A2)+
+0000183C  14FC 0050                853                  MOVE.B      #'P', (A2)+
+00001840  14FC 002E                854                  MOVE.B      #'.', (A2)+
+00001844  14FC 0042                855                  MOVE.B      #'B', (A2)+
+00001848  14FC 0009                856                  MOVE.B      #TAB, (A2)+
+0000184C                           857              ;   JSR         ISCMP
+0000184C  60B0                     858                  BRA         RETURN_ELEVEN
+0000184E                           859                  
+0000184E  4EB9 000019F4            860  ELEVEN011       JSR         INVALID_OPCODE
+00001854  60A8                     861                  BRA         RETURN_ELEVEN
+00001856                           862  
+00001856  14FC 0045                863  ELEVEN100       MOVE.B      #'E', (A2)+
+0000185A  14FC 004F                864                  MOVE.B      #'O', (A2)+
+0000185E  14FC 0052                865                  MOVE.B      #'R', (A2)+
+00001862  14FC 002E                866                  MOVE.B      #'.', (A2)+
+00001866  14FC 0042                867                  MOVE.B      #'B', (A2)+
+0000186A  14FC 0009                868                  MOVE.B      #TAB, (A2)+
+0000186E                           869                  ;JSR            ISEOR
+0000186E  608E                     870                  BRA         RETURN_ELEVEN
+00001870                           871                  
+00001870  14FC 0045                872  ELEVEN101       MOVE.B      #'E', (A2)+
+00001874  14FC 004F                873                  MOVE.B      #'O', (A2)+
+00001878  14FC 0052                874                  MOVE.B      #'R', (A2)+
+0000187C  14FC 002E                875                  MOVE.B      #'.', (A2)+
+00001880  14FC 0057                876                  MOVE.B      #'W', (A2)+
+00001884  14FC 0009                877                  MOVE.B      #TAB, (A2)+
+00001888                           878                  ;JSR            ISEOR
+00001888  6000 FF74                879                  BRA         RETURN_ELEVEN
+0000188C                           880                  
+0000188C  14FC 0045                881  ELEVEN110       MOVE.B      #'E', (A2)+
+00001890  14FC 004F                882                  MOVE.B      #'O', (A2)+
+00001894  14FC 0052                883                  MOVE.B      #'R', (A2)+
+00001898  14FC 002E                884                  MOVE.B      #'.', (A2)+
+0000189C  14FC 004C                885                  MOVE.B      #'L', (A2)+
+000018A0  14FC 0009                886                  MOVE.B      #TAB, (A2)+
+000018A4                           887                  ;JSR            ISEOR
+000018A4  6000 FF58                888                  BRA         RETURN_ELEVEN
+000018A8                           889                  
+000018A8  4EB9 000019F4            890  ELEVEN111       JSR         INVALID_OPCODE
+000018AE  6000 FF4E                891                  BRA         RETURN_ELEVEN
+000018B2                           892  
+000018B2                           893  *----------------------------------------------------------------------------------------------------
+000018B2                           894  * TABLETHIRTEEEN: THIS IS FUNCTION FOR DETERMINING THE OPMODE OF THE INSTRUCTION
+000018B2                           895  *----------------------------------------------------------------------------------------------------X
+000018B2  4EF9 000018E4            896  TABLETHIRTEEN   JMP         THIRTEEN000
+000018B8  4EF9 000018EE            897                  JMP         THIRTEEN001
+000018BE  4EF9 000018F8            898                  JMP         THIRTEEN010
+000018C4  4EF9 00001902            899                  JMP         THIRTEEN011
+000018CA  4EF9 00001910            900                  JMP         THIRTEEN100
+000018D0  4EF9 0000191A            901                  JMP         THIRTEEN101
+000018D6  4EF9 00001924            902                  JMP         THIRTEEN110
+000018DC  4EF9 0000192E            903                  JMP         THIRTEEN111
+000018E2  4E75                     904  RETURN_THIRTEEN RTS
+000018E4                           905  
+000018E4                           906  
+000018E4  14FC 002E                907  THIRTEEN000     MOVE.B      #'.', (A2)+
+000018E8  14FC 0042                908                  MOVE.B      #'B', (A2)+
+000018EC                           909                  ;JSR         ISADD
+000018EC  60F4                     910                  BRA         RETURN_THIRTEEN
+000018EE                           911  
+000018EE  14FC 002E                912  THIRTEEN001     MOVE.B      #'.', (A2)+
+000018F2  14FC 0057                913                  MOVE.B      #'W', (A2)+
+000018F6                           914                  ;JSR         ISADD
+000018F6  60EA                     915                  BRA         RETURN_THIRTEEN
+000018F8                           916  
+000018F8  14FC 002E                917  THIRTEEN010     MOVE.B      #'.', (A2)+
+000018FC  14FC 004C                918                  MOVE.B      #'L', (A2)+
+00001900                           919                  ;JSR         ISADD
+00001900  60E0                     920                  BRA         RETURN_THIRTEEN
+00001902                           921  
+00001902  14FC 0041                922  THIRTEEN011     MOVE.B      #'A', (A2)+
+00001906  14FC 002E                923                  MOVE.B      #'.', (A2)+
+0000190A  14FC 0057                924                  MOVE.B      #'W', (A2)+
+0000190E                           925                  ;JSR         ISADDA
+0000190E  60D2                     926                  BRA         RETURN_THIRTEEN
+00001910                           927  
+00001910  14FC 002E                928  THIRTEEN100     MOVE.B      #'.', (A2)+
+00001914  14FC 0042                929                  MOVE.B      #'B', (A2)+
+00001918                           930                  ;JSR         ISADD
+00001918  60C8                     931                  BRA         RETURN_THIRTEEN
+0000191A                           932  
+0000191A  14FC 002E                933  THIRTEEN101     MOVE.B      #'.', (A2)+
+0000191E  14FC 0057                934                  MOVE.B      #'W', (A2)+
+00001922                           935                  ;JSR         ISADD
+00001922  60BE                     936                  BRA         RETURN_THIRTEEN
+00001924                           937  
+00001924  14FC 002E                938  THIRTEEN110     MOVE.B      #'.', (A2)+
+00001928  14FC 004C                939                  MOVE.B      #'L', (A2)+
+0000192C                           940                  ;JSR         ISADD
+0000192C  60B4                     941                  BRA         RETURN_THIRTEEN
+0000192E                           942  
+0000192E  14FC 0041                943  THIRTEEN111     MOVE.B      #'A', (A2)+
+00001932  14FC 002E                944                  MOVE.B      #'.', (A2)+
+00001936  14FC 004C                945                  MOVE.B      #'L', (A2)+
+0000193A                           946                  ;JSR         ISADDA
+0000193A  60A6                     947                  BRA         RETURN_THIRTEEN
+0000193C                           948  
+0000193C                           949  *----------------------------------------------------------------------------------------------------
+0000193C                           950  * GET_OPMODE: THIS IS FUNCTION FOR DETERMINING THE OPMODE OF THE INSTRUCTION
+0000193C                           951  *----------------------------------------------------------------------------------------------------
+0000193C  3602                     952  GET_OPMODE      MOVE.W      D2, D3          ;MAKE A COPY OF INSTRUCTION TO D3
+0000193E  EF4B                     953                  LSL         #7, D3          ;SHIFT TO THE LEFT 7 BITS
+00001940  E84B                     954                  LSR         #4, D3          ;SHIFT TO THE RIGHT 4 BITS
+00001942  EE4B                     955                  LSR         #7, D3          ;SHIFT TO THE RIGHT 7 BITS
+00001944  C6FC 0006                956                  MULU        #6, D3
+00001948                           957                  
+00001948  47F9 00001954            958                  LEA         TABLEOPMODE, A3
+0000194E  4EB3 3000                959                  JSR         0(A3, D3)
+00001952  4E75                     960                  RTS
+00001954                           961    
+00001954  4EF9 00001986            962  TABLEOPMODE     JMP         MODE000
+0000195A  4EF9 0000198C            963                  JMP         MODE001
+00001960  4EF9 00001992            964                  JMP         MODE010
+00001966  4EF9 00001998            965                  JMP         MODE011
+0000196C  4EF9 0000199A            966                  JMP         MODE100
+00001972  4EF9 000019A0            967                  JMP         MODE101
+00001978  4EF9 000019A6            968                  JMP         MODE110
+0000197E  4EF9 000019AC            969                  JMP         MODE111
+00001984  4E75                     970  RETURN_OPMODE   RTS
+00001986                           971                  
+00001986  14FC 0042                972  MODE000         MOVE.B      #'B', (A2)+
+0000198A  60F8                     973                  BRA         RETURN_OPMODE
+0000198C                           974                  
+0000198C  14FC 0057                975  MODE001         MOVE.B      #'W', (A2)+
+00001990  60F2                     976                  BRA         RETURN_OPMODE
+00001992                           977                  
+00001992  14FC 004C                978  MODE010         MOVE.B      #'L', (A2)+
+00001996  60EC                     979                  BRA         RETURN_OPMODE
+00001998                           980  
+00001998  60EA                     981  MODE011         BRA         RETURN_OPMODE
+0000199A                           982  
+0000199A  14FC 0042                983  MODE100         MOVE.B      #'B', (A2)+
+0000199E  60E4                     984                  BRA         RETURN_OPMODE
+000019A0                           985  
+000019A0  14FC 0057                986  MODE101         MOVE.B      #'W', (A2)+
+000019A4  60DE                     987                  BRA         RETURN_OPMODE
+000019A6                           988                  
+000019A6  14FC 004C                989  MODE110         MOVE.B      #'L', (A2)+
+000019AA  60D8                     990                  BRA         RETURN_OPMODE
+000019AC                           991                  
+000019AC  60D6                     992  MODE111         BRA         RETURN_OPMODE
+000019AE                           993                  
+000019AE                           994  *----------------------------------------------------------------------------------------------------
+000019AE                           995  * GET_SIZE: THIS IS A FUNCTION FOR DETERMINING THE SIZE OF THE INSTRUCTION
+000019AE                           996  *----------------------------------------------------------------------------------------------------
+000019AE  3602                     997  GET_SIZE        MOVE.W      D2, D3          ;MAKE A COPY OF ORIGINAL INSTRUCTION TO D3
+000019B0  E14B                     998                  LSL         #8, D3          ;SHIFT TO THE LEFT 8 BITS
+000019B2  EC4B                     999                  LSR         #6, D3          ;SHIFT TO THE RIGHT 6 BITS
+000019B4  E04B                    1000                  LSR         #8, D3          ;SHIFT TO THE RIGHT 8 BITS
+000019B6  C6FC 0006               1001                  MULU        #6, D3
+000019BA                          1002                  
+000019BA  47F9 000019C6           1003                  LEA         TABLESIZE, A3
+000019C0  4EB3 3000               1004                  JSR         0(A3, D3)
+000019C4  4E75                    1005                  RTS
+000019C6                          1006  
+000019C6  4EF9 000019E0           1007  TABLESIZE       JMP         SIZE00
+000019CC  4EF9 000019E6           1008                  JMP         SIZE01
+000019D2  4EF9 000019EC           1009                  JMP         SIZE10
+000019D8  4EF9 000019F2           1010                  JMP         SIZE11
+000019DE  4E75                    1011  RETURN_SIZE     RTS
+000019E0                          1012                  
+000019E0  14FC 0042               1013  SIZE00          MOVE.B      #'B', (A2)+
+000019E4  60F8                    1014                  BRA         RETURN_SIZE
+000019E6                          1015                                  
+000019E6  14FC 0057               1016  SIZE01          MOVE.B      #'W', (A2)+
+000019EA  60F2                    1017                  BRA         RETURN_SIZE
+000019EC                          1018                  
+000019EC  14FC 004C               1019  SIZE10          MOVE.B      #'L', (A2)+
+000019F0  60EC                    1020                  BRA         RETURN_SIZE
+000019F2                          1021                  
+000019F2  60EA                    1022  SIZE11          BRA         RETURN_SIZE
+000019F4                          1023  
+000019F4                          1024  *----------------------------------------------------------------------------------------------------
+000019F4                          1025  * GET_DIRECTION: THIS IS A FUNCTION FOR DETERMINING THE DIRECTION OF THE INSTRUCTION (LEFT OR RIGHT)
+000019F4                          1026  *----------------------------------------------------------------------------------------------------
+000019F4                          1027  
+000019F4                          1028  
+000019F4                          1029  *----------------------------------------------------------------------------------------------------
+000019F4                          1030  INVALID_OPCODE:
+000019F4                          1031  *----------------------------------------------------------------------------------------------------
+000019F4  14FC 0049               1032  INVALID_OPCODE  MOVE.B      #'I', (A2)+
+000019F8  14FC 004E               1033                  MOVE.B      #'N', (A2)+
+000019FC  14FC 0056               1034                  MOVE.B      #'V', (A2)+
+00001A00  14FC 0041               1035                  MOVE.B      #'A', (A2)+
+00001A04  14FC 004C               1036                  MOVE.B      #'L', (A2)+
+00001A08  14FC 0049               1037                  MOVE.B      #'I', (A2)+
+00001A0C  14FC 0044               1038                  MOVE.B      #'D', (A2)+
+00001A10  14FC 0020               1039                  MOVE.B      #' ', (A2)+
+00001A14  14FC 004F               1040                  MOVE.B      #'O', (A2)+
+00001A18  14FC 0050               1041                  MOVE.B      #'P', (A2)+
+00001A1C  14FC 0043               1042                  MOVE.B      #'C', (A2)+
+00001A20  14FC 004F               1043                  MOVE.B      #'O', (A2)+
+00001A24  14FC 0044               1044                  MOVE.B      #'D', (A2)+
+00001A28  14FC 0045               1045                  MOVE.B      #'E', (A2)+
+00001A2C  4E75                    1046                  RTS
+00001A2E                          1047  
+00001A2E                          1048              
+00001A2E                          1049  *-----------------------------------------------------------
+00001A2E                          1050  * Title      :EA
+00001A2E                          1051  * Written by :Nicolas Michael
+00001A2E                          1052  * Date       :5/19/2015
+00001A2E                          1053  * Description:Completed EA codes for testing
+00001A2E                          1054  *-----------------------------------------------------------
+00001A2E                          1055  
+00001A2E                          1056  *---------------------------------------------------------------------------------------------------------
+00001A2E                          1057  *IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN SUBQ COMMAND. APPENDS 
+00001A2E                          1058  *IS MULS           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MULS COMMAND. APPENDS 
+00001A2E                          1059  *                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+00001A2E                          1060  *
+00001A2E                          1061  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001A2E                          1062  *
+00001A2E                          1063  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001A2E                          1064  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001A2E                          1065  *                  REGISTERS ARE PRESERVED
+00001A2E                          1066  *---------------------------------------------------------------------------------------------------------   
+00001A2E  48F8 3BFF 0400          1067  ISMULS       MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001A34  4EB9 0000219C           1068               JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001A3A  301E                    1069               MOVE.W      (A6)+, D0
+00001A3C  4EB9 00001C9E           1070               JSR         GETMOVEREG                                               
+00001A42  4EB9 0000200E           1071               JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001A48  163C 0000               1072               MOVE.B      #0, D3
+00001A4C  4EB9 00002066           1073               JSR         SWAP
+00001A52  4EB9 0000200E           1074               JSR         ERRORCHECK
+00001A58  0C78 BEEF 0456          1075               CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001A5E  6700 002E               1076               BEQ         BADMULDATA
+00001A62  4EB9 00002066           1077               JSR         SWAP
+00001A68  4EB9 0000206C           1078               JSR         APPENDEA 
+00001A6E  4EB9 00002066           1079               JSR         SWAP                             *ELSE APPEND SRC AE
+00001A74  14FC 002C               1080               MOVE.B      #',', (A2)+
+00001A78  14FC 0020               1081               MOVE.B      #' ', (A2)+
+00001A7C  4EB9 0000206C           1082               JSR         APPENDEA                         *APPEND DESTINATION EA
+00001A82  4CF8 3BFF 0400          1083  RTN_BADMUL   MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001A88  7C00                    1084               MOVE.L      #0, D6
+00001A8A  7E00                    1085               MOVE.L      #0, D7
+00001A8C  4E75                    1086               RTS  
+00001A8E                          1087  
+00001A8E                          1088  *---------------------------------------------------------------------------------------------------------
+00001A8E                          1089  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001A8E                          1090  *---------------------------------------------------------------------------------------------------------      
+00001A8E  4EB9 0000227C           1091  BADMULDATA  JSR         BADDATA
+00001A94  4EF8 1A82               1092              JMP         RTN_BADMUL  
+00001A98                          1093  
+00001A98                          1094  
+00001A98                          1095  *---------------------------------------------------------------------------------------------------------
+00001A98                          1096  *IS SUBQ           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN SUBQ COMMAND. APPENDS 
+00001A98                          1097  *                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+00001A98                          1098  *
+00001A98                          1099  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001A98                          1100  *
+00001A98                          1101  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001A98                          1102  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001A98                          1103  *                  REGISTERS ARE PRESERVED
+00001A98                          1104  *---------------------------------------------------------------------------------------------------------   
+00001A98  48F8 3BFF 0400          1105  ISSUBQ       MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001A9E  4EB9 0000219C           1106               JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001AA4  301E                    1107               MOVE.W      (A6)+, D0
+00001AA6  4EB9 00001C9E           1108               JSR         GETMOVEREG                                               
+00001AAC  4EB9 0000200E           1109               JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001AB2  0C78 BEEF 0456          1110               CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001AB8  6700 0032               1111               BEQ         BADQDATA
+00001ABC  4EB9 00002066           1112               JSR         SWAP
+00001AC2  14FC 0023               1113               MOVE.B      #'#', (A2)+
+00001AC6  4EB9 00002210           1114               JSR         APPENDDISPLACE 
+00001ACC  4EB9 00002066           1115               JSR         SWAP                             *ELSE APPEND SRC AE
+00001AD2  14FC 002C               1116               MOVE.B      #',', (A2)+
+00001AD6  14FC 0020               1117               MOVE.B      #' ', (A2)+
+00001ADA  4EB9 0000206C           1118               JSR         APPENDEA                         *APPEND DESTINATION EA
+00001AE0  4CF8 3BFF 0400          1119  RTN_BADQ     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001AE6  7C00                    1120               MOVE.L      #0, D6
+00001AE8  7E00                    1121               MOVE.L      #0, D7
+00001AEA  4E75                    1122               RTS    
+00001AEC                          1123   
+00001AEC                          1124  *---------------------------------------------------------------------------------------------------------
+00001AEC                          1125  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001AEC                          1126  *---------------------------------------------------------------------------------------------------------      
+00001AEC  4EB9 0000227C           1127  BADQDATA     JSR         BADDATA
+00001AF2  4EF8 1AE0               1128               JMP         RTN_BADQ 
+00001AF6                          1129   
+00001AF6                          1130  *---------------------------------------------------------------------------------------------------------
+00001AF6                          1131  *IS ADDA           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN ADDA COMMAND. APPENDS 
+00001AF6                          1132  *                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+00001AF6                          1133  *
+00001AF6                          1134  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001AF6                          1135  *
+00001AF6                          1136  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001AF6                          1137  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001AF6                          1138  *                  REGISTERS ARE PRESERVED
+00001AF6                          1139  *---------------------------------------------------------------------------------------------------------   
+00001AF6  7C01                    1140  ISADDAL      MOVE.L      #1, D6                           *INDICATES LONG DATA
+00001AF8  4EB9 00001B00           1141               JSR         ISADDA                                                                             
+00001AFE  4E75                    1142               RTS   
+00001B00  48F8 3BFF 0400          1143  ISADDA       MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001B06  4EB9 0000219C           1144               JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001B0C  301E                    1145               MOVE.W      (A6)+, D0
+00001B0E  4EB9 00001C9E           1146               JSR         GETMOVEREG
+00001B14  163C 0001               1147               MOVE.B      #1, D3                           *SET DESTINATION TO ADDRESS REGISTER                                               
+00001B18  4EB9 0000200E           1148               JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001B1E  4EB9 00002066           1149               JSR         SWAP
+00001B24  4EB9 0000200E           1150               JSR         ERRORCHECK
+00001B2A  4EB9 00002066           1151               JSR         SWAP
+00001B30  0C78 BEEF 0456          1152               CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001B36  6700 0028               1153               BEQ         ADDABADDATA
+00001B3A  4EB9 0000206C           1154               JSR         APPENDEA 
+00001B40  4EB9 00002066           1155               JSR         SWAP                             *ELSE APPEND SRC AE
+00001B46  14FC 002C               1156               MOVE.B      #',', (A2)+
+00001B4A  14FC 0020               1157               MOVE.B      #' ', (A2)+
+00001B4E  4EB9 0000206C           1158               JSR         APPENDEA                         *APPEND DESTINATION EA
+00001B54  4CF8 3BFF 0400          1159  RTN_BADA     MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001B5A  7C00                    1160               MOVE.L      #0, D6
+00001B5C  7E00                    1161               MOVE.L      #0, D7
+00001B5E  4E75                    1162               RTS    
+00001B60                          1163   
+00001B60                          1164  *---------------------------------------------------------------------------------------------------------
+00001B60                          1165  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001B60                          1166  *---------------------------------------------------------------------------------------------------------      
+00001B60  4EB9 0000227C           1167  ADDABADDATA  JSR         BADDATA
+00001B66  4EF8 1B54               1168               JMP         RTN_BADA     
+00001B6A                          1169                              
+00001B6A                          1170  *---------------------------------------------------------------------------------------------------------
+00001B6A                          1171  *IS BCLR           TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN BCLR COMMAND. CAN BE 
+00001B6A                          1172  *                  CALLED REGARDLESS OF SIZE CODE. EA WILL BE THE SAME FOR BOTH BYTE AND LONG MODES
+00001B6A                          1173  *
+00001B6A                          1174  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001B6A                          1175  *
+00001B6A                          1176  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001B6A                          1177  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001B6A                          1178  *                  REGISTERS ARE PRESERVED
+00001B6A                          1179  *---------------------------------------------------------------------------------------------------------   
+00001B6A  48F8 3BFF 0400          1180  ISBCLR       MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001B70  4EB9 0000219C           1181               JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001B76  301E                    1182               MOVE.W      (A6)+, D0
+00001B78  4EB9 00001C9E           1183               JSR         GETMOVEREG                                               
+00001B7E  4EB9 00002066           1184               JSR         SWAP
+00001B84  0C01 0006               1185               CMPI.B      #6, D1
+00001B88  6600 004E               1186               BNE         IMSOURCE
+00001B8C  123C 0000               1187               MOVE.B      #0, D1
+00001B90  4EB9 0000200E           1188  RTN_IMSRC    JSR         ERRORCHECK
+00001B96  4EB9 00002066           1189               JSR         SWAP
+00001B9C  4EB9 0000200E           1190               JSR         ERRORCHECK
+00001BA2  4EB9 00002066           1191               JSR         SWAP
+00001BA8  0C78 BEEF 0456          1192               CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001BAE  6700 0034               1193               BEQ         BCLRBADDATA
+00001BB2  4EB9 0000206C           1194               JSR         APPENDEA 
+00001BB8  4EB9 00002066           1195               JSR         SWAP                             *ELSE APPEND SRC AE
+00001BBE  14FC 002C               1196               MOVE.B      #',', (A2)+
+00001BC2  14FC 0020               1197               MOVE.B      #' ', (A2)+
+00001BC6  4EB9 0000206C           1198               JSR         APPENDEA                         *APPEND DESTINATION EA
+00001BCC  4CF8 3BFF 0400          1199  RTN_BCLRBAD  MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001BD2  7C00                    1200               MOVE.L      #0, D6
+00001BD4  7E00                    1201               MOVE.L      #0, D7
+00001BD6  4E75                    1202               RTS 
+00001BD8                          1203               
+00001BD8  123C 0007               1204  IMSOURCE     MOVE.B      #7, D1
+00001BDC  103C 0004               1205               MOVE.B      #4, D0
+00001BE0  4EF8 1B90               1206               JMP         RTN_IMSRC
+00001BE4                          1207   
+00001BE4                          1208  *---------------------------------------------------------------------------------------------------------
+00001BE4                          1209  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001BE4                          1210  *---------------------------------------------------------------------------------------------------------      
+00001BE4  4EB9 0000227C           1211  BCLRBADDATA  JSR         BADDATA
+00001BEA  4EF8 1BCC               1212               JMP         RTN_BCLRBAD
+00001BEE                          1213             
+00001BEE                          1214   
+00001BEE                          1215  *---------------------------------------------------------------------------------------------------------
+00001BEE                          1216  *IS BRA            TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN BRA OR BRA FAMILY COMMAND. 
+00001BEE                          1217  *                  APPENDS ADDRESSING OF NEXT INSTRUCTION TO BE EXECUTED TO A2
+00001BEE                          1218  *
+00001BEE                          1219  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001BEE                          1220  *
+00001BEE                          1221  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001BEE                          1222  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001BEE                          1223  *                  REGISTERS ARE PRESERVED
+00001BEE                          1224  *---------------------------------------------------------------------------------------------------------
+00001BEE  48F8 3BFF 0400          1225  ISBRA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001BF4  4EB9 0000219C           1226                   JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001BFA  220E                    1227                   MOVE.L      A6, D1                           *PC ADDRESS
+00001BFC  5441                    1228                   ADDQ        #2, D1                           *ADD 2 TO PC ADDRESS
+00001BFE  301E                    1229                   MOVE.W      (A6)+, D0
+00001C00  4EB9 00001C22           1230                   JSR         GETDISPLACEMENT                                               
+00001C06  0C00 0000               1231                   CMPI.B      #0, D0
+00001C0A  6700 001C               1232                   BEQ         BITDISPLACE                      *IF SIXTEEN BIT DISPLACEMENT GET NEXT WORD
+00001C0E  D280                    1233  RTN_16BIT        ADD.L       D0, D1
+00001C10  4EB9 00002210           1234                   JSR         APPENDDISPLACE                   *APPEND DESTINATION EA
+00001C16  4CF8 3BFF 0400          1235                   MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001C1C  7C00                    1236                   MOVE.L      #0, D6
+00001C1E  7E00                    1237                   MOVE.L      #0, D7
+00001C20  4E75                    1238                   RTS
+00001C22                          1239   
+00001C22                          1240  *---------------------------------------------------------------------------------------------------------
+00001C22                          1241  *GET DISPLACEMENT - SHIFTS CURRENT WORD TO EXTRACT 8 BIT DISPLACEMENT VALUE, CHECK FOR 00 AFTERWARDS
+00001C22                          1242  *---------------------------------------------------------------------------------------------------------
+00001C22  E148                    1243  GETDISPLACEMENT     LSL.W   #8, D0
+00001C24  E048                    1244                      LSR.W   #8, D0
+00001C26  4E75                    1245                      RTS
+00001C28                          1246    
+00001C28                          1247  *---------------------------------------------------------------------------------------------------------
+00001C28                          1248  *BIT DISPLACEMENT - 8 BIT DISPLACEMENT MUST BE 0, GRAB NEXT WORD TO EXTRACT 16 BIT DISPLACEMENT, HEHE.
+00001C28                          1249  *---------------------------------------------------------------------------------------------------------               
+00001C28  301E                    1250  BITDISPLACE      MOVE.W      (A6)+, D0
+00001C2A  4EF8 1C0E               1251                   JMP         RTN_16BIT
+00001C2E                          1252   
+00001C2E                          1253  *---------------------------------------------------------------------------------------------------------
+00001C2E                          1254  *IS MOVEB/W/L      TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN MOVE COMMAND. APPENDS 
+00001C2E                          1255  *                  ADDRESSING MODES TO END OF CURRENT COMMAND STRING
+00001C2E                          1256  *
+00001C2E                          1257  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001C2E                          1258  *
+00001C2E                          1259  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001C2E                          1260  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001C2E                          1261  *                  REGISTERS ARE PRESERVED
+00001C2E                          1262  *---------------------------------------------------------------------------------------------------------   
+00001C2E  7C01                    1263  ISMOVEL      MOVE.L      #1, D6                           *INDICATES LONG DATA
+00001C30  4EB9 00001C38           1264               JSR         ISMOVE                                                                             
+00001C36  4E75                    1265               RTS   
+00001C38  48F8 3BFF 0400          1266  ISMOVE       MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001C3E  4EB9 0000219C           1267               JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001C44  301E                    1268               MOVE.W      (A6)+, D0
+00001C46  4EB9 00001C9E           1269               JSR         GETMOVEREG                                               
+00001C4C  4EB9 0000200E           1270               JSR         ERRORCHECK                       *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001C52  4EB9 00002066           1271               JSR         SWAP
+00001C58  4EB9 0000200E           1272               JSR         ERRORCHECK
+00001C5E  4EB9 00002066           1273               JSR         SWAP
+00001C64  0C78 BEEF 0456          1274               CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001C6A  6700 0028               1275               BEQ         MOVEBADDATA
+00001C6E  4EB9 0000206C           1276               JSR         APPENDEA 
+00001C74  4EB9 00002066           1277               JSR         SWAP                             *ELSE APPEND SRC AE
+00001C7A  14FC 002C               1278               MOVE.B      #',', (A2)+
+00001C7E  14FC 0020               1279               MOVE.B      #' ', (A2)+
+00001C82  4EB9 0000206C           1280               JSR         APPENDEA                         *APPEND DESTINATION EA
+00001C88  4CF8 3BFF 0400          1281  RTN_BAD      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001C8E  7C00                    1282               MOVE.L      #0, D6
+00001C90  7E00                    1283               MOVE.L      #0, D7
+00001C92  4E75                    1284               RTS 
+00001C94                          1285   
+00001C94                          1286  *---------------------------------------------------------------------------------------------------------
+00001C94                          1287  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001C94                          1288  *---------------------------------------------------------------------------------------------------------      
+00001C94  4EB9 0000227C           1289  MOVEBADDATA  JSR         BADDATA
+00001C9A  4EF8 1C88               1290               JMP         RTN_BAD
+00001C9E                          1291  
+00001C9E                          1292  *---------------------------------------------------------------------------------------------------------
+00001C9E                          1293  *GET MOVE REGISTERS - PARSES MOVE ADDRESSING REGISTERS AND MODES INTO D0, D1, D2 AND D3 TO BE CHECKED FOR ERROR
+00001C9E                          1294  *---------------------------------------------------------------------------------------------------------            
+00001C9E  3200                    1295  GETMOVEREG      MOVE.W  D0, D1
+00001CA0  3400                    1296                  MOVE.W  D0, D2
+00001CA2  3600                    1297                  MOVE.W  D0, D3
+00001CA4  E148                    1298                  LSL.W   #8, D0
+00001CA6  EB48                    1299                  LSL.W   #5, D0
+00001CA8  E048                    1300                  LSR.W   #8, D0
+00001CAA  EA48                    1301                  LSR.W   #5, D0
+00001CAC  E149                    1302                  LSL.W   #8, D1
+00001CAE  E549                    1303                  LSL.W   #2, D1
+00001CB0  E049                    1304                  LSR.W   #8, D1
+00001CB2  EA49                    1305                  LSR.W   #5, D1
+00001CB4  E94A                    1306                  LSL.W   #4, D2
+00001CB6  E04A                    1307                  LSR.W   #8, D2
+00001CB8  EA4A                    1308                  LSR.W   #5, D2
+00001CBA  EF4B                    1309                  LSL.W   #7, D3
+00001CBC  E04B                    1310                  LSR.W   #8, D3
+00001CBE  EA4B                    1311                  LSR.W   #5, D3
+00001CC0  4E75                    1312                  RTS               
+00001CC2                          1313                  
+00001CC2                          1314  *---------------------------------------------------------------------------------------------------------
+00001CC2                          1315  *ISMOVEMW/L        (IS MOVEM.L AND MOVEM.W)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A 
+00001CC2                          1316  *                  KNOWN MOVEM COMMAND
+00001CC2                          1317  *
+00001CC2                          1318  *PRE CONDITIONS -  A6 POINTS TO START OF MOVEM COMMAND
+00001CC2                          1319  *
+00001CC2                          1320  *POST CONDITIONS - A2 POINTS TO NEXT AVAILABLE LOCATION TO ADD NEXT ASCII INSTRUCTION. DO NOT INCREMENT
+00001CC2                          1321  *                  A2, ALREADY DONE! A6 POINTS TO START OF NEXT COMMAND OR AND OF FILE IF ALL COMMANDS HAVE
+00001CC2                          1322  *                  BEEN DIASSEMBLED. DO NOT INC A6, ALREADY DONE. ASCII STRINGS HAVE BEEN ADDED TO (A2) IF
+00001CC2                          1323  *                  NO ERRORS OCCURED. IF ADDRESSING MODES ARE USED THAT ARE NOT SUPPORTED, THE COMMAND 
+00001CC2                          1324  *                  STRING WILL BE INCORRECT, TO BE FIXED! THE STATE OF ALL OTHER REGISTERS IS UNDETERMINED 
+00001CC2                          1325  *                  AFTER EXECUTION.
+00001CC2                          1326  *---------------------------------------------------------------------------------------------------------
+00001CC2  48F8 3BFF 0400          1327  ISMOVEM       MOVEM.L       D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001CC8  4EB9 0000219C           1328                JSR           CLRALLDREG                       *CLEAR REGISTERS FOR MOVEM
+00001CCE  4EB9 00001E1A           1329                JSR           SETEAREGISTERS
+00001CD4  4EB9 0000200E           1330                JSR           ERRORCHECK
+00001CDA  0C78 BEEF 0456          1331                CMP.W         #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001CE0  6700 001E               1332                BEQ           MMBADDATA 
+00001CE4  4EB9 00001E16           1333                JSR           GETLISTMASK
+00001CEA  0C04 0001               1334                CMPI.B        #1, D4
+00001CEE  6700 003C               1335                BEQ           MMAPPEA1
+00001CF2  4EB9 00001D0A           1336                JSR           MMAPPEA0
+00001CF8  4CF8 3BFF 0400          1337  RTN_1DIR      MOVEM.L       $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS     
+00001CFE  4E75                    1338                RTS 
+00001D00                          1339  
+00001D00                          1340  *---------------------------------------------------------------------------------------------------------
+00001D00                          1341  *MOVE BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001D00                          1342  *---------------------------------------------------------------------------------------------------------      
+00001D00  4EB9 0000227C           1343  MMBADDATA   JSR         BADDATA
+00001D06  4EF8 1CF8               1344              JMP         RTN_1DIR 
+00001D0A                          1345  
+00001D0A                          1346  *-----------------------------------------------------------------------------------------------------------
+00001D0A                          1347  *MOVEM APPEND ADDRESS DIRECTION 0 (REG TO MEM) - APPENDS ADDRESSES ACCORDING TO DIRECTION REG TO MEM
+00001D0A                          1348  *-----------------------------------------------------------------------------------------------------------
+00001D0A  48B8 00FF 0500          1349  MMAPPEA0      MOVEM.W      D0-D7, $500                      *SAVE MY PRECIOUS REGISTERS
+00001D10  4EB9 00001D44           1350                JSR          APPLISTRTM
+00001D16  4CB8 00FF 0500          1351                MOVEM.W      $500, D0-D7
+00001D1C  14FC 002C               1352                MOVE.B       #',', (A2)+
+00001D20  14FC 0020               1353                MOVE.B       #' ', (A2)+
+00001D24  4EB9 0000206C           1354                JSR          APPENDEA
+00001D2A  4E75                    1355                RTS
+00001D2C                          1356  
+00001D2C                          1357  *-----------------------------------------------------------------------------------------------------------
+00001D2C                          1358  *MOVEM APPEND ADDRESS DIRECTION 1 (MEM TO REG) - APPENDS ADDRESSES ACCORDING TO DIRECTION MEM TO REG
+00001D2C                          1359  *-----------------------------------------------------------------------------------------------------------
+00001D2C  4EB9 0000206C           1360  MMAPPEA1      JSR          APPENDEA
+00001D32  14FC 002C               1361                MOVE.B       #',', (A2)+
+00001D36  14FC 0020               1362                MOVE.B       #' ', (A2)+
+00001D3A  4EB9 00001D44           1363                JSR          APPLISTRTM
+00001D40  4EF8 1CF8               1364                JMP          RTN_1DIR     
+00001D44                          1365  
+00001D44                          1366  *-----------------------------------------------------------------------------------------------------------
+00001D44                          1367  *APPEND LIST - APPENDS SOURCE LIST OF REGISTERS TO COMMAND STRING IN THE FORMAT AN/DN OR DN/AN IF ADDRESS 
+00001D44                          1368  *              INDIRECT PRE DECREMENT IS USED FOR DESTINATION ADDRESSING MODE. DOES NOT USE DASH (-) SYMBOL. 
+00001D44                          1369  *              IF THERE'S TIME, I WILL ADD.
+00001D44                          1370  *-----------------------------------------------------------------------------------------------------------                
+00001D44  0C01 0004               1371  APPLISTRTM      CMPI.B        #4, D1              *DIESTINATION IS ADDRESS INDIRECT PRE DECREMEMNT
+00001D48  6700 0070               1372                  BEQ           BACKWARDLIST
+00001D4C  0C01 0002               1373                  CMPI.B        #2, D1              *DESTINATION IS ADDRESS INDIRECT
+00001D50  6700 000C               1374                  BEQ           FORWARDLIST
+00001D54  0C01 0007               1375                  CMPI.B        #7, D1              *DESTINATION IS  ABSOLUTE WORD OR LONG
+00001D58  6700 0004               1376                  BEQ           FORWARDLIST
+00001D5C  4E75                    1377  RTN_LIST        RTS
+00001D5E                          1378  
+00001D5E                          1379  *-----------------------------------------------------------------------------------------------------------
+00001D5E                          1380  *FORWARD LIST - FOR LOOP USED TO APPEND REGISTER STRINGS FOR EXAMPLE "A7/A6/D3/D1/D0"
+00001D5E                          1381  *-----------------------------------------------------------------------------------------------------------
+00001D5E  323C 000F               1382  FORWARDLIST     MOVE.W  #0015, D1           *BIG UGLY FOR LOOP
+00001D62  303C 0000               1383                  MOVE.W  #0000, D0
+00001D66  343C 0000               1384                  MOVE.W  #0000, D2
+00001D6A  E34B                    1385  FRWRDLOOP       LSL.W   #1, D3              *SHIFT FIELD MASK, CARRY WILL BE SET IF REGISTER SHOULD BE APPENDED
+00001D6C  6500 000C               1386                  BCS     APPENDDORAF         *WAS THERE CARRY?
+00001D70  5301                    1387  RTN_APPDF       SUBI.B  #1, D1              *DECREMENT 
+00001D72  B200                    1388                  CMP.B   D0, D1              *IS GREATER THAN OR EQUAL? FOR(INT D0 = 15; D1 >= D0; D1--)
+00001D74  6CF4                    1389                  BGE     FRWRDLOOP
+00001D76  4EF8 1D5C               1390                  JMP     RTN_LIST 
+00001D7A                          1391  
+00001D7A                          1392  *-----------------------------------------------------------------------------------------------------------
+00001D7A                          1393  *APPEND D OR A (FORWARD LOOP) - APPENDS STRING D OR A DEPENDING ON FOR LOOP COUNT
+00001D7A                          1394  *-----------------------------------------------------------------------------------------------------------
+00001D7A  0C01 0007               1395  APPENDDORAF     CMPI.B  #7, D1
+00001D7E  6E00 002A               1396                  BGT     APPAF
+00001D82  14FC 0044               1397                  MOVE.B  #'D', (A2)+
+00001D86  0602 0030               1398                  ADDI.B  #48, D2
+00001D8A  D401                    1399                  ADD.B   D1, D2
+00001D8C  14C2                    1400                  MOVE.B  D2, (A2)+
+00001D8E  B67C 0000               1401  RTN_APPAF       CMP.W   #0, D3
+00001D92  6700 0008               1402                  BEQ     RTN_SLASHF
+00001D96  4EF9 00001DA2           1403                  JMP     APPENDSLASHF
+00001D9C  4242                    1404  RTN_SLASHF      CLR     D2
+00001D9E  4EF8 1D70               1405                  JMP     RTN_APPDF            *END BIG UGLY FOR LOOP
+00001DA2                          1406  
+00001DA2                          1407  *-----------------------------------------------------------------------------------------------------------
+00001DA2                          1408  *APPEND SLASH (FORWARD LOOP) - APPENDS A SLASH (/) TO COMMAND STRING IS MORE REGISTERS ARE TO BE PRINTED
+00001DA2                          1409  *-----------------------------------------------------------------------------------------------------------
+00001DA2  14FC 002F               1410  APPENDSLASHF    MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
+00001DA6  4EF8 1D9C               1411                  JMP     RTN_SLASHF 
+00001DAA                          1412                  
+00001DAA  14FC 0041               1413  APPAF           MOVE.B  #'A', (A2)+
+00001DAE  0602 0028               1414                  ADDI.B  #40, D2
+00001DB2  D401                    1415                  ADD.B   D1, D2
+00001DB4  14C2                    1416                  MOVE.B  D2, (A2)+
+00001DB6  4EF8 1D8E               1417                  JMP     RTN_APPAF
+00001DBA                          1418  
+00001DBA                          1419  *-----------------------------------------------------------------------------------------------------------
+00001DBA                          1420  *BACKWARDS LIST - SAME AS BEFORE BUT WE HAVE TO GO THE OTHER WAY FOR(INT D0 = 0; D0 <= D1; D0++)
+00001DBA                          1421  *-----------------------------------------------------------------------------------------------------------
+00001DBA  323C 000F               1422  BACKWARDLIST    MOVE.W  #0015, D1             *BIG UGLY FOR LOOP
+00001DBE  303C 0000               1423                  MOVE.W  #0000, D0
+00001DC2  343C 0000               1424                  MOVE.W  #0000, D2
+00001DC6  E34B                    1425  BCKWRDLOOP      LSL.W   #1, D3
+00001DC8  6500 000C               1426                  BCS     APPENDDORA
+00001DCC  5200                    1427  RTN_APPD        ADDI.B  #1, D0
+00001DCE  B041                    1428                  CMP     D1, D0
+00001DD0  6FF4                    1429                  BLE     BCKWRDLOOP
+00001DD2  4EF8 1D5C               1430                  JMP     RTN_LIST 
+00001DD6                          1431  
+00001DD6                          1432  *-----------------------------------------------------------------------------------------------------------
+00001DD6                          1433  *APPEND D OR A - SAME AS ABOVE BUT DIFFERENT REGISTERS WERE USED...I SHOULDN'T HAVE DONE THAT...
+00001DD6                          1434  *-----------------------------------------------------------------------------------------------------------             
+00001DD6  0C00 0007               1435  APPENDDORA      CMPI.B  #7, D0
+00001DDA  6E00 002A               1436                  BGT     APPA
+00001DDE  14FC 0044               1437                  MOVE.B  #'D', (A2)+
+00001DE2  0602 0030               1438                  ADDI.B  #48, D2
+00001DE6  D400                    1439                  ADD.B   D0, D2
+00001DE8  14C2                    1440                  MOVE.B  D2, (A2)+
+00001DEA  B67C 0000               1441  RTN_APPA        CMP.W   #0, D3
+00001DEE  6700 0008               1442                  BEQ     RTN_SLASH
+00001DF2  4EF9 00001DFE           1443                  JMP     APPENDSLASH
+00001DF8  4242                    1444  RTN_SLASH       CLR     D2
+00001DFA  4EF8 1DCC               1445                  JMP     RTN_APPD            *END BIG UGLY FOR LOOP
+00001DFE                          1446  
+00001DFE                          1447  *-----------------------------------------------------------------------------------------------------------
+00001DFE                          1448  *APPEND SLASH - SAME AS ABOVE BUT DIFFERENT REGISTERS ARE USED FOR THE FORWARD LOOP....STUPID....
+00001DFE                          1449  *-----------------------------------------------------------------------------------------------------------               
+00001DFE  14FC 002F               1450  APPENDSLASH     MOVE.B  #$2F, (A2)+     *ADD SLASH = 2F IN HEX
+00001E02  4EF8 1DF8               1451                  JMP     RTN_SLASH 
+00001E06                          1452                  
+00001E06  14FC 0041               1453  APPA            MOVE.B  #'A', (A2)+
+00001E0A  0602 0028               1454                  ADDI.B  #40, D2
+00001E0E  D400                    1455                  ADD.B   D0, D2
+00001E10  14C2                    1456                  MOVE.B  D2, (A2)+
+00001E12  4EF8 1DEA               1457                  JMP     RTN_APPA
+00001E16                          1458  
+00001E16                          1459  *-----------------------------------------------------------------------------------------------------------
+00001E16                          1460  *GET LIST MASK - MOVES THE LIST MASK FROM MEMORY TO D3 TO BE SHIFTED FOR EACH REGISTER SAVED
+00001E16                          1461  *-----------------------------------------------------------------------------------------------------------
+00001E16  361E                    1462  GETLISTMASK     MOVE.W  (A6)+, D3      *THANKS!
+00001E18  4E75                    1463                  RTS     
+00001E1A                          1464                
+00001E1A                          1465  *-----------------------------------------------------------------------------------------------------------
+00001E1A                          1466  *SET EA REGISTERS - PUTS THE DIRECTION, MODE, AND REGISTER ID D4, D5, AND D6 TO BE CHECKED FOR ERRORS AND W/E
+00001E1A                          1467  *-----------------------------------------------------------------------------------------------------------
+00001E1A  381E                    1468  SETEAREGISTERS  MOVE.W (A6)+, D4       *COPY COMMAND INTO D4, 5 AND 6 TO BE PARSED
+00001E1C  3204                    1469                  MOVE.W  D4, D1         *FOR DIRECTION, MODE AND REG
+00001E1E  3004                    1470                  MOVE.W  D4, D0  
+00001E20  EB4C                    1471                  LSL.W   #5, D4         *SHIFTING FOR DIRECTION
+00001E22  E04C                    1472                  LSR.W   #8, D4
+00001E24  EE4C                    1473                  LSR.W   #7, D4
+00001E26  E149                    1474                  LSL.W   #8, D1         *SHIFTING FOR MODE
+00001E28  E549                    1475                  LSL.W   #2, D1
+00001E2A  E049                    1476                  LSR.W   #8, D1
+00001E2C  EA49                    1477                  LSR.W   #5, D1
+00001E2E  E148                    1478                  LSL.W   #8, D0         *SHIFTING FOR REGISTER
+00001E30  EB48                    1479                  LSL.W   #5, D0
+00001E32  E048                    1480                  LSR.W   #8, D0
+00001E34  EA48                    1481                  LSR.W   #5, D0
+00001E36  4E75                    1482                  RTS
+00001E38                          1483  
+00001E38                          1484  *---------------------------------------------------------------------------------------------------------
+00001E38                          1485  *isLEA            (IS LEA)- TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN LEA COMMAND
+00001E38                          1486  *
+00001E38                          1487  *PRE CONDITIONS -  A6 POINTS TO START OF LEA COMMAND
+00001E38                          1488  *
+00001E38                          1489  *POST CONDITIONS - A2 POINTS TO NEXT AVAILABLE LOCATION TO ADD NEXT ASCII INSTRUCTION. DO NOT INCREMENT
+00001E38                          1490  *                  A2, ALREADY DONE! A6 POINTS TO START OF NEXT COMMAND OR AND OF FILE IF ALL COMMANDS HAVE
+00001E38                          1491  *                  BEEN DIASSEMBLED. DO NOT INC A6, ALREADY DONE. ASCII STRINGS HAVE BEEN ADDED TO (A2) IF
+00001E38                          1492  *                  NO ERRORS OCCURED. THE STATE OF ALL OTHER REGISTERS IS EXACTLY HOW THEY WERE BEFORE CALLING THIS
+00001E38                          1493  *---------------------------------------------------------------------------------------------------------
+00001E38  48F8 3BFF 0400          1494  isLEA            MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001E3E  4EB9 0000219C           1495                   JSR         CLRALLDREG                           
+00001E44  301E                    1496                   MOVE.W      (A6)+, D0                        *GET CURRENT OP CODE DATA TO D7
+00001E46  4EB8 1C9E               1497                   JSR         GETMOVEREG
+00001E4A  4EB9 0000200E           1498                   JSR         ERRORCHECK
+00001E50  0C78 BEEF 0456          1499                   CMP.W       #$BEEF, $456
+00001E56  6700 002C               1500                   BEQ         LEABADDATA
+00001E5A  7C01                    1501                   MOVE.L      #1, D6                           *INDICATES LONG FOR IMMEDIATE ADDRESSING
+00001E5C  4EB9 0000206C           1502                   JSR         APPENDEA
+00001E62  14FC 002C               1503                   MOVE.B      #',', (A2)+                      *ADD SPACE BETWEEN ADDRESSES
+00001E66  14FC 0020               1504                   MOVE.B      #' ', (A2)+                      *ADD COMMA BETWEEN ADDRESSES
+00001E6A  4EB9 00002066           1505                   JSR         SWAP
+00001E70  323C 0001               1506                   MOVE.W      #1, D1
+00001E74  4EB9 0000206C           1507                   JSR         APPENDEA
+00001E7A  4CF8 3BFF 0400          1508  LEARTN           MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+00001E80  7C00                    1509                   MOVE.L      #0, D6
+00001E82  4E75                    1510                   RTS
+00001E84                          1511  
+00001E84                          1512  *-----------------------------------------------------------------------------------------------------------
+00001E84                          1513  *LEABAD DATA - SETS BEEF FLAG IF BAD DATA
+00001E84                          1514  *-----------------------------------------------------------------------------------------------------------
+00001E84  4EB9 0000227C           1515  LEABADDATA       JSR         BADDATA
+00001E8A  4EF8 1E7A               1516                   JMP         LEARTN
+00001E8E                          1517                  
+00001E8E                          1518  *---------------------------------------------------------------------------------------------------------
+00001E8E                          1519  *IS ORIB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN ORI COMMAND
+00001E8E                          1520  *
+00001E8E                          1521  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001E8E                          1522  *
+00001E8E                          1523  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001E8E                          1524  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001E8E                          1525  *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+00001E8E                          1526  *---------------------------------------------------------------------------------------------------------            
+00001E8E  7C01                    1527  ISORIL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+00001E90  4EB9 00001E98           1528                  JSR         ISORIB                                                                             
+00001E96  4E75                    1529                  RTS   
+00001E98  48F8 3BFF 0400          1530  ISORIB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001E9E  4EB9 0000219C           1531                  JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001EA4  301E                    1532                  MOVE.W      (A6)+, D0
+00001EA6  4EB8 1C9E               1533                  JSR         GETMOVEREG                                              
+00001EAA  4EB9 0000200E           1534                  JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001EB0  0C78 BEEF 0456          1535                  CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001EB6  6700 0020               1536                  BEQ         ORIBADDATA
+00001EBA  4EB9 0000204E           1537                  JSR         APPENDIMMEDIATE                  *ELSE APPEND SRC AE
+00001EC0  14FC 002C               1538                  MOVE.B      #',', (A2)+
+00001EC4  14FC 0020               1539                  MOVE.B      #' ', (A2)+
+00001EC8  4EB9 0000206C           1540                  JSR         APPENDEA                         *APPEND DESTINATION EA
+00001ECE  4CF8 3BFF 0400          1541  RTN_BADORI      MOVEM.L     $400, D0-D7/A0/A1/A3-A5          *RESTORE JEENS REGISTERS
+00001ED4  7C00                    1542                  MOVE.L      #0, D6
+00001ED6  4E75                    1543                  RTS 
+00001ED8                          1544  
+00001ED8                          1545  *---------------------------------------------------------------------------------------------------------
+00001ED8                          1546  *ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001ED8                          1547  *---------------------------------------------------------------------------------------------------------      
+00001ED8  4EB9 0000227C           1548  ORIBADDATA  JSR         BADDATA
+00001EDE  4EF8 1ECE               1549              JMP         RTN_BADORI      
+00001EE2                          1550                  
+00001EE2                          1551  *---------------------------------------------------------------------------------------------------------
+00001EE2                          1552  *IS NEGB/W/L       TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN NEG COMMAND
+00001EE2                          1553  *
+00001EE2                          1554  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001EE2                          1555  *
+00001EE2                          1556  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001EE2                          1557  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001EE2                          1558  *                  REGISTERS ARE PRESERVED. EXCEPT D6, D6 IS GONE....SORRY
+00001EE2                          1559  *---------------------------------------------------------------------------------------------------------             
+00001EE2  7C01                    1560  ISNEGL          MOVE.L      #1, D6                           *INDICATES LONG DATA
+00001EE4  4EB9 00001EEC           1561                  JSR         ISNEGB
+00001EEA  4E75                    1562                  RTS
+00001EEC  48F8 3BFF 0400          1563  ISNEGB          MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001EF2  4EB9 0000219C           1564                  JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001EF8  301E                    1565                  MOVE.W      (A6)+, D0
+00001EFA  4EB8 1C9E               1566                  JSR         GETMOVEREG                                               
+00001EFE  4EB9 0000200E           1567                  JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001F04  0C78 BEEF 0456          1568                  CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001F0A  6700 0012               1569                  BEQ         NEGBADDATA
+00001F0E  4EB9 0000206C           1570                  JSR         APPENDEA                         *APPEND DESTINATION EA
+00001F14  4CF8 3BFF 0400          1571  RTN_NEGERR      MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+00001F1A  7C00                    1572                  MOVE.L      #0, D6
+00001F1C  4E75                    1573                  RTS
+00001F1E                          1574  
+00001F1E                          1575  *---------------------------------------------------------------------------------------------------------
+00001F1E                          1576  *ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001F1E                          1577  *---------------------------------------------------------------------------------------------------------      
+00001F1E  4EB9 0000227C           1578  NEGBADDATA  JSR         BADDATA
+00001F24  4EF8 1F14               1579              JMP         RTN_NEGERR
+00001F28                          1580  
+00001F28                          1581  *---------------------------------------------------------------------------------------------------------
+00001F28                          1582  *IS E/ORB/W/L        TO BE CALLED IF CURRENT INSTRUCTION POINTED TO BY A6 IS A KNOWN OR/EOR COMMAND
+00001F28                          1583  *
+00001F28                          1584  *PRE CONDITIONS -  A6 POINTS TO START OF MOVE COMMAND. A2 POINTS TO LOCATION AFTER MOVE STRING AND TAB
+00001F28                          1585  *
+00001F28                          1586  *POST CONDITIONS - A6 POINTS TO NEXT COMMAND TO BE DISASSEMBLED. A2 POINTS TO NEXT LOCATION TO BE APPENDED,
+00001F28                          1587  *                  DELIMETER SHOULD BE ADDED TO THIS LOCATION IMMEDIATELY. ALL OTHER ADDRESS AND DATA 
+00001F28                          1588  *                  REGISTERS ARE PRESERVED. EXCEPT D6...
+00001F28                          1589  *---------------------------------------------------------------------------------------------------------
+00001F28  7C01                    1590  ISEORB          MOVE.L      #1, D6                           *INDICATES EXCULIVE OR OPERATION TO THE OR DISASSEMBLER
+00001F2A  4EB9 00001F32           1591                  JSR         ISORB
+00001F30  4E75                    1592                  RTS
+00001F32  48F8 3BFF 0400          1593  ISORB           MOVEM.L     D0-D7/A0/A1/A3-A5, $400          *SAVE JEENS REGISTERS AT $400
+00001F38  4EB9 0000219C           1594                  JSR         CLRALLDREG                       *CLEAR REGISTERS FOR USE
+00001F3E  381E                    1595                  MOVE.W      (A6)+, D4
+00001F40  4EB9 00001FA4           1596                  JSR         PARSEOROP 
+00001F46  0C04 0002               1597                  CMPI.B      #2, D4                           *IF OPMODE GREATER THAN 2 DN IS SOURCE
+00001F4A  6E00 0068               1598                  BGT         PARSEDNSOURCE    
+00001F4E  4EB9 00001FDA           1599                  JSR         PARSEDNDEST                                          
+00001F54  4EB9 0000200E           1600  RTN_PARSEOR     JSR         ERRORCHECK                        *CHECK FOR ERRORS, $BEEF AT $456 IF ERRORS EXISTS
+00001F5A  4EB9 00002066           1601                  JSR         SWAP
+00001F60  4EB9 0000200E           1602                  JSR         ERRORCHECK  
+00001F66  4EB9 00002066           1603                  JSR         SWAP
+00001F6C  0C78 BEEF 0456          1604                  CMP.W       #$BEEF, $456                     *IF $BEEF, APPEND BAD DATA STRING TO A2
+00001F72  6700 0026               1605                  BEQ         ORBADDATA
+00001F76  4EB9 0000206C           1606                  JSR         APPENDEA                         *APPEND DESTINATION EA
+00001F7C  4EB9 00002066           1607                  JSR         SWAP
+00001F82  14FC 002C               1608                  MOVE.B      #',', (A2)+
+00001F86  14FC 0020               1609                  MOVE.B      #' ', (A2)+
+00001F8A  4EB9 0000206C           1610                  JSR         APPENDEA
+00001F90  4CF8 3BFF 0400          1611  RTN_OR          MOVEM.L     $400, D0-D7/A0/A1/A3-A5
+00001F96  7C00                    1612                  MOVE.L      #0, D6
+00001F98  4E75                    1613                  RTS
+00001F9A                          1614  
+00001F9A                          1615  *---------------------------------------------------------------------------------------------------------
+00001F9A                          1616  *ORI BAD DATA - BAD DATA FOUND, CLEANUP AND RETURN
+00001F9A                          1617  *---------------------------------------------------------------------------------------------------------      
+00001F9A  4EB9 0000227C           1618  ORBADDATA   JSR         BADDATA
+00001FA0  4EF8 1F90               1619              JMP         RTN_OR
+00001FA4                          1620  
+00001FA4                          1621  *---------------------------------------------------------------------------------------------------------
+00001FA4                          1622  *PARSE OR OP MODE - PARSES THE OPMODE FROM THE COMMAND TO DETERMINE IF DATA REGISTER IS SOURCE OR 
+00001FA4                          1623  *                   DESTINATION OPERAND
+00001FA4                          1624  *---------------------------------------------------------------------------------------------------------
+00001FA4  3004                    1625  PARSEOROP       MOVE.W      D4, D0
+00001FA6  3204                    1626                  MOVE.W      D4, D1
+00001FA8  3404                    1627                  MOVE.W      D4, D2
+00001FAA  3604                    1628                  MOVE.W      D4, D3
+00001FAC  EF4C                    1629                  LSL.W       #7, D4
+00001FAE  E04C                    1630                  LSR.W       #8, D4
+00001FB0  EA4C                    1631                  LSR.W       #5, D4
+00001FB2  4E75                    1632                  RTS
+00001FB4                          1633  
+00001FB4                          1634  *---------------------------------------------------------------------------------------------------------
+00001FB4                          1635  *PARSE DN SOURCE - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE SOURCE OPERAND
+00001FB4                          1636  *---------------------------------------------------------------------------------------------------------                
+00001FB4  323C 0000               1637  PARSEDNSOURCE   MOVE.W      #0, D1
+00001FB8  E948                    1638                  LSL.W       #4, D0
+00001FBA  E048                    1639                  LSR.W       #8, D0
+00001FBC  EA48                    1640                  LSR.W       #5, D0  
+00001FBE  E14A                    1641                  LSL.W       #8, D2
+00001FC0  EB4A                    1642                  LSL.W       #5, D2
+00001FC2  E04A                    1643                  LSR.W       #8, D2
+00001FC4  EA4A                    1644                  LSR.W       #5, D2
+00001FC6  E14B                    1645                  LSL.W       #8, D3
+00001FC8  E54B                    1646                  LSL.W       #2, D3
+00001FCA  E04B                    1647                  LSR.W       #8, D3
+00001FCC  EA4B                    1648                  LSR.W       #5, D3
+00001FCE  0C06 0001               1649                  CMPI.B      #1, D6
+00001FD2  6700 0026               1650                  BEQ         RTN_STRGCASE
+00001FD6  4EF8 1F54               1651                  JMP         RTN_PARSEOR 
+00001FDA                          1652  
+00001FDA                          1653  *---------------------------------------------------------------------------------------------------------
+00001FDA                          1654  *PARSE DN DESTINATION - PARSES ADDRESSING REGISTER AND MODE IF DN IS KNOWN TO BE DESTINATION OPERAND
+00001FDA                          1655  *---------------------------------------------------------------------------------------------------------
+00001FDA  0C06 0001               1656  PARSEDNDEST     CMPI.B      #1, D6
+00001FDE  67D4                    1657                  BEQ         PARSEDNSOURCE
+00001FE0  363C 0000               1658                  MOVE.W      #0, D3
+00001FE4  E94A                    1659                  LSL.W       #4, D2
+00001FE6  E04A                    1660                  LSR.W       #8, D2
+00001FE8  EA4A                    1661                  LSR.W       #5, D2  
+00001FEA  E148                    1662                  LSL.W       #8, D0
+00001FEC  EB48                    1663                  LSL.W       #5, D0
+00001FEE  E048                    1664                  LSR.W       #8, D0
+00001FF0  EA48                    1665                  LSR.W       #5, D0
+00001FF2  E149                    1666                  LSL.W       #8, D1
+00001FF4  E549                    1667                  LSL.W       #2, D1
+00001FF6  E049                    1668                  LSR.W       #8, D1
+00001FF8  EA49                    1669                  LSR.W       #5, D1
+00001FFA  4E75                    1670  RTN_STRGCASE    RTS
+00001FFC                          1671  
+00001FFC                          1672  *-----------------------------------------------------------------------------------------------------------
+00001FFC                          1673  **********************************************SHARED-CODE-SECTION******************************************* 
+00001FFC                          1674  *-----------------------------------------------------------------------------------------------------------
+00001FFC                          1675  *~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~HEHE~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~*
+00001FFC                          1676  *-----------------------------------------------------------------------------------------------------------
+00001FFC                          1677  **********************************************SHARED-CODE-SECTION******************************************* 
+00001FFC                          1678  *-----------------------------------------------------------------------------------------------------------
+00001FFC                          1679  
+00001FFC                          1680  *---------------------------------------------------------------------------------------------------------
+00001FFC                          1681  *RECOVER POINTER  - RECOVERS A2 IN CASE OF BAD DATA (INSUPPORTED ADDRESSING MODES) DOES THIS MAKE SENSE??
+00001FFC                          1682  *---------------------------------------------------------------------------------------------------------
+00001FFC  0C06 0001               1683  RECOVERPTR          CMPI.B      #1, D6
+00002000  6700 0006               1684                      BEQ         INCPTRLONG  
+00002004  544E                    1685                      ADDA        #2, A6
+00002006  4E75                    1686  RTN_LONGPTR         RTS
+00002008  584E                    1687  INCPTRLONG          ADDA        #4, A6
+0000200A  4EF8 2006               1688                      JMP         RTN_LONGPTR
+0000200E                          1689                      
+0000200E                          1690  *---------------------------------------------------------------------------------------------------------
+0000200E                          1691  *ERROR CHECK - CHECKS ADDRESSING MODES AND ADDRESSING REGISTERS FOR GENERAL ERRORS THAT APPLY TO ALL OP CODES
+0000200E                          1692  *---------------------------------------------------------------------------------------------------------            
+0000200E  4EB9 00002016           1693  ERRORCHECK      JSR         CHECKMODE
+00002014  4E75                    1694  RTN_REGCHK      RTS
+00002016  0C01 0005               1695  CHECKMODE       CMPI.B      #5, D1
+0000201A  6700 0028               1696                  BEQ         ERROR2
+0000201E  0C01 0006               1697                  CMPI.B      #6, D1
+00002022  6700 04B8               1698                  BEQ         ERROR
+00002026  0C01 0007               1699                  CMPI.B      #7, D1
+0000202A  6700 0004               1700                  BEQ         CHECKREG
+0000202E  4E75                    1701                  RTS
+00002030  0C00 0002               1702  CHECKREG        CMPI.B      #2, D0
+00002034  6700 000E               1703                  BEQ         ERROR2
+00002038  0C00 0003               1704                  CMPI.B      #3, D0
+0000203C  6700 0006               1705                  BEQ         ERROR2
+00002040  4EF8 2014               1706                  JMP         RTN_REGCHK
+00002044  31FC BEEF 0456          1707  ERROR2          MOVE.W      #$BEEF, $456
+0000204A  4EF8 2014               1708                  JMP         RTN_REGCHK
+0000204E                          1709  
+0000204E                          1710  *---------------------------------------------------------------------------------------------------------
+0000204E                          1711  *APPENDS IMMEDIATE  - APPEND IMMEDIATE DATA FROM A6 TO A2 DEPENDING ON WORD OR LONG ADDRESSING MODE
+0000204E                          1712  *                     INDICATED BY D6, (1 FOR LONG, 0 FOR WORD)
+0000204E                          1713  *---------------------------------------------------------------------------------------------------------                
+0000204E  14FC 0023               1714  APPENDIMMEDIATE MOVE.B      #'#', (A2)+
+00002052  14FC 0024               1715                  MOVE.B      #'$', (A2)+
+00002056  BC3C 0001               1716                  CMP.B       #1, D6
+0000205A  6700 00AA               1717                  BEQ         ISLONG
+0000205E  4EB9 000021BA           1718                  JSR         APPENDWORD
+00002064  4E75                    1719                  RTS
+00002066                          1720                  
+00002066                          1721  *---------------------------------------------------------------------------------------------------------
+00002066                          1722  *SWAP  - SWAPS D0 AND D1 WITH D2 AND D3 SO ERROR CHECKING CAN BE DONE ONE BOTH SOURCE AND DEST OPERANDS
+00002066                          1723  *---------------------------------------------------------------------------------------------------------
+00002066  C142                    1724  SWAP            EXG         D0, D2
+00002068  C343                    1725                  EXG         D1, D3
+0000206A  4E75                    1726                  RTS
+0000206C                          1727  
+0000206C                          1728  *---------------------------------------------------------------------------------------------------------
+0000206C                          1729  *APPEND EA          - APPENDS ADDRESSES DEPENDING ON ADDRESSING MODES USED
+0000206C                          1730  *PRE-CONDITIONS     - ERROR CHECKING HAS BEEN COMPLETED. D0 CONTAINS ADDRESSING REGISTER. D1 CONTAINS
+0000206C                          1731  *                     ADDRESSING MODE. d6 contains 1 for immediate long addressing
+0000206C                          1732  *---------------------------------------------------------------------------------------------------------           
+0000206C  0C01 0007               1733  APPENDEA        CMPI.B      #7, D1
+00002070  6700 005E               1734                  BEQ         MSWORL
+00002074  0C01 0000               1735                  CMPI.B      #0, D1
+00002078  6700 0024               1736                  BEQ         MSDREG
+0000207C  0C01 0001               1737                  CMPI.B      #1, D1
+00002080  6700 0026               1738                  BEQ         MSAREG
+00002084  0C01 0002               1739                  CMPI.B      #2, D1
+00002088  6700 0028               1740                  BEQ         MSAIREG
+0000208C  0C01 0003               1741                  CMPI.B      #3, D1
+00002090  6700 002A               1742                  BEQ         MSAPIREG
+00002094  0C01 0004               1743                  CMPI.B      #4, D1
+00002098  6700 002C               1744                  BEQ         MSAPDREG
+0000209C  4E75                    1745  RTN_APPSRC      RTS
+0000209E                          1746  
+0000209E                          1747  *---------------------------------------------------------------------------------------------------------
+0000209E                          1748  *APPEND MOVE SOURCE DATA REGISTER - APPENDS DN TO ADDRESS POINTED TO BY A2
+0000209E                          1749  *---------------------------------------------------------------------------------------------------------
+0000209E  4EB9 0000212C           1750  MSDREG          JSR         APPENDSRCDREG
+000020A4  4EF8 209C               1751                  JMP         RTN_APPSRC
+000020A8                          1752  
+000020A8                          1753  *---------------------------------------------------------------------------------------------------------
+000020A8                          1754  *APPEND MOVE SOURCE ADDRESS REGISTER - APPENDS AN TO ADDRESS POINTED TO BY A2
+000020A8                          1755  *---------------------------------------------------------------------------------------------------------                
+000020A8  4EB9 0000213C           1756  MSAREG          JSR         APPENDSRCAREG
+000020AE  4EF8 209C               1757                  JMP         RTN_APPSRC
+000020B2                          1758  
+000020B2                          1759  *---------------------------------------------------------------------------------------------------------
+000020B2                          1760  *APPEND MOVE SOURCE ADRESS INDIRECT REGISTER - APPENDS (AN) TO ADDRESS POINTED TO BY A2
+000020B2                          1761  *---------------------------------------------------------------------------------------------------------                
+000020B2  4EB9 0000214C           1762  MSAIREG         JSR         APPENDSRCAIREG
+000020B8  4EF8 209C               1763                  JMP         RTN_APPSRC
+000020BC                          1764  
+000020BC                          1765  *---------------------------------------------------------------------------------------------------------
+000020BC                          1766  *APPEND MOVE SOURCE ADRESS INDIRECT POST INCREMENT REGISTER - APPENDS (AN)+ TO ADDRESS POINTED TO BY A2
+000020BC                          1767  *---------------------------------------------------------------------------------------------------------                
+000020BC  4EB9 00002164           1768  MSAPIREG        JSR         APPENDSRCAPIREG
+000020C2  4EF8 209C               1769                  JMP         RTN_APPSRC
+000020C6                          1770  
+000020C6                          1771  *---------------------------------------------------------------------------------------------------------
+000020C6                          1772  *APPEND MOVE SOURCE ADRESS INDIRECT PRE DECREMENT REGISTER - APPENDS -(AN) TO ADDRESS POINTED TO BY A2
+000020C6                          1773  *---------------------------------------------------------------------------------------------------------                
+000020C6  4EB9 00002180           1774  MSAPDREG        JSR         APPENDSRCAPDREG
+000020CC  4EF8 209C               1775                  JMP         RTN_APPSRC
+000020D0                          1776  
+000020D0                          1777  *---------------------------------------------------------------------------------------------------------
+000020D0                          1778  *MOVE SOURCE WORD OR LONG - SOURCE ADDRESSING MODE IS ABSOLUTE WORD OR LONG, APPEND APPROPRIATELY
+000020D0                          1779  *---------------------------------------------------------------------------------------------------------                
+000020D0  0C00 0000               1780  MSWORL          CMPI.B      #0, D0
+000020D4  6700 0048               1781                  BEQ         MSWORD
+000020D8  0C00 0001               1782                  CMPI.B      #1, D0
+000020DC  6700 0032               1783                  BEQ         MSLONG
+000020E0  0C00 0004               1784                  CMPI.B      #4, D0
+000020E4  6700 0006               1785                  BEQ         MSIMMEDIATE
+000020E8  4EF8 209C               1786                  JMP         RTN_APPSRC
+000020EC                          1787  
+000020EC                          1788  *---------------------------------------------------------------------------------------------------------
+000020EC                          1789  *MOVE SOURCE IMMEDIATE - SOURCE ADDRESSING MODE IS IMMEDIATE DATA, APPEND APPROPRIATELY
+000020EC                          1790  *---------------------------------------------------------------------------------------------------------                
+000020EC  14FC 0023               1791  MSIMMEDIATE     MOVE.B      #'#', (A2)+
+000020F0  14FC 0024               1792                  MOVE.B      #'$', (A2)+
+000020F4  BC3C 0001               1793                  CMP.B       #1, D6
+000020F8  6700 000C               1794                  BEQ         ISLONG
+000020FC  4EB9 000021BA           1795                  JSR         APPENDWORD
+00002102  4EF8 209C               1796                  JMP         RTN_APPSRC
+00002106                          1797  
+00002106                          1798  *---------------------------------------------------------------------------------------------------------
+00002106                          1799  *IS LONG - ADDRESSING MODE IS LONG, APPEND APPROPRIATELY
+00002106                          1800  *---------------------------------------------------------------------------------------------------------                
+00002106  4EB9 000021AC           1801  ISLONG          JSR         APPENDLONG
+0000210C  4EF8 209C               1802                  JMP         RTN_APPSRC
+00002110                          1803  
+00002110                          1804  *---------------------------------------------------------------------------------------------------------
+00002110                          1805  *MOVE SOURCE LONG - IS LONG, APPEND APPROPRIATELY
+00002110                          1806  *---------------------------------------------------------------------------------------------------------                
+00002110  14FC 0024               1807  MSLONG          MOVE.B      #'$', (A2)+
+00002114  4EB9 000021AC           1808                  JSR         APPENDLONG
+0000211A  4EF8 209C               1809                  JMP         RTN_APPSRC
+0000211E                          1810  
+0000211E                          1811  *---------------------------------------------------------------------------------------------------------
+0000211E                          1812  *MOVE SOURCE WORD - ADDRESSING MODE IS ABSOLUTE WORD, APPEND APPROPRIATELY
+0000211E                          1813  *---------------------------------------------------------------------------------------------------------               
+0000211E  14FC 0024               1814  MSWORD          MOVE.B      #'$', (A2)+
+00002122  4EB9 000021BA           1815                  JSR         APPENDWORD
+00002128  4EF8 209C               1816                  JMP         RTN_APPSRC
+0000212C                          1817  
+0000212C                          1818  *---------------------------------------------------------------------------------------------------------
+0000212C                          1819  *APPEND DATA REGISTER - APPENDS DN TO A2
+0000212C                          1820  *---------------------------------------------------------------------------------------------------------
+0000212C  14FC 0044               1821  APPENDSRCDREG       MOVE.B      #'D', (A2)+
+00002130  0600 0030               1822                      ADDI.B      #48, D0
+00002134  14C0                    1823                      MOVE.B      D0, (A2)+
+00002136  0400 0030               1824                      SUBI.B      #48, D0
+0000213A  4E75                    1825                      RTS
+0000213C                          1826  
+0000213C                          1827  *---------------------------------------------------------------------------------------------------------
+0000213C                          1828  *APPEND ADDRESS REGISTER - APPENDS AN TO A2
+0000213C                          1829  *---------------------------------------------------------------------------------------------------------                    
+0000213C  14FC 0041               1830  APPENDSRCAREG       MOVE.B      #'A', (A2)+
+00002140  0600 0030               1831                      ADDI.B      #48, D0
+00002144  14C0                    1832                      MOVE.B      D0, (A2)+
+00002146  0400 0030               1833                      SUBI.B      #48, D0
+0000214A  4E75                    1834                      RTS
+0000214C                          1835  
+0000214C                          1836  *---------------------------------------------------------------------------------------------------------
+0000214C                          1837  *APPEND ADDRESS REGISTER INDIRECT - APPENDS (AN) TO A2
+0000214C                          1838  *---------------------------------------------------------------------------------------------------------                    
+0000214C  14FC 0028               1839  APPENDSRCAIREG      MOVE.B      #'(', (A2)+
+00002150  14FC 0041               1840                      MOVE.B      #'A', (A2)+
+00002154  0600 0030               1841                      ADDI.B      #48, D0
+00002158  14C0                    1842                      MOVE.B      D0, (A2)+
+0000215A  14FC 0029               1843                      MOVE.B      #')', (A2)+
+0000215E  0400 0030               1844                      SUBI.B      #48, D0
+00002162  4E75                    1845                      RTS
+00002164                          1846  
+00002164                          1847  *---------------------------------------------------------------------------------------------------------
+00002164                          1848  *APPEND ADDRESS REGISTER POST INCREMENT - APPENDS (AN)+ TO A2
+00002164                          1849  *---------------------------------------------------------------------------------------------------------                     
+00002164  14FC 0028               1850  APPENDSRCAPIREG     MOVE.B      #'(', (A2)+
+00002168  14FC 0041               1851                      MOVE.B      #'A', (A2)+
+0000216C  0600 0030               1852                      ADDI.B      #48, D0
+00002170  14C0                    1853                      MOVE.B      D0, (A2)+
+00002172  14FC 0029               1854                      MOVE.B      #')', (A2)+
+00002176  14FC 002B               1855                      MOVE.B      #'+', (A2)+
+0000217A  0400 0030               1856                      SUBI.B      #48, D0
+0000217E  4E75                    1857                      RTS
+00002180                          1858   
+00002180                          1859  *---------------------------------------------------------------------------------------------------------
+00002180                          1860  *APPEND ADDRESS REGISTER PRE DECREMENT - APPENDS -(AN) TO A2
+00002180                          1861  *---------------------------------------------------------------------------------------------------------                    
+00002180  14FC 002D               1862  APPENDSRCAPDREG     MOVE.B      #'-', (A2)+
+00002184  14FC 0028               1863                      MOVE.B      #'(', (A2)+
+00002188  14FC 0041               1864                      MOVE.B      #'A', (A2)+
+0000218C  0600 0030               1865                      ADDI.B      #48, D0
+00002190  14C0                    1866                      MOVE.B      D0, (A2)+
+00002192  14FC 0029               1867                      MOVE.B      #')', (A2)+
+00002196  0400 0030               1868                      SUBI.B      #48, D0
+0000219A  4E75                    1869                      RTS
+0000219C                          1870  
+0000219C                          1871  *---------------------------------------------------------------------------------------------------------
+0000219C                          1872  *CLEA ALL D REG - CLEARS ALL DATA REGISTERS, EXCEPT D6....I NEED IT, DONT ASK
+0000219C                          1873  *--------------------------------------------------------------------------------------------------------- 
+0000219C  4240                    1874  CLRALLDREG          CLR         D0
+0000219E  4241                    1875                      CLR         D1
+000021A0  4242                    1876                      CLR         D2
+000021A2  4243                    1877                      CLR         D3
+000021A4  4244                    1878                      CLR         D4
+000021A6  4245                    1879                      CLR         D5
+000021A8  4247                    1880                      CLR         D7
+000021AA  4E75                    1881                      RTS
+000021AC                          1882  
+000021AC                          1883  *---------------------------------------------------------------------------------------------------------
+000021AC                          1884  *APPEND LONG - APPENDS THE LONG ABSOLUTE ADDRESS TO A2
+000021AC                          1885  *---------------------------------------------------------------------------------------------------------                 
+000021AC  4EB9 000021BA           1886  APPENDLONG          JSR         APPENDWORD
+000021B2  4EB9 000021BA           1887                      JSR         APPENDWORD
+000021B8  4E75                    1888                      RTS 
+000021BA                          1889   
+000021BA                          1890  *---------------------------------------------------------------------------------------------------------
+000021BA                          1891  *APPEND WORD - APPENDS THE WORD ABSOLUTE ADDRESS TO A2
+000021BA                          1892  *---------------------------------------------------------------------------------------------------------                 
+000021BA  48F8 00FF 0400          1893  APPENDWORD      MOVEM.L     D0-D7, $400
+000021C0  4EB8 219C               1894                  JSR         CLRALLDREG
+000021C4  3E1E                    1895                  MOVE.W      (A6)+, D7
+000021C6  3007                    1896                  MOVE.W      D7, D0
+000021C8  3207                    1897                  MOVE.W      D7, D1
+000021CA  3407                    1898                  MOVE.W      D7, D2
+000021CC  3607                    1899                  MOVE.W      D7, D3
+000021CE  E048                    1900                  LSR.W       #8, D0
+000021D0  E848                    1901                  LSR.W       #4, D0
+000021D2  E949                    1902                  LSL.W       #4, D1
+000021D4  E049                    1903                  LSR.W       #8, D1
+000021D6  E849                    1904                  LSR.W       #4, D1
+000021D8  E14A                    1905                  LSL.W       #8, D2
+000021DA  E04A                    1906                  LSR.W       #8, D2
+000021DC  E84A                    1907                  LSR.W       #4, D2
+000021DE  E14B                    1908                  LSL.W       #8, D3
+000021E0  E94B                    1909                  LSL.W       #4, D3
+000021E2  E04B                    1910                  LSR.W       #8, D3
+000021E4  E84B                    1911                  LSR.W       #4, D3
+000021E6  4EB9 0000226E           1912                  JSR         CONVERT
+000021EC  1001                    1913                  MOVE.B      D1, D0
+000021EE  4EB9 0000226E           1914                  JSR         CONVERT
+000021F4  1002                    1915                  MOVE.B      D2, D0
+000021F6  4EB9 0000226E           1916                  JSR         CONVERT
+000021FC  1003                    1917                  MOVE.B      D3, D0
+000021FE  4EB9 0000226E           1918                  JSR         CONVERT
+00002204  4EB8 219C               1919                  JSR         CLRALLDREG        
+00002208  4CF8 00FF 0400          1920                  MOVEM.L     $400, D0-D7
+0000220E  4E75                    1921                  RTS
+00002210                          1922                  
+00002210                          1923  *---------------------------------------------------------------------------------------------------------
+00002210                          1924  *APPEND WORD - APPENDS THE WORD ABSOLUTE ADDRESS TO A2
+00002210                          1925  *---------------------------------------------------------------------------------------------------------                 
+00002210  14FC 0024               1926  APPENDDISPLACE  MOVE.B      #'$', (A2)+
+00002214  48F8 00FF 0400          1927                   MOVEM.L     D0-D7, $400
+0000221A  3200                    1928                   MOVE.W      D0, D1
+0000221C  3400                    1929                   MOVE.W      D0, D2
+0000221E  3600                    1930                   MOVE.W      D0, D3
+00002220  E048                    1931                   LSR.W       #8, D0
+00002222  E848                    1932                   LSR.W       #4, D0
+00002224  E949                    1933                   LSL.W       #4, D1
+00002226  E049                    1934                   LSR.W       #8, D1
+00002228  E849                    1935                   LSR.W       #4, D1
+0000222A  E14A                    1936                   LSL.W       #8, D2
+0000222C  E04A                    1937                   LSR.W       #8, D2
+0000222E  E84A                    1938                   LSR.W       #4, D2
+00002230  E14B                    1939                   LSL.W       #8, D3
+00002232  E94B                    1940                   LSL.W       #4, D3
+00002234  E04B                    1941                   LSR.W       #8, D3
+00002236  E84B                    1942                   LSR.W       #4, D3
+00002238  4EB9 0000226E           1943                   JSR         CONVERT
+0000223E  1001                    1944                   MOVE.B      D1, D0
+00002240  4EB9 0000226E           1945                   JSR         CONVERT
+00002246  1002                    1946                   MOVE.B      D2, D0
+00002248  4EB9 0000226E           1947                   JSR         CONVERT
+0000224E  1003                    1948                   MOVE.B      D3, D0
+00002250  4EB9 0000226E           1949                   JSR         CONVERT        
+00002256  4CF8 00FF 0400          1950                   MOVEM.L     $400, D0-D7
+0000225C  4E75                    1951                   RTS
+0000225E                          1952  
+0000225E                          1953  
+0000225E                          1954  *---------------------------------------------------------------------------------------------------------
+0000225E                          1955  *ADD 55 - ADD 55 HEX TO VALUE IN D0 TO CONVERT TO LETTER
+0000225E                          1956  *---------------------------------------------------------------------------------------------------------                 
+0000225E  0600 0037               1957  ADD55           ADDI.B      #55, D0
+00002262  4EF9 00002278           1958                  JMP         RTN_ADD55
+00002268                          1959  
+00002268                          1960  *---------------------------------------------------------------------------------------------------------
+00002268                          1961  *ADD 48 - ADD 55 HEX TO VALUE IN D0 TO CONVERT TO NUMBER
+00002268                          1962  *---------------------------------------------------------------------------------------------------------                 
+00002268  0600 0030               1963  ADD48           ADDI.B      #48, D0
+0000226C  4E75                    1964                  RTS
+0000226E                          1965  *---------------------------------------------------------------------------------------------------------
+0000226E                          1966  *CONVERT - CONVERTS VALUE AT D0 BY ADDING 55 OR 48 IF LETTER OR NUMBER
+0000226E                          1967  *---------------------------------------------------------------------------------------------------------                
+0000226E  0C00 000A               1968  CONVERT         CMPI.B      #$A, D0
+00002272  6CEA                    1969                  BGE         ADD55 
+00002274  4EB8 2268               1970                  JSR         ADD48 
+00002278  14C0                    1971  RTN_ADD55       MOVE.B      D0, (A2)+  
+0000227A  4E75                    1972                  RTS
+0000227C                          1973                  
+0000227C                          1974  *---------------------------------------------------------------------------------------------------------
+0000227C                          1975  *BAD DATA - ILLEGAL ADDRESSING MODES USED, APPEND BAD DATA TO A2, REMOVE BEEF FLAG FROM MEMORY FOR LATER USE
+0000227C                          1976  *---------------------------------------------------------------------------------------------------------            
+0000227C  14FC 0042               1977  BADDATA         MOVE.B      #'B', (A2)+
+00002280  14FC 0041               1978                  MOVE.B      #'A', (A2)+
+00002284  14FC 0044               1979                  MOVE.B      #'D', (A2)+
+00002288  14FC 0020               1980                  MOVE.B      #' ', (A2)+
+0000228C  14FC 0044               1981                  MOVE.B      #'D', (A2)+
+00002290  14FC 0041               1982                  MOVE.B      #'A', (A2)+
+00002294  14FC 0054               1983                  MOVE.B      #'T', (A2)+
+00002298  14FC 0041               1984                  MOVE.B      #'A', (A2)+
+0000229C  31FC FFFF 0456          1985                  MOVE.W      #$FFFF, $456
+000022A2  4E75                    1986                  RTS
+000022A4                          1987  
+000022A4                          1988  * Put variables and constants here
+000022A4                          1989  *-----------Output texts------------------------------------
+000022A4= 57 65 6C 63 6F 6D ...   1990  WelcomeMsg  DC.b    'Welcome to EASy68K Instruction Disassembler!',CR,LF,0
+000022D3= 43 72 65 61 74 65 ...   1991  WrtBy       DC.B    'Created by: Vuochly Ky, Kunlakan Cherdchusilp, Nicolas Michael',CR,LF,CR,LF,0
+00002316= 50 72 65 63 6F 6E ...   1992  note1       DC.B    'Preconditions: ',CR,LF,0
+00002328= 20 20 20 2D 2D 20 ...   1993  note2       DC.B    '   -- The address inputs must be in hexadecimal number (without $)',CR,LF,0
+0000236D= 20 20 20 2D 2D 20 ...   1994  note3       DC.B    '   -- Addresses must be in the range of 0 ~ 00FFFFFE',CR,LF,0
+000023A4= 20 20 20 2D 2D 20 ...   1995  note4       DC.B    '   -- Both starting and ending address must be even addresses',CR,LF,0
+000023E4= 50 6C 65 61 73 65 ...   1996  startLoc    DC.B    'Please enter the starting location in hexadecimal format: ',0
+0000241F= 50 6C 65 61 73 65 ...   1997  endLoc      DC.B    'Please enter the ending location in hexadecimal format: ',0
+00002458= 57 6F 75 6C 64 20 ...   1998  AskToCont   DC.B    'Would you like to start over? (y/n) :',0
+0000247E= 50 72 65 73 73 20 ...   1999  enter       DC.B    'Press ENTER key to see more.',0
+0000249B= 54 68 61 6E 6B 20 ...   2000  ThxMsg      DC.B    'Thank you for using our EASy68K Instruction Disassembler!',0
+000024D6= 0080                    2001  string      DC.W    $80
+000024D8= 0090                    2002  startAddr   DC.W    $90
+000024DA= 0098                    2003  endAddr     DC.W    $98
+000024DC= 54 68 65 20 61 64 ...   2004  error       DC.B    'The address you entered is whether invalid or out of range.',CR,LF,CR,LF,0
+0000251C                          2005      END    START        ; last line of source
+
+No errors detected
+No warnings generated
+
+
+SYMBOL TABLE INFORMATION
+Symbol-name         Value
+-------------------------
+ADD48               2268
+ADD55               225E
+ADDABADDATA         1B60
+APPA                1E06
+APPAF               1DAA
+APPENDDISPLACE      2210
+APPENDDORA          1DD6
+APPENDDORAF         1D7A
+APPENDEA            206C
+APPENDIMMEDIATE     204E
+APPENDLONG          21AC
+APPENDSLASH         1DFE
+APPENDSLASHF        1DA2
+APPENDSRCAIREG      214C
+APPENDSRCAPDREG     2180
+APPENDSRCAPIREG     2164
+APPENDSRCAREG       213C
+APPENDSRCDREG       212C
+APPENDWORD          21BA
+APPLISTRTM          1D44
+ASKTOCONT           2458
+BACKWARDLIST        1DBA
+BADDATA             227C
+BADINPUT            11C0
+BADMULDATA          1A8E
+BADQDATA            1AEC
+BCKWRDLOOP          1DC6
+BCLRBADDATA         1BE4
+BITDISPLACE         1C28
+CHECKMODE           2016
+CHECKODD            10C6
+CHECKRANGEE         1104
+CHECKRANGES         10A4
+CHECKREG            2030
+CLRALLDREG          219C
+CODE0000            12B2
+CODE0001            12FE
+CODE0010            131C
+CODE0011            1356
+CODE0100            137A
+CODE0101            13C4
+CODE0110            13E6
+CODE0111            1400
+CODE1000            1406
+CODE1001            144C
+CODE1010            146A
+CODE1011            1472
+CODE1100            148C
+CODE1101            14B0
+CODE1110            14D8
+CODE1111            14D8
+CONLCASE            118C
+CONNUM              11AA
+CONUCASE            1194
+CONVERT             226E
+CONVERTED           1198
+CR                  D
+DISASSEMBLE         1232
+ELEVEN000           1800
+ELEVEN001           181A
+ELEVEN010           1834
+ELEVEN011           184E
+ELEVEN100           1856
+ELEVEN101           1870
+ELEVEN110           188C
+ELEVEN111           18A8
+END                 1200
+ENDADDR             24DA
+ENDING              FFFFFE
+ENDLOC              241F
+ENTER               247E
+ERRMSGE             1134
+ERRMSGS             1094
+ERROR               24DC
+ERROR2              2044
+ERRORCHECK          200E
+FINISH              12B0
+FORWARDLIST         1D5E
+FOUR000             15D0
+FOUR001             15D8
+FOUR010             15E0
+FOUR011             15F2
+FOUR100             15FA
+FOUR100_CONT        1618
+FOUR101             1650
+FOUR110             165A
+FOUR111             165C
+FRWRDLOOP           1D6A
+GETDISPLACEMENT     1C22
+GETEND              10DA
+GETLISTMASK         1E16
+GETMOVEREG          1C9E
+GETSTART            106A
+GET_OPMODE          193C
+GET_SIZE            19AE
+GOODINPUT           11C4
+IFBCLR_DN           12D8
+IFDIVS              141E
+IFJSR               1684
+IFLEA               13A2
+IFMOVEA             1342
+IFMOVEL             1332
+IFMOVEML            163A
+IFMOVEMW            1624
+IFMOVEW             136A
+IFOR                1434
+IFRTS               1670
+IMSOURCE            1BD8
+INCPTRLONG          2008
+INVALID_OPCODE      19F4
+ISADDA              1B00
+ISADDAL             1AF6
+ISBCLR              1B6A
+ISBRA               1BEE
+ISEORB              1F28
+ISLEA               1E38
+ISLONG              2106
+ISMOVE              1C38
+ISMOVEL             1C2E
+ISMOVEM             1CC2
+ISMULS              1A2E
+ISNEGB              1EEC
+ISNEGL              1EE2
+ISORB               1F32
+ISORIB              1E98
+ISORIL              1E8E
+ISSUBQ              1A98
+LEABADDATA          1E84
+LEARTN              1E7A
+LF                  A
+LOOPDYDOOP          1212
+MAIN                1052
+MAINTABLE           1250
+MMAPPEA0            1D0A
+MMAPPEA1            1D2C
+MMBADDATA           1D00
+MODE000             1986
+MODE001             198C
+MODE010             1992
+MODE011             1998
+MODE100             199A
+MODE101             19A0
+MODE110             19A6
+MODE111             19AC
+MOVEBADDATA         1C94
+MSAIREG             20B2
+MSAPDREG            20C6
+MSAPIREG            20BC
+MSAREG              20A8
+MSDREG              209E
+MSIMMEDIATE         20EC
+MSLONG              2110
+MSWORD              211E
+MSWORL              20D0
+NEGBADDATA          1F1E
+NOTE1               2316
+NOTE2               2328
+NOTE3               236D
+NOTE4               23A4
+ORBADDATA           1F9A
+ORIBADDATA          1ED8
+OUTDATA             10000
+PARSEDNDEST         1FDA
+PARSEDNSOURCE       1FB4
+PARSEOROP           1FA4
+PROMPTCONT          11C8
+RECOVERPTR          1FFC
+RETURN0000          12D6
+RETURN0100          139E
+RETURN1000          141A
+RETURN_ELEVEN       17FE
+RETURN_FOUR         15CE
+RETURN_OPMODE       1984
+RETURN_SIX          1708
+RETURN_SIZE         19DE
+RETURN_THIRTEEN     18E2
+RETURN_ZERO         150E
+RTN_16BIT           1C0E
+RTN_1DIR            1CF8
+RTN_ADD55           2278
+RTN_APPA            1DEA
+RTN_APPAF           1D8E
+RTN_APPD            1DCC
+RTN_APPDF           1D70
+RTN_APPSRC          209C
+RTN_BAD             1C88
+RTN_BADA            1B54
+RTN_BADMUL          1A82
+RTN_BADORI          1ECE
+RTN_BADQ            1AE0
+RTN_BCLRBAD         1BCC
+RTN_IMSRC           1B90
+RTN_LIST            1D5C
+RTN_LONGPTR         2006
+RTN_NEGERR          1F14
+RTN_OR              1F90
+RTN_PARSEOR         1F54
+RTN_REGCHK          2014
+RTN_SLASH           1DF8
+RTN_SLASHF          1D9C
+RTN_STRGCASE        1FFA
+SETEAREGISTERS      1E1A
+SIX0000             170A
+SIX0001             171C
+SIX0010             1724
+SIX0011             172C
+SIX0100             1734
+SIX0101             1746
+SIX0110             1758
+SIX0111             1760
+SIX1000             1768
+SIX1001             177A
+SIX1010             1782
+SIX1011             178C
+SIX1100             1796
+SIX1101             17AA
+SIX1110             17BA
+SIX1111             17C4
+SIZE00              19E0
+SIZE01              19E6
+SIZE10              19EC
+SIZE11              19F2
+START               1000
+STARTADDR           24D8
+STARTING            400
+STARTLOC            23E4
+STRING              24D6
+SWAP                2066
+TAB                 9
+TABLEELEVEN         17CE
+TABLEFOUR           159E
+TABLEFOURTEEN       14D8
+TABLEOPMODE         1954
+TABLESIX            16A8
+TABLESIZE           19C6
+TABLETHIRTEEN       18B2
+TABLEZERO           14DE
+THIRTEEN000         18E4
+THIRTEEN001         18EE
+THIRTEEN010         18F8
+THIRTEEN011         1902
+THIRTEEN100         1910
+THIRTEEN101         191A
+THIRTEEN110         1924
+THIRTEEN111         192E
+THXMSG              249B
+VALIDATE            1144
+VALLOOP             1154
+WELCOME             1006
+WELCOMEMSG          22A4
+WRTBY               22D3
+ZERO000             1510
+ZERO001             152C
+ZERO010             1534
+ZERO011             153C
+ZERO100             1544
+ZERO101             156A
+ZERO110             1572
+ZERO111             1594
