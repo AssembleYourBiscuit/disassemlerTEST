@@ -24,8 +24,30 @@ public class AsymCrypto
         return (int) (Math.pow(m, kd) % n);
     }
     
-    public int extraCredit()
+    public int extraCredit(int p, int q, int ke)
     {
-        return 0;
+        int thisNum = (p - 1) * (q - 1);
+        int max = 100;
+        for (int i = 1; i < max; i++) 
+        {
+            boolean isPrimeNumber = true;
+            for (int j = 2; j < i; j++) 
+            {
+                if (i % j == 0) {
+                    isPrimeNumber = false;
+                    break; 
+                }
+            }
+            if (isPrimeNumber) 
+            {
+                if(i * ke % thisNum == 1)
+                {
+                    return i;
+                }
+            }
+        }
+        return -1;
     }
+       
+    
 }

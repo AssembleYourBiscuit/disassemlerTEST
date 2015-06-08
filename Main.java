@@ -19,12 +19,14 @@ public class Main
         }
         System.out.println(crypted);
         
-        for(int i = 0; i < crypted.length(); i++)
+        for(int i = 0; i < crypted.length() - 2; i = i + 2)
         {
             int ascii = Integer.parseInt(crypted.substring(i, i + 2));
             String thisChar = Character.toString((char) ascii);
             decry += thisChar;
         }
         System.out.println("Decrypted string: " + decry);
+        System.out.println("Extra Credit: " + cry.extraCredit(19, 41, 11));
+        
     }
 }
